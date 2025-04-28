@@ -1,19 +1,17 @@
-import Link from "next/link";
+import Heading from "@/components/heading";
 import { initialTickets } from "@/data";
-import { ticketPath } from "@/paths";
+import TicketItem from "@/features/ticket/components/ticket-item";
 
 const TicketsPage = () => {
   return (
-    <div>
-      {initialTickets.map((ticket) => (
-        <div key={ticket.id}>
-          <h2 className="text-lg">{ticket.title}</h2>
+    <div className="flex flex-1 flex-col gap-y-8">
+      <Heading title="Tickets" description="All your tickets at one place" />
 
-          <Link href={ticketPath(ticket.id)} className="text-sm underline">
-            View
-          </Link>
-        </div>
-      ))}
+      <div className="flex flex-1 animate-fade-from-top flex-col items-center gap-y-4">
+        {initialTickets.map((ticket) => (
+          <TicketItem key={ticket.id} ticket={ticket} />
+        ))}
+      </div>
     </div>
   );
 };
