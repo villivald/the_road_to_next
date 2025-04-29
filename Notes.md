@@ -116,5 +116,15 @@ const TICKET_ICONS = {
   DONE: <LucideCircleCheck />,
 };
 ```
-- theme can be generated via the website and added to the project
+- theme variables can be generated via the website and added to the project
+
+## Dark mode
+
+- Dark mode switching can be implemented using `next-themes` package.
+
+1. [theme-provider.tsx](./the-road-to-next-app/src/components/theme/theme-provider.tsx)
+2. [theme-switcher.tsx](./the-road-to-next-app//src/components/theme/theme-switcher.tsx)
+3. [ThemeProvider in main layout](./the-road-to-next-app/src/app/layout.tsx)
+4. [dark theme color variables in global styles](./the-road-to-next-app/src/app/globals.css)
+
 
