@@ -4,7 +4,7 @@
   - see usage example in [eslint config](./the-road-to-next-app/eslint.config.mjs)
 - Absolute imports can be used in Next.js by adding a `@` prefix to the import path.
   - E.g. `import { data } from "@/data.ts"` instead of `import { data } from "../../../data.ts"` (assuming the file is in `/src` folder)
-
+- Component composition pattern (passing children as props`<AppProvider>{children}</AppProvider>`) can be used to avoid propagating client components (`"use client"`) down the tree.
 
 ## Routing
 - Dynamic route can be created by using square brackets in the file name. E.g. `app/tickets/[ticketId]/page.tsx`.
@@ -127,4 +127,72 @@ const TICKET_ICONS = {
 3. [ThemeProvider in main layout](./the-road-to-next-app/src/app/layout.tsx)
 4. [dark theme color variables in global styles](./the-road-to-next-app/src/app/globals.css)
 
+## Data fetching, streaming, suspense & fallbacks
 
+- Data can be fetched in server components by using async/await syntax, e.g.
+```tsx
+import { getTicket } from "@/features/ticket/queries/get-ticket";
+
+const TicketPage = async () => {
+  const ticket = await getTicket(params.ticketId);
+
+  return (
+   /* ... */
+  );
+};
+```
+
+- `<Suspense>` component can be used to show a fallback UI (spinner, etc.) while the data is being fetched, e.g.
+```tsx
+import { Suspense } from "react";
+import { TicketList } from "@/features/ticket/components/ticket-list";
+import { Spinner } from "@/features/ticket/components/ticket-list-skeleton";
+
+const TicketListPage = async () => {
+
+  return (
+    <>
+      <Suspense fallback={<Spinner />}>
+      // data is fetched inside TicketList component
+        <TicketList />
+      </Suspense>
+    </>
+  );
+};
+export default TicketListPage;
+```
+
+- Whole page loading can be also implemented by creating a `loading.tsx` file in the same folder as the page, e.g. [loading.tsx](./the-road-to-next-app/src/app/tickets/[ticketId]/loading.tsx)
+- Error cases can be handled in the same way by creating an `error.tsx` file, e.g. [error.tsx](./the-road-to-next-app/src/app/tickets/error.tsx)
+  - or by using `ErrorBoundary` component from `react-error-boundary` package, e.g.
+  ```tsx
+  import { ErrorBoundary } from "react-error-boundary";
+  import { TicketList } from "@/features/ticket/components/ticket-list";
+
+  const TicketListPage = async () => {
+    return (
+      <>
+        <ErrorBoundary fallback="Something went wrong!">
+          <TicketList />
+        </ErrorBoundary>
+      </>
+    );
+  };
+  export default TicketListPage;
+  ```
+- A not found case can be handled with a `not-found.tsx` file, e.g. [not-found.tsx](./the-road-to-next-app/src/app/tickets/[ticketId]/not-found.tsx). It can be used in combination with `notFound()` function from `next/navigation` package, e.g. [ticket.tsx](./the-road-to-next-app/src/app/tickets/[ticketId]/page.tsx)
+
+## DB & ORM
+- https://supabase.com/dashboard/project/
+- `npm i prisma --save-dev`
+- `npm install @prisma/client` installs the Prisma Client package
+- `npx prisma init` initializes Prisma in the project & generates [schema.prisma](./the-road-to-next-app/prisma/schema.prisma)
+- `npx prisma generate` updates the generated Prisma Client code
+- add `"postinstall": "prisma generate"` to `package.json` scripts
+- add `directUrl = env("DIRECT_URL")` to the datasource block in [schema.prisma](./the-road-to-next-app/prisma/schema.prisma)
+- `npx prisma db push` to push the schema to the database
+- data can be seeded to the DB using `PrismaClient`, e.g. [seed.ts](./the-road-to-next-app/prisma/seed.ts)
+- DB data can be accessed via the Prisma Studio - `npx prisma studio`, http://localhost:5555/
+- Prisma workaround for Next.js to prevent hot reloading issues [prisma.ts](./the-road-to-next-app/src/lib/prisma.ts)
+  - prisma then can be used in the app like in [get-ticket.ts](./the-road-to-next-app/src/features/ticket/queries/get-ticket.ts) & [page.tsx](./the-road-to-next-app/src/app/tickets/[ticketId]/page.tsx)
+- Types from Prisma Client can be used in the app, e.g. like in [ticket-item.tsx](./the-road-to-next-app/src/features/ticket/components/ticket-item.tsx)
