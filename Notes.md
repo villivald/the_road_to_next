@@ -32,6 +32,8 @@ import { ticketPath } from "@/paths";
 /* ... */
 ```
 
+- Redirects can be done using `redirect` function from `next/navigation` package. E.g. `redirect("/tickets");`
+
 ## Typescript
 - ts errors can be checked using `npm run type` command with `"type": "tsc --noEmit"` in package.json scripts.
 - const assertions can be used for literal types, e.g. `let x = "hello" as const;`, type is `"hello"`, not `string`.
@@ -196,3 +198,61 @@ export default TicketListPage;
 - Prisma workaround for Next.js to prevent hot reloading issues [prisma.ts](./the-road-to-next-app/src/lib/prisma.ts)
   - prisma then can be used in the app like in [get-ticket.ts](./the-road-to-next-app/src/features/ticket/queries/get-ticket.ts) & [page.tsx](./the-road-to-next-app/src/app/tickets/[ticketId]/page.tsx)
 - Types from Prisma Client can be used in the app, e.g. like in [ticket-item.tsx](./the-road-to-next-app/src/features/ticket/components/ticket-item.tsx)
+
+## Server actions
+- Server actions can be used to perform mutations on the server side. They are defined in the separate file and marked with `"use server"` directive. They can be called from client components as follows:
+
+*[delete-ticket.ts](./the-road-to-next-app/src/features/ticket/actions/delete-ticket.ts)*
+```ts
+"use server";
+
+import { prisma } from "@/lib/prisma";
+
+export const deleteTicket = async (id: string) => {
+  await prisma.ticket.delete({
+    where: {
+      id,
+    },
+  });
+};
+```
+*Component.tsx*
+```tsx
+"use client";
+
+import { deleteTicket } from "@/features/ticket/actions/delete-ticket";
+/* ... */
+const handleDelete = async (id: string) => {
+  await deleteTicket(id);
+};
+/* ... */
+<button onClick={() => handleDelete(ticket.id)}>
+  Delete
+</button>
+```
+
+- Server action can be used in a server component as well, with `action` attribute in the form element:
+*[Component.tsx](./the-road-to-next-app/src/features/ticket/components/ticket-item.tsx)*
+```tsx
+import { deleteTicket } from "@/features/ticket/actions/delete-ticket";
+/* ... */
+const deleteButton = (
+  <form action={deleteTicket.bind(null, ticket.id)}>
+    <Button variant="outline" size="icon">
+      <LucideTrash className="h4 w-4" />
+    </Button>
+  </form>
+);
+/* ... */
+```
+
+## Caching
+
+- Dev - `npm run dev`
+- Prod - `npm run build` then `npm run start`
+
+Caching can be turned on in production by using experimental `staleTimes` option in `next.config.js` file.
+
+`prefetch` flag in a `Link` component enables prefetching of the page data, it is enabled by default in production.
+
+- Next.js uses a static rendering by default (for non-dynamic routes), we can opt-out of it by using `export const dynamic = "force-dynamic";` in the page component.
