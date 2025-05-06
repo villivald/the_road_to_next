@@ -256,3 +256,22 @@ Caching can be turned on in production by using experimental `staleTimes` option
 `prefetch` flag in a `Link` component enables prefetching of the page data, it is enabled by default in production.
 
 - Next.js uses a static rendering by default (for non-dynamic routes), we can opt-out of it by using `export const dynamic = "force-dynamic";` in the page component.
+
+- Dynamic revalidation of a static page can be also done with `export const revalidate = 10;` in the page component. This will revalidate the page every 10 seconds. Passing `0` will make a page kind of dynamic.
+
+- On demand caching can be done with `revalidatePath` adding function from `next/cache` package to the action. It can be used to revalidate a specific path in the cache. E.g. [page.tsx](./the-road-to-next-app/src/features/ticket/actions/delete-ticket.ts).
+
+- `cache` from react can be used for request memoization - `import { cache } from "react"` and then wrap a fetch function with it.
+
+- `generateStaticParams` function can be used to generate static params for a dynamic route [docs](https://nextjs.org/docs/app/api-reference/functions/generate-static-params)
+```js
+export async function generateStaticParams() {
+  const tickets = await getTickets();
+
+  return tickets.map((ticket) => ({
+    ticketId: ticket.id,
+  }));
+}
+```
+
+![caching strategies](./img/caching_strategies.png)
