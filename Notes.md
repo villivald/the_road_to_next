@@ -5,6 +5,8 @@
 - Absolute imports can be used in Next.js by adding a `@` prefix to the import path.
   - E.g. `import { data } from "@/data.ts"` instead of `import { data } from "../../../data.ts"` (assuming the file is in `/src` folder)
 - Component composition pattern (passing children as props`<AppProvider>{children}</AppProvider>`) can be used to avoid propagating client components (`"use client"`) down the tree.
+- Example of working with currencies using a `big.js` package - [utils/currency.ts](./the-road-to-next-app/src/utils/currency.ts), [lib/big.ts](./the-road-to-next-app/src/lib/big.ts)
+- Providing a key to a component can be used to force re-rendering of the component. E.g. `<DatePicker key={Date.now()} />` or `<DatePicker key={actiopnState.timeStamp} />` this will re-render the component when the key changes.
 
 ## Routing
 - Dynamic route can be created by using square brackets in the file name. E.g. `app/tickets/[ticketId]/page.tsx`.
@@ -199,6 +201,10 @@ export default TicketListPage;
   - prisma then can be used in the app like in [get-ticket.ts](./the-road-to-next-app/src/features/ticket/queries/get-ticket.ts) & [page.tsx](./the-road-to-next-app/src/app/tickets/[ticketId]/page.tsx)
 - Types from Prisma Client can be used in the app, e.g. like in [ticket-item.tsx](./the-road-to-next-app/src/features/ticket/components/ticket-item.tsx)
 
+### DB migration
+- after schema changes run `npx prisma db push` to push the changes to the DB (new fields should have default values)
+- `npm run type` can be used to detect type errors after the changes
+
 ## Server actions
 - Server actions can be used to perform mutations on the server side. They are defined in the separate file and marked with `"use server"` directive. They can be called from client components as follows:
 
@@ -298,4 +304,4 @@ export async function generateStaticParams() {
 ## Cookies
 - cookies can be handled with `cookies` from the `next/headers` package, e.g. [cookies.tsx](./the-road-to-next-app/src/actions/cookies.tsx)
 - in our case cookies are set in the [upsert-ticket.ts](./the-road-to-next-app/src/features/ticket/actions/upsert-ticket.ts) and [delete-ticket.ts](./the-road-to-next-app/src/features/ticket/actions/delete-ticket.ts) actions
-- cookies functions are then used in the [redirect-toast.tsx](./the-road-to-next-app/src/components/redirect-toast.tsx) component to show the toast notifications - `<RedirectToast />` component is used in the tickets and a single ticket pages for rendering the toast notifications after redirecting
+- cookies functions are then used in the [redirect-toast.tsx](./the-road-to-next-app/src/components/redirect-toast.tsx) component to show the toast notifications - `<RedirectToast />` component is used in the tickets and a single ticket pages (layout or template) for rendering the toast notifications after redirecting

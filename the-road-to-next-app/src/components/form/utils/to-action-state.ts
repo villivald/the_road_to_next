@@ -24,7 +24,7 @@ export const toActionState = (
   timestamp: Date.now(),
 });
 
-export const fromErrorToActionState = (error: unknown, formData: FormData) => {
+export const fromErrorToActionState = (error: unknown, formData?: FormData) => {
   if (error instanceof ZodError) {
     // Zod validation error, return the first error message
     return {

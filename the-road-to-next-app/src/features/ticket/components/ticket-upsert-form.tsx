@@ -1,6 +1,10 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef } from "react";
+import {
+  DatePicker,
+  ImperativeHandleFromDatePicker,
+} from "@/components/date-picker";
 import { FieldError } from "@/components/form/field-error";
 import { Form } from "@/components/form/form";
 import { SubmitButton } from "@/components/form/submit-button";
@@ -9,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Ticket } from "@/generated/prisma";
+import { fromCent } from "@/utils/currency";
 import { upsertTicket } from "../actions/upsert-ticket";
 
 type TicketUpsertProps = {
@@ -21,8 +26,15 @@ const TicketUpsertForm = ({ ticket }: TicketUpsertProps) => {
     EMPTY_ACTION_STATE,
   );
 
+  const datePickerImperativeHandleRef =
+    useRef<ImperativeHandleFromDatePicker>(null);
+
+  const handleSuccess = () => {
+    datePickerImperativeHandleRef.current?.reset();
+  };
+
   return (
-    <Form action={action} actionState={actionState}>
+    <Form action={action} actionState={actionState} onSuccess={handleSuccess}>
       <Label htmlFor="title">Title</Label>
       <Input
         type="text"
@@ -32,7 +44,6 @@ const TicketUpsertForm = ({ ticket }: TicketUpsertProps) => {
           (actionState.payload?.get("title") as string) ?? ticket?.title
         }
       />
-
       <FieldError actionState={actionState} name="title" />
 
       <Label htmlFor="content">Content</Label>
@@ -43,8 +54,38 @@ const TicketUpsertForm = ({ ticket }: TicketUpsertProps) => {
           (actionState.payload?.get("content") as string) ?? ticket?.content
         }
       />
-
       <FieldError actionState={actionState} name="content" />
+
+      <div className="mb-1 flex gap-x-2">
+        <div className="w-1/2">
+          <Label htmlFor="title">Deadline</Label>
+          <DatePicker
+            id="deadline"
+            name="deadline"
+            defaultValue={
+              (actionState.payload?.get("deadline") as string) ??
+              ticket?.deadline
+            }
+            imperativeHandleRef={datePickerImperativeHandleRef}
+          />
+          <FieldError actionState={actionState} name="deadline" />
+        </div>
+
+        <div className="w-1/2">
+          <Label htmlFor="title">Bounty ($)</Label>
+          <Input
+            type="number"
+            id="bounty"
+            name="bounty"
+            step="0.01"
+            defaultValue={
+              (actionState.payload?.get("bounty") as string) ??
+              (ticket?.bounty ? fromCent(ticket?.bounty) : "")
+            }
+          />
+          <FieldError actionState={actionState} name="bounty" />
+        </div>
+      </div>
 
       <SubmitButton label={ticket ? "Edit" : "Create"} />
 

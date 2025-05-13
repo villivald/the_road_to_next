@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { RedirectToast } from "@/components/redirect-toast";
 import TicketItem from "@/features/ticket/components/ticket-item";
 import { getTicket } from "@/features/ticket/queries/get-ticket";
 
@@ -14,13 +13,9 @@ const TicketPage = async ({ params }: TicketPageProps) => {
   if (!ticket) notFound();
 
   return (
-    <>
-      <div className="flex animate-fade-from-top justify-center">
-        <TicketItem isDetail ticket={ticket} />
-      </div>
-
-      <RedirectToast />
-    </>
+    <div className="flex animate-fade-from-top justify-center">
+      <TicketItem isDetail ticket={ticket} />
+    </div>
   );
 };
 

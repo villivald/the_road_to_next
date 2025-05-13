@@ -1,16 +1,23 @@
 import clsx from "clsx";
 import {
+  LucideMoreVertical,
   LucidePencil,
   LucideSquareArrowOutUpRight,
-  LucideTrash,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { deleteTicket } from "@/features/ticket/actions/delete-ticket";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Ticket } from "@/generated/prisma";
 import { ticketEditPath, ticketPath } from "@/paths";
+import { toCurrencyFromCent } from "@/utils/currency";
 import { TICKET_ICONS } from "../constants";
+import { TicketMoreMenu } from "./ticket-more-menu";
 type TicketItemProps = {
   ticket: Ticket;
   isDetail?: boolean;
@@ -33,12 +40,15 @@ const TicketItem = ({ ticket, isDetail }: TicketItemProps) => {
     </Button>
   );
 
-  const deleteButton = (
-    <form action={deleteTicket.bind(null, ticket.id)}>
-      <Button variant="outline" size="icon">
-        <LucideTrash className="h4 w-4" />
-      </Button>
-    </form>
+  const moreMenu = (
+    <TicketMoreMenu
+      ticket={ticket}
+      trigger={
+        <Button variant="outline" size="icon">
+          <LucideMoreVertical className="h4 w-4" />
+        </Button>
+      }
+    />
   );
 
   return (
@@ -64,12 +74,18 @@ const TicketItem = ({ ticket, isDetail }: TicketItemProps) => {
             {ticket.content}
           </span>
         </CardContent>
+        <CardFooter className="flex justify-between">
+          <p className="text-sm text-muted-foreground">{ticket.deadline}</p>
+          <p className="text-sm text-muted-foreground">
+            {toCurrencyFromCent(ticket.bounty)}
+          </p>
+        </CardFooter>
       </Card>
       <div className="flex flex-col gap-y-1">
         {isDetail ? (
           <>
-            {deleteButton}
             {editButton}
+            {moreMenu}
           </>
         ) : (
           <>
