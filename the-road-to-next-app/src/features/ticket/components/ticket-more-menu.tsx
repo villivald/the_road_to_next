@@ -19,7 +19,7 @@ import { TICKET_STATUS_LABELS } from "../constants";
 
 type TicketMoreMenuProps = {
   ticket: Ticket;
-  trigger: React.ReactNode;
+  trigger: React.ReactElement;
 };
 
 const TicketMoreMenu = ({ ticket, trigger }: TicketMoreMenuProps) => {

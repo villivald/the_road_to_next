@@ -11,13 +11,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Form } from "./form/form";
 import { SubmitButton } from "./form/submit-button";
-import { EMPTY_ACTION_STATE } from "./form/utils/to-action-state";
+import { ActionState, EMPTY_ACTION_STATE } from "./form/utils/to-action-state";
 
-type ConfirmDialogProps = {
+type UseConfirmDialogArgs = {
   title?: string;
   description?: string;
-  action: () => Promise<FormData>;
-  trigger: React.ReactNode;
+  action: () => Promise<ActionState>;
+  trigger: React.ReactElement;
 };
 
 const useConfirmDialog = ({
@@ -25,12 +25,12 @@ const useConfirmDialog = ({
   description = "This action cannot be undone, make sure you want to proceed.",
   action,
   trigger,
-}: ConfirmDialogProps) => {
+}: UseConfirmDialogArgs) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const dialogTrigger = cloneElement(trigger, {
-    onClick: () => setIsOpen((prev) => !prev),
-  });
+    onClick: () => setIsOpen((state) => !state),
+  } as React.HTMLAttributes<HTMLElement>);
 
   const [actionState, formAction] = useActionState(action, EMPTY_ACTION_STATE);
 
@@ -60,7 +60,7 @@ const useConfirmDialog = ({
       </AlertDialogContent>
     </AlertDialog>
   );
-  return [dialogTrigger, dialog];
+  return [dialogTrigger, dialog] as const;
 };
 
 export { useConfirmDialog };

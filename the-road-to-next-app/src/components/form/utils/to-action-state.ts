@@ -5,7 +5,7 @@ export type ActionState = {
   message: string;
   payload?: FormData;
   fieldErrors: Record<string, string[] | undefined>;
-  timestamp?: number;
+  timestamp: number;
 };
 
 export const EMPTY_ACTION_STATE: ActionState = {
