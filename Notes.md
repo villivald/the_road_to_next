@@ -305,3 +305,13 @@ export async function generateStaticParams() {
 - cookies can be handled with `cookies` from the `next/headers` package, e.g. [cookies.tsx](./the-road-to-next-app/src/actions/cookies.tsx)
 - in our case cookies are set in the [upsert-ticket.ts](./the-road-to-next-app/src/features/ticket/actions/upsert-ticket.ts) and [delete-ticket.ts](./the-road-to-next-app/src/features/ticket/actions/delete-ticket.ts) actions
 - cookies functions are then used in the [redirect-toast.tsx](./the-road-to-next-app/src/components/redirect-toast.tsx) component to show the toast notifications - `<RedirectToast />` component is used in the tickets and a single ticket pages (layout or template) for rendering the toast notifications after redirecting
+
+## Authentication
+- `npm i lucia @node-rs/argon2 @lucia-auth/adapter-prisma` - install lucia auth and related packages
+- add user & session models to the [schema.prisma](./the-road-to-next-app/prisma/schema.prisma) file
+- configure lucia auth in [lib/lucia.ts](./the-road-to-next-app/src/lib/lucia.ts)
+- create paths for sign in, sign up and forgot password pages
+- add a sign up form [sign-up-form.tsx](./the-road-to-next-app/src/features/auth/components/sign-up-form.tsx)
+- add a schema and the sign up function [sign-up.ts](./the-road-to-next-app/src/features/auth/actions/sign-up.ts)
+- add a sign in form [sign-in-form.tsx](./the-road-to-next-app/src/features/auth/components/sign-in-form.tsx) and a sign in function [sign-in.ts](./the-road-to-next-app/src/features/auth/actions/sign-in.ts) accordingly, logics remains the same
+- sign out function utilizes `getAuth` query [get-auth.ts](./the-road-to-next-app/src/features/auth/actions/get-auth.ts) (returns user & session) which is used in the [sign-out.tsx](./the-road-to-next-app/src/features/auth/actions/sign-out.ts) action for session invalidation, we are also using it for dynamic rendering of header elements in [header.tsx](./the-road-to-next-app/src/components/header.tsx) via the `useAuth` hook [use-auth.ts](./the-road-to-next-app/src/features/auth/hooks/use-auth.ts)
