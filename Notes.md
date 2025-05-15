@@ -205,6 +205,9 @@ export default TicketListPage;
 - after schema changes run `npx prisma db push` to push the changes to the DB (new fields should have default values)
 - `npm run type` can be used to detect type errors after the changes
 
+### DB patterns
+- One-to-Many Relation or other types of relations can be defined in the [schema.prisma](./the-road-to-next-app/prisma/schema.prisma) file, e.g. see `User` and `Ticket` models, those relations should be then taken into account in queries, e.g. in [seed.ts](./the-road-to-next-app/prisma/seed.ts) where we creating users and then assigning tickets to them
+
 ## Server actions
 - Server actions can be used to perform mutations on the server side. They are defined in the separate file and marked with `"use server"` directive. They can be called from client components as follows:
 
@@ -315,3 +318,9 @@ export async function generateStaticParams() {
 - add a schema and the sign up function [sign-up.ts](./the-road-to-next-app/src/features/auth/actions/sign-up.ts)
 - add a sign in form [sign-in-form.tsx](./the-road-to-next-app/src/features/auth/components/sign-in-form.tsx) and a sign in function [sign-in.ts](./the-road-to-next-app/src/features/auth/actions/sign-in.ts) accordingly, logics remains the same
 - sign out function utilizes `getAuth` query [get-auth.ts](./the-road-to-next-app/src/features/auth/actions/get-auth.ts) (returns user & session) which is used in the [sign-out.tsx](./the-road-to-next-app/src/features/auth/actions/sign-out.ts) action for session invalidation, we are also using it for dynamic rendering of header elements in [header.tsx](./the-road-to-next-app/src/components/header.tsx) via the `useAuth` hook [use-auth.ts](./the-road-to-next-app/src/features/auth/hooks/use-auth.ts)
+
+## Authorization
+- Routes and certain actions can/should be protected, this can be done for example with a `layout` component [layout.tsx](./the-road-to-next-app/src/app/tickets/layout.tsx) which uses custom `getAuthOrRedirect` function [get-auth-or-redirect.ts](./the-road-to-next-app/src/features/auth/queries/get-auth-or-redirect.ts) to check if the user is authenticated and redirect to the sign in page if not - NB: however the layout approach is not sufficient for complete protection and can be bypassed with header manipulation
+- The previous approach can be enhanced with a utility function that checks ownership of an entity [is-owner.ts](./the-road-to-next-app/src/features/auth/utils/is-owner.ts) -> [page.tsx](./the-road-to-next-app/src/app/tickets/[ticketId]/edit/page.tsx)
+- Actions should be also protected with ownership check, e.g. [upsert-ticket.ts](./the-road-to-next-app/src/features/ticket/actions/upsert-ticket.ts), [update-ticket-status.ts](./the-road-to-next-app/src/features/ticket/actions/update-ticket-status.ts), [delete-ticket.ts](./the-road-to-next-app/src/features/ticket/actions/delete-ticket.ts)
+- Not-allowed operations should be hidden from the UI as well [ticket-item.tsx](./the-road-to-next-app/src/features/ticket/components/ticket-item.tsx)

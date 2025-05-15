@@ -8,7 +8,7 @@ const SignUp = () => {
     <div className="flex flex-1 flex-col items-center justify-center">
       <CardCompact
         title="Sign In"
-        description="Welcome back! Please sign in to your account."
+        description="Sign in to your account"
         className="w-full max-w-[420px] animate-fade-from-top"
         content={<SignInForm />}
         footer={
