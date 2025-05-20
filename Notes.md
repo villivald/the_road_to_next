@@ -324,3 +324,10 @@ export async function generateStaticParams() {
 - The previous approach can be enhanced with a utility function that checks ownership of an entity [is-owner.ts](./the-road-to-next-app/src/features/auth/utils/is-owner.ts) -> [page.tsx](./the-road-to-next-app/src/app/tickets/[ticketId]/edit/page.tsx)
 - Actions should be also protected with ownership check, e.g. [upsert-ticket.ts](./the-road-to-next-app/src/features/ticket/actions/upsert-ticket.ts), [update-ticket-status.ts](./the-road-to-next-app/src/features/ticket/actions/update-ticket-status.ts), [delete-ticket.ts](./the-road-to-next-app/src/features/ticket/actions/delete-ticket.ts)
 - Not-allowed operations should be hidden from the UI as well [ticket-item.tsx](./the-road-to-next-app/src/features/ticket/components/ticket-item.tsx)
+
+## Navigation
+The navigation can be implemented and enhanced with the following patterns:
+- Breacrumbs [breadcrumbs.tsx](./the-road-to-next-app/src/components/breadcrumbs.tsx) -> used in ticket page [page.tsx](./the-road-to-next-app/src/app/tickets/[ticketId]/page.tsx) and edit ticket page [edit/page.tsx](./the-road-to-next-app/src/app/tickets/[ticketId]/edit/page.tsx)
+- Sidebar [sidebar.tsx](./the-road-to-next-app/src/components/sidebar) -> used in main layout [layout.tsx](./the-road-to-next-app/src/app/layout.tsx)
+- Dropdown [account-dropdown.tsx](./the-road-to-next-app/src/components/account-dropdown.tsx) -> used in [header.tsx](./the-road-to-next-app/src/components/header.tsx)
+- Tabs [account-tabs.tsx](./the-road-to-next-app/src/features/account/components/account-tabs.tsx) -> used in [heading.tsx](./the-road-to-next-app/src/components/heading.tsx)

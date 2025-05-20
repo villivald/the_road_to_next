@@ -11,6 +11,7 @@
 
   --animate-fade-from-top: fade-from-top 0.5s ease-out;
   --animate-header-from-top: header-from-top 0.5s ease-out;
+  --animate-sidebar-form-left: sidebar-from-left 0.5s ease-out;
 
   --color-sidebar-ring: var(--sidebar-ring);
 
@@ -71,24 +72,34 @@
   --color-card: var(--card);
 
   @keyframes fade-from-top {
-    0% {
+    from {
       opacity: 0;
       transform: translateY(-16px);
     }
 
-    100% {
+    to {
       opacity: 1;
       transform: translateY(0);
     }
   }
 
   @keyframes header-from-top {
-    0% {
+    from {
       transform: translateY(-100%);
     }
 
-    100% {
+    to {
       transform: translateY(0);
+    }
+  }
+
+  @keyframes sidebar-from-left {
+    from {
+      transform: translateX(-100%);
+    }
+
+    to {
+      transform: translateX(0);
     }
   }
 
