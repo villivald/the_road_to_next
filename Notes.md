@@ -36,6 +36,11 @@ import { ticketPath } from "@/paths";
 
 - Redirects can be done using `redirect` function from `next/navigation` package. E.g. `redirect("/tickets");`
 
+- Routes can be organized in route groups using parentheses in the folder name. In the example below we have a route group for routes that need authentication - the check happens in the `layout.tsx`.
+![route group](./img/route_group.png)
+
+- Private folders can be used for moving components closer to the page they are used in. The private folder should be marked with a `_` prefix. E.g. `app/(authenticated)/account/_navigation`. Private folders do not create a route segment and are not accessible via URL.
+
 ## Typescript
 - ts errors can be checked using `npm run type` command with `"type": "tsc --noEmit"` in package.json scripts.
 - const assertions can be used for literal types, e.g. `let x = "hello" as const;`, type is `"hello"`, not `string`.
@@ -166,8 +171,8 @@ const TicketListPage = async () => {
 export default TicketListPage;
 ```
 
-- Whole page loading can be also implemented by creating a `loading.tsx` file in the same folder as the page, e.g. [loading.tsx](./the-road-to-next-app/src/app/tickets/[ticketId]/loading.tsx)
-- Error cases can be handled in the same way by creating an `error.tsx` file, e.g. [error.tsx](./the-road-to-next-app/src/app/tickets/error.tsx)
+- Whole page loading can be also implemented by creating a `loading.tsx` file in the same folder as the page, e.g. [loading.tsx](./the-road-to-next-app/src/app/(authenticated)/tickets/[ticketId]/loading.tsx)
+- Error cases can be handled in the same way by creating an `error.tsx` file, e.g. [error.tsx](./the-road-to-next-app/src/app/(authenticated)/tickets/error.tsx)
   - or by using `ErrorBoundary` component from `react-error-boundary` package, e.g.
   ```tsx
   import { ErrorBoundary } from "react-error-boundary";
@@ -184,7 +189,7 @@ export default TicketListPage;
   };
   export default TicketListPage;
   ```
-- A not found case can be handled with a `not-found.tsx` file, e.g. [not-found.tsx](./the-road-to-next-app/src/app/tickets/[ticketId]/not-found.tsx). It can be used in combination with `notFound()` function from `next/navigation` package, e.g. [ticket.tsx](./the-road-to-next-app/src/app/tickets/[ticketId]/page.tsx)
+- A not found case can be handled with a `not-found.tsx` file, e.g. [not-found.tsx](./the-road-to-next-app/src/app/(authenticated)/tickets/[ticketId]/not-found.tsx). It can be used in combination with `notFound()` function from `next/navigation` package, e.g. [ticket.tsx](./the-road-to-next-app/src/app/(authenticated)/tickets/[ticketId]/page.tsx)
 
 ## DB & ORM
 - https://supabase.com/dashboard/project/
@@ -198,7 +203,7 @@ export default TicketListPage;
 - data can be seeded to the DB using `PrismaClient`, e.g. [seed.ts](./the-road-to-next-app/prisma/seed.ts)
 - DB data can be accessed via the Prisma Studio - `npx prisma studio`, http://localhost:5555/
 - Prisma workaround for Next.js to prevent hot reloading issues [prisma.ts](./the-road-to-next-app/src/lib/prisma.ts)
-  - prisma then can be used in the app like in [get-ticket.ts](./the-road-to-next-app/src/features/ticket/queries/get-ticket.ts) & [page.tsx](./the-road-to-next-app/src/app/tickets/[ticketId]/page.tsx)
+  - prisma then can be used in the app like in [get-ticket.ts](./the-road-to-next-app/src/features/ticket/queries/get-ticket.ts) & [page.tsx](./the-road-to-next-app/src/app/(authenticated)/tickets/[ticketId]/page.tsx)
 - Types from Prisma Client can be used in the app, e.g. like in [ticket-item.tsx](./the-road-to-next-app/src/features/ticket/components/ticket-item.tsx)
 
 ### DB migration
@@ -317,17 +322,17 @@ export async function generateStaticParams() {
 - add a sign up form [sign-up-form.tsx](./the-road-to-next-app/src/features/auth/components/sign-up-form.tsx)
 - add a schema and the sign up function [sign-up.ts](./the-road-to-next-app/src/features/auth/actions/sign-up.ts)
 - add a sign in form [sign-in-form.tsx](./the-road-to-next-app/src/features/auth/components/sign-in-form.tsx) and a sign in function [sign-in.ts](./the-road-to-next-app/src/features/auth/actions/sign-in.ts) accordingly, logics remains the same
-- sign out function utilizes `getAuth` query [get-auth.ts](./the-road-to-next-app/src/features/auth/actions/get-auth.ts) (returns user & session) which is used in the [sign-out.tsx](./the-road-to-next-app/src/features/auth/actions/sign-out.ts) action for session invalidation, we are also using it for dynamic rendering of header elements in [header.tsx](./the-road-to-next-app/src/components/header.tsx) via the `useAuth` hook [use-auth.ts](./the-road-to-next-app/src/features/auth/hooks/use-auth.ts)
+- sign out function utilizes `getAuth` query [get-auth.ts](./the-road-to-next-app/src/features/auth/actions/get-auth.ts) (returns user & session) which is used in the [sign-out.tsx](./the-road-to-next-app/src/features/auth/actions/sign-out.ts) action for session invalidation, we are also using it for dynamic rendering of header elements in [header.tsx](./the-road-to-next-app/src/app/_navigation/header.tsx) via the `useAuth` hook [use-auth.ts](./the-road-to-next-app/src/features/auth/hooks/use-auth.ts)
 
 ## Authorization
-- Routes and certain actions can/should be protected, this can be done for example with a `layout` component [layout.tsx](./the-road-to-next-app/src/app/tickets/layout.tsx) which uses custom `getAuthOrRedirect` function [get-auth-or-redirect.ts](./the-road-to-next-app/src/features/auth/queries/get-auth-or-redirect.ts) to check if the user is authenticated and redirect to the sign in page if not - NB: however the layout approach is not sufficient for complete protection and can be bypassed with header manipulation
-- The previous approach can be enhanced with a utility function that checks ownership of an entity [is-owner.ts](./the-road-to-next-app/src/features/auth/utils/is-owner.ts) -> [page.tsx](./the-road-to-next-app/src/app/tickets/[ticketId]/edit/page.tsx)
+- Routes and certain actions can/should be protected, this can be done for example with a `layout` component [layout.tsx](./the-road-to-next-app/src/app/(authenticated)/layout.tsx) which uses custom `getAuthOrRedirect` function [get-auth-or-redirect.ts](./the-road-to-next-app/src/features/auth/queries/get-auth-or-redirect.ts) to check if the user is authenticated and redirect to the sign in page if not - NB: however the layout approach is not sufficient for complete protection and can be bypassed with header manipulation
+- The previous approach can be enhanced with a utility function that checks ownership of an entity [is-owner.ts](./the-road-to-next-app/src/features/auth/utils/is-owner.ts) -> [page.tsx](./the-road-to-next-app/src/app/(authenticated)/tickets/[ticketId]/edit/page.tsx)
 - Actions should be also protected with ownership check, e.g. [upsert-ticket.ts](./the-road-to-next-app/src/features/ticket/actions/upsert-ticket.ts), [update-ticket-status.ts](./the-road-to-next-app/src/features/ticket/actions/update-ticket-status.ts), [delete-ticket.ts](./the-road-to-next-app/src/features/ticket/actions/delete-ticket.ts)
 - Not-allowed operations should be hidden from the UI as well [ticket-item.tsx](./the-road-to-next-app/src/features/ticket/components/ticket-item.tsx)
 
 ## Navigation
 The navigation can be implemented and enhanced with the following patterns:
-- Breacrumbs [breadcrumbs.tsx](./the-road-to-next-app/src/components/breadcrumbs.tsx) -> used in ticket page [page.tsx](./the-road-to-next-app/src/app/tickets/[ticketId]/page.tsx) and edit ticket page [edit/page.tsx](./the-road-to-next-app/src/app/tickets/[ticketId]/edit/page.tsx)
-- Sidebar [sidebar.tsx](./the-road-to-next-app/src/components/sidebar) -> used in main layout [layout.tsx](./the-road-to-next-app/src/app/layout.tsx)
-- Dropdown [account-dropdown.tsx](./the-road-to-next-app/src/components/account-dropdown.tsx) -> used in [header.tsx](./the-road-to-next-app/src/components/header.tsx)
-- Tabs [account-tabs.tsx](./the-road-to-next-app/src/features/account/components/account-tabs.tsx) -> used in [heading.tsx](./the-road-to-next-app/src/components/heading.tsx)
+- Breacrumbs [breadcrumbs.tsx](./the-road-to-next-app/src/components/breadcrumbs.tsx) -> used in ticket page [page.tsx](./the-road-to-next-app/src/app/(authenticated)/tickets/[ticketId]/page.tsx) and edit ticket page [edit/page.tsx](./the-road-to-next-app/src/app/(authenticated)/tickets/[ticketId]/edit/page.tsx)
+- Sidebar [sidebar.tsx](./the-road-to-next-app/src/app/_navigation/sidebar) -> used in main layout [layout.tsx](./the-road-to-next-app/src/app/layout.tsx)
+- Dropdown [account-dropdown.tsx](./the-road-to-next-app/src/app/_navigation/account-dropdown.tsx) -> used in [header.tsx](./the-road-to-next-app/src/app/_navigation/header.tsx)
+- Tabs [account-tabs.tsx](./the-road-to-next-app/src/app/(authenticated)/account/_navigation/tabs.tsx) -> used in [heading.tsx](./the-road-to-next-app/src/components/heading.tsx)
