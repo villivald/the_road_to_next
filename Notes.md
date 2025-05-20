@@ -336,3 +336,8 @@ The navigation can be implemented and enhanced with the following patterns:
 - Sidebar [sidebar.tsx](./the-road-to-next-app/src/app/_navigation/sidebar) -> used in main layout [layout.tsx](./the-road-to-next-app/src/app/layout.tsx)
 - Dropdown [account-dropdown.tsx](./the-road-to-next-app/src/app/_navigation/account-dropdown.tsx) -> used in [header.tsx](./the-road-to-next-app/src/app/_navigation/header.tsx)
 - Tabs [account-tabs.tsx](./the-road-to-next-app/src/app/(authenticated)/account/_navigation/tabs.tsx) -> used in [heading.tsx](./the-road-to-next-app/src/components/heading.tsx)
+
+## Search & sorts
+- Search component [search-input.tsx](./the-road-to-next-app/src/components/search-input.tsx)
+- Sort component [sort-select.tsx](./the-road-to-next-app/src/components/sort-select.tsx)
+- Components are used on the [ticket-list.tsx](./the-road-to-next-app/src/features/ticket/components/ticket-list.tsx) page via `getTickets` query [get-tickets.ts](./the-road-to-next-app/src/features/ticket/queries/get-tickets.ts)
