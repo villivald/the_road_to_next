@@ -341,3 +341,4 @@ The navigation can be implemented and enhanced with the following patterns:
 - Search component [search-input.tsx](./the-road-to-next-app/src/components/search-input.tsx)
 - Sort component [sort-select.tsx](./the-road-to-next-app/src/components/sort-select.tsx)
 - Components are used on the [ticket-list.tsx](./the-road-to-next-app/src/features/ticket/components/ticket-list.tsx) page via `getTickets` query [get-tickets.ts](./the-road-to-next-app/src/features/ticket/queries/get-tickets.ts)
+- `nuqs` package can be used for easier handling of search params state

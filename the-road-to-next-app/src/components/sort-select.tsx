@@ -1,6 +1,5 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Select,
   SelectContent,
@@ -9,35 +8,33 @@ import {
   SelectValue,
 } from "./ui/select";
 
-type SortSelectProps = {
-  defaultValue: string;
-  options: { value: string; label: string }[];
+export type SortSelectOption = {
+  sortKey: string;
+  sortValue: string;
+  label: string;
 };
 
-const SortSelect = ({ defaultValue, options }: SortSelectProps) => {
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const { replace } = useRouter();
+type SortObject = {
+  sortKey: string;
+  sortValue: string;
+};
 
-  const handleSort = (value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
+type SortSelectProps = {
+  value: SortObject;
+  options: SortSelectOption[];
+  onChange: (value: SortObject) => void;
+};
 
-    if (value === defaultValue) {
-      params.delete("sort");
-    } else if (value) {
-      params.set("sort", value);
-    } else {
-      params.delete("sort");
-    }
+const SortSelect = ({ value, options, onChange }: SortSelectProps) => {
+  const handleSort = (compositeKey: string) => {
+    const [sortKey, sortValue] = compositeKey.split("_");
 
-    replace(`${pathname}?${params.toString()}`, {
-      scroll: false,
-    });
+    onChange({ sortKey, sortValue });
   };
 
   return (
     <Select
-      defaultValue={searchParams.get("sort")?.toString() || defaultValue}
+      defaultValue={value.sortKey + "_" + value.sortValue}
       onValueChange={handleSort}
     >
       <SelectTrigger>
@@ -45,7 +42,10 @@ const SortSelect = ({ defaultValue, options }: SortSelectProps) => {
       </SelectTrigger>
       <SelectContent>
         {options.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
+          <SelectItem
+            key={option.sortKey + option.sortValue}
+            value={option.sortKey + "_" + option.sortValue}
+          >
             {option.label}
           </SelectItem>
         ))}

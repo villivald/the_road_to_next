@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import Header from "@/app/_navigation/header";
 import { Sidebar } from "@/app/_navigation/sidebar/components/sidebar";
 import { RedirectToast } from "@/components/redirect-toast";
@@ -32,17 +33,19 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider>
-          <Header />
-          <div className="flex h-screen border-collapse overflow-hidden">
-            <Sidebar />
-            <main className="flex min-h-screen flex-1 flex-col overflow-x-hidden overflow-y-auto bg-secondary/20 px-8 py-24">
-              {children}
-            </main>
-          </div>
-          <Toaster expand />
-          <RedirectToast />
-        </ThemeProvider>
+        <NuqsAdapter>
+          <ThemeProvider>
+            <Header />
+            <div className="flex h-screen border-collapse overflow-hidden">
+              <Sidebar />
+              <main className="flex min-h-screen flex-1 flex-col overflow-x-hidden overflow-y-auto bg-secondary/20 px-8 py-24">
+                {children}
+              </main>
+            </div>
+            <Toaster expand />
+            <RedirectToast />
+          </ThemeProvider>
+        </NuqsAdapter>
       </body>
     </html>
   );
