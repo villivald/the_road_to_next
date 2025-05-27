@@ -337,8 +337,15 @@ The navigation can be implemented and enhanced with the following patterns:
 - Dropdown [account-dropdown.tsx](./the-road-to-next-app/src/app/_navigation/account-dropdown.tsx) -> used in [header.tsx](./the-road-to-next-app/src/app/_navigation/header.tsx)
 - Tabs [account-tabs.tsx](./the-road-to-next-app/src/app/(authenticated)/account/_navigation/tabs.tsx) -> used in [heading.tsx](./the-road-to-next-app/src/components/heading.tsx)
 
-## Search & sorts
+## Search & sort
 - Search component [search-input.tsx](./the-road-to-next-app/src/components/search-input.tsx)
 - Sort component [sort-select.tsx](./the-road-to-next-app/src/components/sort-select.tsx)
 - Components are used on the [ticket-list.tsx](./the-road-to-next-app/src/features/ticket/components/ticket-list.tsx) page via `getTickets` query [get-tickets.ts](./the-road-to-next-app/src/features/ticket/queries/get-tickets.ts)
 - `nuqs` package can be used for easier handling of search params state
+
+## Pagination
+- Can be implemented with `searchParams` [search-params.ts](./the-road-to-next-app/src/features/ticket/search-params.ts) and `getTickets` query [get-tickets.ts](./the-road-to-next-app/src/features/ticket/queries/get-tickets.ts)
+- Generic pagination component [pagination.tsx](./the-road-to-next-app/src/components/pagination.tsx) used in the feature component [ticket-pagination.tsx](./the-road-to-next-app/src/features/ticket/components/ticket-pagination.tsx) and is rendered in the [ticket-list.tsx](./the-road-to-next-app/src/features/ticket/components/ticket-list.tsx) component
+  - this is an offset-based pagination, and it is implemented with `skip` and `take` parameters in the Prisma query, e.g. `prisma.ticket.findMany({ skip, take })` - `skip` and `take` come from the `searchParams`
+  - current implementation has next and previous buttons, and size selector
+- Database transaction is used in the `getTickets` query [get-tickets.ts](./the-road-to-next-app/src/features/ticket/queries/get-tickets.ts) to fetch tickets and total count in a single query `const [tickets, count] = await prisma.$transaction([...])`
