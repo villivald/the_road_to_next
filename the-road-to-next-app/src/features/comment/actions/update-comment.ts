@@ -22,8 +22,10 @@ export const updateComment = async (
 ) => {
   const { user } = await getAuthOrRedirect();
 
+  let data;
+
   try {
-    const data = updateCommentSchema.parse(Object.fromEntries(formData));
+    data = updateCommentSchema.parse(Object.fromEntries(formData));
 
     const comment = await prisma.comment.findUnique({
       where: { id: commentId },
@@ -44,5 +46,10 @@ export const updateComment = async (
 
   revalidatePath(ticketPath(commentId));
 
-  return toActionState("SUCCESS", "Comment updated successfully");
+  return toActionState(
+    "SUCCESS",
+    "Comment updated successfully",
+    undefined,
+    data.content,
+  );
 };

@@ -28,10 +28,17 @@ type TicketItemProps = {
     include: { user: { select: { username: true } } };
   }>;
   isDetail?: boolean;
-  comments?: CommentWithMetadata[];
+  paginatedComments?: {
+    list: CommentWithMetadata[];
+    metadata: { count: number; hasNext: boolean };
+  };
 };
 
-const TicketItem = async ({ ticket, isDetail, comments }: TicketItemProps) => {
+const TicketItem = async ({
+  ticket,
+  isDetail,
+  paginatedComments,
+}: TicketItemProps) => {
   const { user } = await getAuth();
   const isTicketOwner = isOwner(user, ticket);
 
@@ -110,7 +117,13 @@ const TicketItem = async ({ ticket, isDetail, comments }: TicketItemProps) => {
         </div>
       </div>
 
-      {isDetail ? <Comments ticketId={ticket.id} comments={comments} /> : null}
+      {isDetail ? (
+        <Comments
+          ticketId={ticket.id}
+          paginatedComments={paginatedComments}
+          user={user}
+        />
+      ) : null}
     </div>
   );
 };

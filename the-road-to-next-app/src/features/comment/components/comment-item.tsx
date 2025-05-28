@@ -1,5 +1,6 @@
 "use client";
 
+import { format } from "date-fns";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { CommentWithMetadata } from "../types";
@@ -9,9 +10,16 @@ import { CommentUpdateForm } from "./comment-update-form";
 type CommentItemProps = {
   comment: CommentWithMetadata;
   isOwner?: boolean;
+  onDeleteComment?: (id: string) => void;
+  onUpdateComment?: (updatedComment: CommentWithMetadata) => void;
 };
 
-const CommentItem = ({ comment, isOwner }: CommentItemProps) => {
+const CommentItem = ({
+  comment,
+  isOwner,
+  onDeleteComment,
+  onUpdateComment,
+}: CommentItemProps) => {
   const [isInEditMode, setIsInEditMode] = useState("");
 
   if (isInEditMode === comment.id) {
@@ -20,6 +28,7 @@ const CommentItem = ({ comment, isOwner }: CommentItemProps) => {
         comment={comment}
         isOwner={isOwner}
         setIsInEditMode={setIsInEditMode}
+        onUpdateComment={onUpdateComment}
       />
     );
   }
@@ -32,7 +41,7 @@ const CommentItem = ({ comment, isOwner }: CommentItemProps) => {
             {comment.user?.username ?? "Deleted User"}
           </p>
           <p className="text-sm text-muted-foreground">
-            {comment.createdAt.toLocaleString()}
+            {format(comment.createdAt, "yyyy-MM-dd, HH:mm")}
           </p>
         </div>
         <p className="whitespace-pre-line">{comment.content}</p>
@@ -40,7 +49,11 @@ const CommentItem = ({ comment, isOwner }: CommentItemProps) => {
 
       <div className="flex flex-col gap-y-1">
         {isOwner ? (
-          <CommentButtons id={comment.id} setIsInEditMode={setIsInEditMode} />
+          <CommentButtons
+            id={comment.id}
+            setIsInEditMode={setIsInEditMode}
+            onDeleteComment={onDeleteComment}
+          />
         ) : null}
       </div>
     </div>

@@ -4,10 +4,13 @@
   - see usage example in [eslint config](./the-road-to-next-app/eslint.config.mjs)
 - Absolute imports can be used in Next.js by adding a `@` prefix to the import path.
   - E.g. `import { data } from "@/data.ts"` instead of `import { data } from "../../../data.ts"` (assuming the file is in `/src` folder)
-- Component composition pattern (passing children as props`<AppProvider>{children}</AppProvider>`) can be used to avoid propagating client components (`"use client"`) down the tree.
+- Component composition pattern (passing children as props `<AppProvider>{children}</AppProvider>`) can be used to avoid propagating client components (`"use client"`) down the tree. This way we can have a sever component inside a client component without issues by passing the server component as a prop.
 - Example of working with currencies using a `big.js` package - [utils/currency.ts](./the-road-to-next-app/src/utils/currency.ts), [lib/big.ts](./the-road-to-next-app/src/lib/big.ts)
 - Providing a key to a component can be used to force re-rendering of the component. E.g. `<DatePicker key={Date.now()} />` or `<DatePicker key={actiopnState.timeStamp} />` this will re-render the component when the key changes.
 - Example of a API route implementation [src/app/api/tickets/route.ts](./the-road-to-next-app/src/app/api/tickets/route.ts) & [src/app/api/tickets/[ticketId]/route.ts](./the-road-to-next-app/src/app/api/tickets/[ticketId]/route.ts)
+- Both client and server components are rendered on the server in Next.js. The difference is that client components are hydrated on the client side, while server components are not. This means that client components can use client JS, event handlers, browser APIs and hooks like `useState`, `useEffect`, etc.
+![Hydration](./img/hydration.png)
+![Next.js rendering](./img/server_vs_client.png)
 
 ## Routing
 - Dynamic route can be created by using square brackets in the file name. E.g. `app/tickets/[ticketId]/page.tsx`.

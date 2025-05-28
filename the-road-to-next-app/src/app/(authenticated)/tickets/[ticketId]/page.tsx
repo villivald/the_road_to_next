@@ -14,7 +14,7 @@ const TicketPage = async ({ params }: TicketPageProps) => {
   const ticketPromise = getTicket(ticketId);
   const commentsPromise = getComments(ticketId);
 
-  const [ticket, comments] = await Promise.all([
+  const [ticket, paginatedComments] = await Promise.all([
     ticketPromise,
     commentsPromise,
   ]);
@@ -30,7 +30,11 @@ const TicketPage = async ({ params }: TicketPageProps) => {
       <Separator />
 
       <div className="flex animate-fade-from-top justify-center">
-        <TicketItem isDetail ticket={ticket} comments={comments} />
+        <TicketItem
+          isDetail
+          ticket={ticket}
+          paginatedComments={paginatedComments}
+        />
       </div>
     </div>
   );

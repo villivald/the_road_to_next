@@ -1,10 +1,14 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { format } from "date-fns";
+import { useActionState } from "react";
 import { FieldError } from "@/components/form/field-error";
 import { Form } from "@/components/form/form";
 import { SubmitButton } from "@/components/form/submit-button";
-import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
+import {
+  ActionState,
+  EMPTY_ACTION_STATE,
+} from "@/components/form/utils/to-action-state";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -16,23 +20,27 @@ type CommentUpdateProps = {
   comment: CommentWithMetadata;
   isOwner?: boolean;
   setIsInEditMode?: (id: string) => void;
+  onUpdateComment?: (updatedComment: CommentWithMetadata) => void;
 };
 
 const CommentUpdateForm = ({
   comment,
   isOwner,
   setIsInEditMode,
+  onUpdateComment,
 }: CommentUpdateProps) => {
   const [actionState, action] = useActionState(
     updateComment.bind(null, comment?.id),
     EMPTY_ACTION_STATE,
   );
 
-  useEffect(() => {
-    if (actionState.status === "SUCCESS" && setIsInEditMode) {
-      setIsInEditMode("");
-    }
-  }, [actionState.status, setIsInEditMode]);
+  const handleSuccess = (actionState: ActionState) => {
+    setIsInEditMode?.("");
+    onUpdateComment?.({
+      ...comment,
+      content: actionState.data as string,
+    });
+  };
 
   const sudbitButtonIsDisabled =
     actionState.status === "PENDING" || actionState.status === "ERROR";
@@ -45,11 +53,15 @@ const CommentUpdateForm = ({
             {comment.user?.username ?? "Deleted User"}
           </p>
           <p className="text-sm text-muted-foreground">
-            {comment.createdAt.toLocaleString()}
+            {format(comment.createdAt, "yyyy-MM-dd, HH:mm")}
           </p>
         </div>
 
-        <Form action={action} actionState={actionState}>
+        <Form
+          action={action}
+          actionState={actionState}
+          onSuccess={handleSuccess}
+        >
           <Label htmlFor="content">Content</Label>
           <Textarea
             id="content"
