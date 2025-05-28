@@ -7,6 +7,7 @@
 - Component composition pattern (passing children as props`<AppProvider>{children}</AppProvider>`) can be used to avoid propagating client components (`"use client"`) down the tree.
 - Example of working with currencies using a `big.js` package - [utils/currency.ts](./the-road-to-next-app/src/utils/currency.ts), [lib/big.ts](./the-road-to-next-app/src/lib/big.ts)
 - Providing a key to a component can be used to force re-rendering of the component. E.g. `<DatePicker key={Date.now()} />` or `<DatePicker key={actiopnState.timeStamp} />` this will re-render the component when the key changes.
+- Example of a API route implementation [src/app/api/tickets/route.ts](./the-road-to-next-app/src/app/api/tickets/route.ts) & [src/app/api/tickets/[ticketId]/route.ts](./the-road-to-next-app/src/app/api/tickets/[ticketId]/route.ts)
 
 ## Routing
 - Dynamic route can be created by using square brackets in the file name. E.g. `app/tickets/[ticketId]/page.tsx`.
@@ -212,6 +213,7 @@ export default TicketListPage;
 
 ### DB patterns
 - One-to-Many Relation or other types of relations can be defined in the [schema.prisma](./the-road-to-next-app/prisma/schema.prisma) file, e.g. see `User` and `Ticket` models, those relations should be then taken into account in queries, e.g. in [seed.ts](./the-road-to-next-app/prisma/seed.ts) where we creating users and then assigning tickets to them
+- Example of a Many-to-One Relation in the [schema.prisma](./the-road-to-next-app/prisma/schema.prisma) is `Comment` and `Ticket` models
 
 ## Server actions
 - Server actions can be used to perform mutations on the server side. They are defined in the separate file and marked with `"use server"` directive. They can be called from client components as follows:

@@ -35,30 +35,40 @@ const TicketUpsertForm = ({ ticket }: TicketUpsertProps) => {
 
   return (
     <Form action={action} actionState={actionState} onSuccess={handleSuccess}>
-      <Label htmlFor="title">Title</Label>
-      <Input
-        type="text"
-        id="title"
-        name="title"
-        defaultValue={
-          (actionState.payload?.get("title") as string) ?? ticket?.title
-        }
-      />
-      <FieldError actionState={actionState} name="title" />
+      <div>
+        <Label className="mb-2 block" htmlFor="title">
+          Title
+        </Label>
+        <Input
+          type="text"
+          id="title"
+          name="title"
+          defaultValue={
+            (actionState.payload?.get("title") as string) ?? ticket?.title
+          }
+        />
+        <FieldError actionState={actionState} name="title" />
+      </div>
 
-      <Label htmlFor="content">Content</Label>
-      <Textarea
-        id="content"
-        name="content"
-        defaultValue={
-          (actionState.payload?.get("content") as string) ?? ticket?.content
-        }
-      />
-      <FieldError actionState={actionState} name="content" />
+      <div>
+        <Label className="mb-2 block" htmlFor="content">
+          Content
+        </Label>
+        <Textarea
+          id="content"
+          name="content"
+          defaultValue={
+            (actionState.payload?.get("content") as string) ?? ticket?.content
+          }
+        />
+        <FieldError actionState={actionState} name="content" />
+      </div>
 
       <div className="mb-1 flex gap-x-2">
         <div className="w-1/2">
-          <Label htmlFor="title">Deadline</Label>
+          <Label htmlFor="title" className="mb-2 block">
+            Deadline
+          </Label>
           <DatePicker
             id="deadline"
             name="deadline"
@@ -72,7 +82,9 @@ const TicketUpsertForm = ({ ticket }: TicketUpsertProps) => {
         </div>
 
         <div className="w-1/2">
-          <Label htmlFor="title">Bounty ($)</Label>
+          <Label htmlFor="title" className="mb-2 block">
+            Bounty ($)
+          </Label>
           <Input
             type="number"
             id="bounty"

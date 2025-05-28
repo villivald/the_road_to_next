@@ -35,7 +35,7 @@ const Form = ({
   });
 
   return (
-    <form action={action} className="flex flex-col gap-2">
+    <form action={action} className="flex flex-col gap-3">
       {children}
     </form>
   );
