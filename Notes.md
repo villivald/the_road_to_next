@@ -152,7 +152,7 @@ const TicketPage = async () => {
 };
 ```
 
-- `<Suspense>` component can be used to show a fallback UI (spinner, etc.) while the data is being fetched, e.g.
+- `<Suspense>` component can be used to show a fallback UI (spinner, skeletonm etc.) while the data is being fetched, e.g.
 ```tsx
 import { Suspense } from "react";
 import { TicketList } from "@/features/ticket/components/ticket-list";
@@ -191,6 +191,7 @@ export default TicketListPage;
   export default TicketListPage;
   ```
 - A not found case can be handled with a `not-found.tsx` file, e.g. [not-found.tsx](./the-road-to-next-app/src/app/(authenticated)/tickets/[ticketId]/not-found.tsx). It can be used in combination with `notFound()` function from `next/navigation` package, e.g. [ticket.tsx](./the-road-to-next-app/src/app/(authenticated)/tickets/[ticketId]/page.tsx)
+- A data fetching can be improved by lifting the data fetching logic up and fetching in parallel, e.g. in the [ticket.tsx](./the-road-to-next-app/src/app/(authenticated)/tickets/[ticketId]/page.tsx) we are fetching ticket and comments data in parallel using `Promise.all([getTicket(ticketId), getComments(ticketId)])` and then destructuring the results.
 
 ## DB & ORM
 - https://supabase.com/dashboard/project/
