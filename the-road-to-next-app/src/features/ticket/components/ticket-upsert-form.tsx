@@ -100,8 +100,6 @@ const TicketUpsertForm = ({ ticket }: TicketUpsertProps) => {
       </div>
 
       <SubmitButton label={ticket ? "Edit" : "Create"} />
-
-      {actionState.message}
     </Form>
   );
 };
