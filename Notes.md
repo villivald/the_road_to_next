@@ -356,3 +356,8 @@ The navigation can be implemented and enhanced with the following patterns:
   - current implementation has next and previous buttons, and size selector
 - Database transaction is used in the `getTickets` query [get-tickets.ts](./the-road-to-next-app/src/features/ticket/queries/get-tickets.ts) to fetch tickets and total count in a single query `const [tickets, count] = await prisma.$transaction([...])`
 - After implementing comments feature, a cursor-based pagination was used as well, e.g. [get-comments.ts](./the-road-to-next-app/src/features/comment/queries/get-comments.ts) -> [comments.tsx](./the-road-to-next-app/src/features/comment/components/comments.tsx)
+
+## React Query
+- `npm i @tanstack/react-query` - install react query package
+- add a react query provider [react-query-provider.tsx](./the-road-to-next-app/src/app/_providers/react-query/react-query-provider.tsx) (boilerplates are available in the react query docs), the provider is used in the main layout [layout.tsx](./the-road-to-next-app/src/app/layout.tsx)
+- React Query hooks are then used in the [comments.tsx](./the-road-to-next-app/src/features/comment/components/comments.tsx) component to fetch comments and manage their state efficiently

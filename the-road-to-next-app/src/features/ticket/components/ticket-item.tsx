@@ -18,6 +18,7 @@ import { isOwner } from "@/features/auth/utils/is-owner";
 import { Comments } from "@/features/comment/components/comments";
 import { CommentWithMetadata } from "@/features/comment/types";
 import { ticketEditPath, ticketPath } from "@/paths";
+import { PaginatedData } from "@/types/pagination";
 import { toCurrencyFromCent } from "@/utils/currency";
 import { TICKET_ICONS } from "../constants";
 import { TicketWithMetadata } from "../types";
@@ -26,10 +27,7 @@ import { TicketMoreMenu } from "./ticket-more-menu";
 type TicketItemProps = {
   ticket: TicketWithMetadata;
   isDetail?: boolean;
-  paginatedComments?: {
-    list: CommentWithMetadata[];
-    metadata: { count: number; hasNextPage: boolean };
-  };
+  paginatedComments?: PaginatedData<CommentWithMetadata>;
 };
 
 const TicketItem = async ({
@@ -115,15 +113,10 @@ const TicketItem = async ({
         </div>
       </div>
 
-      {isDetail ? (
+      {isDetail && paginatedComments ? (
         <Comments
           ticketId={ticket.id}
-          paginatedComments={
-            paginatedComments ?? {
-              list: [],
-              metadata: { count: 0, hasNextPage: false },
-            }
-          }
+          paginatedComments={paginatedComments}
           user={user}
         />
       ) : null}

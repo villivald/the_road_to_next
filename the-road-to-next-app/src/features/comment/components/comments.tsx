@@ -1,8 +1,10 @@
 "use client";
 
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { User as AuthUser } from "lucia";
 import { useState } from "react";
 import { CardCompact } from "@/components/card-compact";
+import { fromErrorToActionState } from "@/components/form/utils/to-action-state";
 import { Button } from "@/components/ui/button";
 import { isOwner } from "@/features/auth/utils/is-owner";
 import { PaginatedData } from "@/types/pagination";
@@ -18,35 +20,58 @@ type CommentsProps = {
 };
 
 const Comments = ({ ticketId, paginatedComments, user }: CommentsProps) => {
-  const [comments, setComments] = useState(paginatedComments.list);
-  const [metadata, setMetadata] = useState(paginatedComments.metadata);
+  const [isFetchingAll, setIsFetchingAll] = useState(false);
 
-  const handleMore = async () => {
-    const morePaginatedComments = await getComments(ticketId, metadata.cursor);
-    const moreComments = morePaginatedComments.list;
+  const queryKey = ["comments", ticketId];
 
-    setComments([...comments, ...moreComments]);
-    setMetadata(morePaginatedComments.metadata);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey,
+      queryFn: ({ pageParam }) => getComments(ticketId, pageParam),
+      initialPageParam: undefined as
+        | { id: string; createdAt: number }
+        | undefined,
+      getNextPageParam: (lastPage) =>
+        lastPage.metadata.hasNextPage ? lastPage.metadata.cursor : undefined,
+      initialData: {
+        pages: [
+          {
+            list: paginatedComments.list,
+            metadata: paginatedComments.metadata,
+          },
+        ],
+        pageParams: [undefined],
+      },
+    });
+
+  const comments = data.pages.flatMap((page) => page.list);
+
+  const queryClient = useQueryClient();
+
+  const handleMore = () => fetchNextPage();
+
+  const handleShowAll = async () => {
+    if (!hasNextPage || isFetchingAll) return;
+
+    setIsFetchingAll(true);
+
+    try {
+      let hasMore: boolean = hasNextPage;
+      while (hasMore) {
+        const result = await fetchNextPage();
+        const lastPage = result.data?.pages[result.data.pages.length - 1];
+
+        hasMore = !!lastPage?.metadata.hasNextPage;
+      }
+    } catch (error) {
+      fromErrorToActionState(error);
+    } finally {
+      setIsFetchingAll(false);
+    }
   };
 
-  const handleDeleteComment = (id: string) => {
-    setComments((prevComments) =>
-      prevComments.filter((comment) => comment.id !== id),
-    );
-  };
-
-  const handleUpdateComment = (updatedComment: CommentWithMetadata) => {
-    setComments((prevComments) =>
-      prevComments.map((comment) =>
-        comment.id === updatedComment.id ? updatedComment : comment,
-      ),
-    );
-  };
-
-  const handleCreateComment = (newComment: CommentWithMetadata | undefined) => {
-    if (!newComment) return;
-
-    setComments((prevComments) => [newComment, ...prevComments]);
+  const handleInvalidateQueries = () => {
+    queryClient.invalidateQueries({ queryKey });
   };
 
   return (
@@ -57,7 +82,7 @@ const Comments = ({ ticketId, paginatedComments, user }: CommentsProps) => {
         content={
           <CommentCreateForm
             ticketId={ticketId}
-            onCreateComment={handleCreateComment}
+            onCreateComment={handleInvalidateQueries}
           />
         }
       />
@@ -68,16 +93,27 @@ const Comments = ({ ticketId, paginatedComments, user }: CommentsProps) => {
             key={comment.id}
             comment={comment}
             isOwner={isOwner(user, comment)}
-            onDeleteComment={handleDeleteComment}
-            onUpdateComment={handleUpdateComment}
+            onDeleteComment={handleInvalidateQueries}
+            onUpdateComment={handleInvalidateQueries}
           />
         ))}
       </div>
 
-      {metadata?.hasNextPage && (
-        <div className="ml-4 flex flex-col justify-center">
-          <Button variant="ghost" onClick={handleMore}>
-            More
+      {hasNextPage && (
+        <div className="ml-4 flex justify-end">
+          <Button
+            variant="ghost"
+            onClick={handleMore}
+            disabled={isFetchingNextPage}
+          >
+            Show a few more
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={handleShowAll}
+            disabled={isFetchingNextPage}
+          >
+            Show all ({paginatedComments.metadata.count})
           </Button>
         </div>
       )}
