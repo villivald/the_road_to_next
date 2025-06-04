@@ -5,6 +5,7 @@ import { useState } from "react";
 import { CardCompact } from "@/components/card-compact";
 import { Button } from "@/components/ui/button";
 import { isOwner } from "@/features/auth/utils/is-owner";
+import { PaginatedData } from "@/types/pagination";
 import { getComments } from "../queries/get-comments";
 import { CommentWithMetadata } from "../types";
 import { CommentCreateForm } from "./comment-create-form";
@@ -13,25 +14,19 @@ import { CommentItem } from "./comment-item";
 type CommentsProps = {
   ticketId: string;
   user: AuthUser | null;
-  paginatedComments?: {
-    list: CommentWithMetadata[];
-    metadata: { count: number; hasNext: boolean };
-  };
+  paginatedComments: PaginatedData<CommentWithMetadata>;
 };
 
 const Comments = ({ ticketId, paginatedComments, user }: CommentsProps) => {
-  const [comments, setComments] = useState(paginatedComments?.list || []);
-  const [metadata, setMetadata] = useState(paginatedComments?.metadata);
+  const [comments, setComments] = useState(paginatedComments.list);
+  const [metadata, setMetadata] = useState(paginatedComments.metadata);
 
   const handleMore = async () => {
-    const morePaginatedComments = await getComments(ticketId, comments.length);
+    const morePaginatedComments = await getComments(ticketId, metadata.cursor);
     const moreComments = morePaginatedComments.list;
 
     setComments([...comments, ...moreComments]);
-    setMetadata({
-      count: morePaginatedComments.metadata.count,
-      hasNext: morePaginatedComments.metadata.hasNext,
-    });
+    setMetadata(morePaginatedComments.metadata);
   };
 
   const handleDeleteComment = (id: string) => {
@@ -79,7 +74,7 @@ const Comments = ({ ticketId, paginatedComments, user }: CommentsProps) => {
         ))}
       </div>
 
-      {metadata?.hasNext && (
+      {metadata?.hasNextPage && (
         <div className="ml-4 flex flex-col justify-center">
           <Button variant="ghost" onClick={handleMore}>
             More

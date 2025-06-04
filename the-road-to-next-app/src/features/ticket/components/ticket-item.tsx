@@ -17,20 +17,18 @@ import { getAuth } from "@/features/auth/actions/get-auth";
 import { isOwner } from "@/features/auth/utils/is-owner";
 import { Comments } from "@/features/comment/components/comments";
 import { CommentWithMetadata } from "@/features/comment/types";
-import { Prisma } from "@/generated/prisma";
 import { ticketEditPath, ticketPath } from "@/paths";
 import { toCurrencyFromCent } from "@/utils/currency";
 import { TICKET_ICONS } from "../constants";
+import { TicketWithMetadata } from "../types";
 import { TicketMoreMenu } from "./ticket-more-menu";
 
 type TicketItemProps = {
-  ticket: Prisma.TicketGetPayload<{
-    include: { user: { select: { username: true } } };
-  }>;
+  ticket: TicketWithMetadata;
   isDetail?: boolean;
   paginatedComments?: {
     list: CommentWithMetadata[];
-    metadata: { count: number; hasNext: boolean };
+    metadata: { count: number; hasNextPage: boolean };
   };
 };
 
@@ -120,7 +118,12 @@ const TicketItem = async ({
       {isDetail ? (
         <Comments
           ticketId={ticket.id}
-          paginatedComments={paginatedComments}
+          paginatedComments={
+            paginatedComments ?? {
+              list: [],
+              metadata: { count: 0, hasNextPage: false },
+            }
+          }
           user={user}
         />
       ) : null}

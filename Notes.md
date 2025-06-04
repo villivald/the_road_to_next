@@ -355,3 +355,4 @@ The navigation can be implemented and enhanced with the following patterns:
   - this is an offset-based pagination, and it is implemented with `skip` and `take` parameters in the Prisma query, e.g. `prisma.ticket.findMany({ skip, take })` - `skip` and `take` come from the `searchParams`
   - current implementation has next and previous buttons, and size selector
 - Database transaction is used in the `getTickets` query [get-tickets.ts](./the-road-to-next-app/src/features/ticket/queries/get-tickets.ts) to fetch tickets and total count in a single query `const [tickets, count] = await prisma.$transaction([...])`
+- After implementing comments feature, a cursor-based pagination was used as well, e.g. [get-comments.ts](./the-road-to-next-app/src/features/comment/queries/get-comments.ts) -> [comments.tsx](./the-road-to-next-app/src/features/comment/components/comments.tsx)
