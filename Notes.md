@@ -329,6 +329,9 @@ export async function generateStaticParams() {
 - add a schema and the sign up function [sign-up.ts](./the-road-to-next-app/src/features/auth/actions/sign-up.ts)
 - add a sign in form [sign-in-form.tsx](./the-road-to-next-app/src/features/auth/components/sign-in-form.tsx) and a sign in function [sign-in.ts](./the-road-to-next-app/src/features/auth/actions/sign-in.ts) accordingly, logics remains the same
 - sign out function utilizes `getAuth` query [get-auth.ts](./the-road-to-next-app/src/features/auth/actions/get-auth.ts) (returns user & session) which is used in the [sign-out.tsx](./the-road-to-next-app/src/features/auth/actions/sign-out.ts) action for session invalidation, we are also using it for dynamic rendering of header elements in [header.tsx](./the-road-to-next-app/src/app/_navigation/header.tsx) via the `useAuth` hook [use-auth.ts](./the-road-to-next-app/src/features/auth/hooks/use-auth.ts)
+- NB! In the latest version the previous approach was slightly changed, migration from `lucia` to `oslo` package was done, more info here:
+  - https://www.robinwieruch.de/how-to-roll-your-own-auth/
+  - https://github.com/rwieruch/the-road-to-next-app/pull/9/commits/9a3c64970034b2fcc85b2ef52d3f9edb1369c669#diff-8cd785a50c02dddef720d852fcd8bf4071d2b95fa965933a4534c30de61fc870
 
 ## Authorization
 - Routes and certain actions can/should be protected, this can be done for example with a `layout` component [layout.tsx](./the-road-to-next-app/src/app/(authenticated)/layout.tsx) which uses custom `getAuthOrRedirect` function [get-auth-or-redirect.ts](./the-road-to-next-app/src/features/auth/queries/get-auth-or-redirect.ts) to check if the user is authenticated and redirect to the sign in page if not - NB: however the layout approach is not sufficient for complete protection and can be bypassed with header manipulation

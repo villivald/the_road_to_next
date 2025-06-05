@@ -1,12 +1,12 @@
 "use client";
 
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-import { User as AuthUser } from "lucia";
 import { useState } from "react";
 import { CardCompact } from "@/components/card-compact";
 import { fromErrorToActionState } from "@/components/form/utils/to-action-state";
 import { Button } from "@/components/ui/button";
 import { isOwner } from "@/features/auth/utils/is-owner";
+import { User } from "@/generated/prisma";
 import { PaginatedData } from "@/types/pagination";
 import { getComments } from "../queries/get-comments";
 import { CommentWithMetadata } from "../types";
@@ -15,7 +15,7 @@ import { CommentItem } from "./comment-item";
 
 type CommentsProps = {
   ticketId: string;
-  user: AuthUser | null;
+  user: User | null;
   paginatedComments: PaginatedData<CommentWithMetadata>;
 };
 
