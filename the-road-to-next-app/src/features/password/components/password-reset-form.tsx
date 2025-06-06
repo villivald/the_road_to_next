@@ -1,0 +1,49 @@
+"use client";
+
+import { useActionState } from "react";
+import { FieldError } from "@/components/form/field-error";
+import { Form } from "@/components/form/form";
+import { SubmitButton } from "@/components/form/submit-button";
+const EMPTY_ACTION_STATE = {
+  status: "",
+  message: "",
+  fieldErrors: {},
+  payload: undefined,
+  timestamp: Date.now(),
+};
+import { Input } from "@/components/ui/input";
+import { passwordReset } from "../actions/password-reset";
+
+type PasswordResetFormProps = {
+  tokenId: string;
+};
+
+const PasswordResetForm = ({ tokenId }: PasswordResetFormProps) => {
+  const [actionState, action] = useActionState(
+    passwordReset.bind(null, tokenId),
+    EMPTY_ACTION_STATE,
+  );
+
+  return (
+    <Form action={action} actionState={actionState}>
+      <Input
+        type="password"
+        name="password"
+        placeholder="Password"
+        defaultValue={actionState.payload?.get("password") as string}
+      />
+      <FieldError name="password" actionState={actionState} />
+
+      <Input
+        type="password"
+        name="confirmPassword"
+        placeholder="Confirm Password"
+        defaultValue={actionState.payload?.get("confirmPassword") as string}
+      />
+      <FieldError name="confirmPassword" actionState={actionState} />
+
+      <SubmitButton label="Reset Password" />
+    </Form>
+  );
+};
+export default PasswordResetForm;

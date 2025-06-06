@@ -364,3 +364,22 @@ The navigation can be implemented and enhanced with the following patterns:
 - `npm i @tanstack/react-query` - install react query package
 - add a react query provider [react-query-provider.tsx](./the-road-to-next-app/src/app/_providers/react-query/react-query-provider.tsx) (boilerplates are available in the react query docs), the provider is used in the main layout [layout.tsx](./the-road-to-next-app/src/app/layout.tsx)
 - React Query hooks are then used in the [comments.tsx](./the-road-to-next-app/src/features/comment/components/comments.tsx) component to fetch comments and manage their state efficiently
+
+## Password reset
+- update schema with `PasswordResetToken` model [schema.prisma](./the-road-to-next-app/prisma/schema.prisma) and add a relationship to the `User` model (one-to-many in this case, can be one-to-one as well)
+Feature contains three main parts:
+  - Password forgot -page [password-forgot/page.tsx](./the-road-to-next-app/src/app/password-forgot/page.tsx) with a form [password-forgot-form](./the-road-to-next-app/src/features/password/components/password-forgot-form.tsx) and action [password-forgot.ts](./the-road-to-next-app/src/features/password/actions/password-forgot.ts)
+  - Password reset -page [password-reset/page.tsx](./the-road-to-next-app/src/app/password-reset/page.tsx) with a form [password-reset-form](./the-road-to-next-app/src/features/password/components/password-reset-form.tsx) and action [password-reset.ts](./the-road-to-next-app/src/features/password/actions/password-reset.ts)
+  - Password change -form is used on auth protected account page [account/password/page.tsx](./the-road-to-next-app/src/app/(authenticated)/account/password/page.tsx) with a form [password-change-form](./the-road-to-next-app/src/features/password/components/password-change-form.tsx) and action [password-change.ts](./the-road-to-next-app/src/features/password/actions/password-change.ts)
+- The user flow works as follows:
+  1. User clicks on "Forgot password?" link on the sign in page, which redirects to the password forgot page
+  2. User enters an email and submits the form, which triggers the `password-forgot` action that generates a reset token via util function from [generate-password-reset-link](./the-road-to-next-app/src/features/password/utils/generate-password-reset-link.ts)
+     1. All user's previous tokens are removed from the database `prisma.passwordResetToken.deleteMany`
+     2. The new random token is saved to the database with a `userId` and an expiration date `prisma.passwordResetToken.create`
+     3. Email with a generated reset link (`getBaseUrl() + passwordResetPath + tokenId`) is sent to the user
+  3. User clicks on the reset link in the email, which redirects them to the password reset page with the valid token (`tokenId` - in the params)
+  4. User enters a new password/confirmation and submits the form, which triggers the `password-reset` action that validates the token and updates the user's password
+     1. We check that token exists in db and is not expired
+     2. User's active sessions are invalidated `prisma.session.deleteMany({ where: { userId: passwordResetToken.userId } })`
+     3. User's password hash is updated in the database `prisma.user.update`
+  5. User is redirected to the sign in page with a success message (`setCookieByKey` & `redirect`)

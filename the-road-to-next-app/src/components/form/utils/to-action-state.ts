@@ -10,8 +10,10 @@ export type ActionState<T = unknown> = {
 };
 
 export const EMPTY_ACTION_STATE: ActionState = {
+  status: "",
   message: "",
   fieldErrors: {},
+  payload: undefined,
   timestamp: Date.now(),
 };
 

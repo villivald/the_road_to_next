@@ -16,13 +16,23 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  username     String    @unique
-  email        String    @unique
-  passwordHash String
-  sessions     Session[]
-  tickets      Ticket[]
-  comments     Comment[]
+  id                  String               @id @default(cuid())
+  username            String               @unique
+  email               String               @unique
+  passwordHash        String
+  sessions            Session[]
+  passwordResetTokens PasswordResetToken[]
+  tickets             Ticket[]
+  comments            Comment[]
+}
+
+model PasswordResetToken {
+  tokenHash String   @id
+  userId    String
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Session {
@@ -54,10 +64,10 @@ model Comment {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   content   String   @db.VarChar(1024)
-  ticketId  String
   ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  userId    String?
+  ticketId  String
   user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId    String?
 
   @@index([ticketId])
   @@index([userId])
