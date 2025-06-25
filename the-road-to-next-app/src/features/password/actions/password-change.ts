@@ -7,8 +7,7 @@ import {
   toActionState,
 } from "@/components/form/utils/to-action-state";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
-import { sendEmailPasswordReset } from "../emails/send-email-password-reset";
-import { generatePasswordResetLink } from "../utils/generate-password-reset-link";
+import { inngest } from "@/lib/inngest";
 import { verifyPasswordHash } from "../utils/hash-and-verify";
 
 const passwordChangeSchema = z.object({
@@ -35,13 +34,10 @@ export const passwordChange = async (
       return toActionState("ERROR", "Incorrect password", formData);
     }
 
-    const passwordResetLink = await generatePasswordResetLink(auth.user.id);
-
-    await sendEmailPasswordReset(
-      auth.user.username,
-      auth.user.email,
-      passwordResetLink,
-    );
+    await inngest.send({
+      name: "app/password.password-reset",
+      data: { userId: auth.user.id },
+    });
   } catch (error) {
     return fromErrorToActionState(error, formData);
   }

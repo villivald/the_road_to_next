@@ -387,10 +387,21 @@ Feature contains three main parts:
 ## Email
 - Install React Email package `npm i react-email --save-dev` && `npm i @react-email/components`
 - add a password reset email template [password-reset-email.tsx](./the-road-to-next-app/src/emails/password/email-password-reset.tsx) - more custom templates [here](https://react.email/templates)
-- add script `"email": "email dev --dir src/emails"` to the `package.json` file for running the email dev server where the emails are rendered (preview)
+- add script `"email": "email dev --dir src/emails"` to the `package.json` file for running the email dev server where the emails are rendered (preview) - http://localhost:3001
 - create an account on [Resend](https://resend.com/), create the API key and add it to the `.env` file as `RESEND_API_KEY`
 - install resend package `npm i resend`
 - initialize resend client in the [lib/resend.ts](./the-road-to-next-app/src/lib/resend.ts) file
 - add custom domain via [Resend](https://resend.com/domains), add dns records to the domain provider and verify the domain - to be able to send emails
 - add function for sending emails [send-email-password-reset.tsx](./the-road-to-next-app/src/features/password/emails/send-email-password-reset.tsx)
 - and finally use `sendEmailPasswordReset` function in the [password-forgot.ts](./the-road-to-next-app/src/features/password/actions/password-forgot.ts) and [password-change.ts](./the-road-to-next-app/src/features/password/actions/password-change.ts) actions
+
+## Message Queue
+- Install [Inngest](https://inngest.com) package `npm i inngest`
+- initialize inngest client in the [lib/inngest.ts](./the-road-to-next-app/src/lib/inngest.ts) file
+- add a inngest route [route.ts](./the-road-to-next-app/src/app/api/inngest/route.ts) to handle incoming events
+- run `npx inngest-cli@latest dev` to start the inngest dev server - http://localhost:8288
+- add a `passwordResetEvent` function to handle the event [event-password-reset.ts](./the-road-to-next-app/src/features/password/events/event-password-reset.ts) and register it in the inngest route handler [route.ts](./the-road-to-next-app/src/app/api/inngest/route.ts)
+- `passwordResetEvent` function can be now used in the [password-forgot.ts](./the-road-to-next-app/src/features/password/actions/password-forgot.ts) and [password-change.ts](./the-road-to-next-app/src/features/password/actions/password-change.ts) actions to trigger the event and send the request to the message queue
+- The queue and single events can be now observed in the inngest dev server
+- Inngest can be used in production as well (e.g. Vercel with [integration](https://vercel.com/integrations/inngest))
+- Inngest can be also used for handling delayed or background/periodic tasks
