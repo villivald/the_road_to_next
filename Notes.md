@@ -383,3 +383,14 @@ Feature contains three main parts:
      2. User's active sessions are invalidated `prisma.session.deleteMany({ where: { userId: passwordResetToken.userId } })`
      3. User's password hash is updated in the database `prisma.user.update`
   5. User is redirected to the sign in page with a success message (`setCookieByKey` & `redirect`)
+
+## Email
+- Install React Email package `npm i react-email --save-dev` && `npm i @react-email/components`
+- add a password reset email template [password-reset-email.tsx](./the-road-to-next-app/src/emails/password/email-password-reset.tsx) - more custom templates [here](https://react.email/templates)
+- add script `"email": "email dev --dir src/emails"` to the `package.json` file for running the email dev server where the emails are rendered (preview)
+- create an account on [Resend](https://resend.com/), create the API key and add it to the `.env` file as `RESEND_API_KEY`
+- install resend package `npm i resend`
+- initialize resend client in the [lib/resend.ts](./the-road-to-next-app/src/lib/resend.ts) file
+- add custom domain via [Resend](https://resend.com/domains), add dns records to the domain provider and verify the domain - to be able to send emails
+- add function for sending emails [send-email-password-reset.tsx](./the-road-to-next-app/src/features/password/emails/send-email-password-reset.tsx)
+- and finally use `sendEmailPasswordReset` function in the [password-forgot.ts](./the-road-to-next-app/src/features/password/actions/password-forgot.ts) and [password-change.ts](./the-road-to-next-app/src/features/password/actions/password-change.ts) actions

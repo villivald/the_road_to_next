@@ -4,13 +4,7 @@ import { useActionState } from "react";
 import { FieldError } from "@/components/form/field-error";
 import { Form } from "@/components/form/form";
 import { SubmitButton } from "@/components/form/submit-button";
-const EMPTY_ACTION_STATE = {
-  status: "",
-  message: "",
-  fieldErrors: {},
-  payload: undefined,
-  timestamp: Date.now(),
-};
+import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
 import { Input } from "@/components/ui/input";
 import { passwordReset } from "../actions/password-reset";
 
