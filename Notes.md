@@ -415,3 +415,17 @@ Feature contains three main parts:
 - add new `email-verification`route [email-verification/page.tsx](./the-road-to-next-app/src/app/email-verification/page.tsx) with a form [email-verification-form.tsx](./the-road-to-next-app/src/features/auth/components/email-verification-form.tsx) and action [email-verification.ts](./the-road-to-next-app/src/features/auth/actions/email-verification.ts) - action uses `validateEmailVerificationCode` function [validate-email-verification-code.ts](./the-road-to-next-app/src/features/auth/utils/validate-email-verification-code.ts) to check the verification code and return the status
 - add a new `email-verification-email.tsx` email template for sending the verification email [email-verification.tsx](./the-road-to-next-app/src/emails/auth/email-verification.tsx) with `sendEmailVerification` function [send-email-verification.tsx](./the-road-to-next-app/src/features/auth/emails/send-email-verification.tsx) to send the email which is used in the [sign-up.ts](./the-road-to-next-app/src/features/auth/actions/sign-up.ts) action via `inngest`
 - add an option for email verification code resending with[email-verification-resend-form.tsx](./the-road-to-next-app/src/features/auth/components/email-verification-resend-form.tsx) form and action [email-verification-resend.ts](./the-road-to-next-app/src/features/auth/actions/email-verification-resend.ts) which uses `sendEmailVerification` function to send the email
+
+
+## Organization
+
+- [Organization page](./the-road-to-next-app/src/app/(authenticated)/organization/page.tsx) is available for authenticated users with an organization.
+- Users without organization can create one via (included in onboarding) [Organization creation page](./the-road-to-next-app/src/app/(authenticated)/organization/create/page.tsx) -> [organization-create-form.tsx](./the-road-to-next-app/src/features/organization/components/organization-create-form.tsx) -> [create-organization.ts](./the-road-to-next-app/src/features/organization/actions/create-organization.ts)
+- Organization listing component: [organization-list.tsx](./the-road-to-next-app/src/features/organization/components/organization-list.tsx)
+- Switching active organization is implemented with [switch-organization.ts](./the-road-to-next-app/src/features/organization/actions/switch-organization.ts) and [Organization switch button](./the-road-to-next-app/src/features/organization/components/organization-switch-button.tsx)
+- Deleting organization is implemented with [organization-delete-button.tsx](./the-road-to-next-app/src/features/organization/components/organization-delete-button.tsx) and [delete-organization.ts](./the-road-to-next-app/src/features/organization/actions/delete-organization.ts)
+- [Onboarding page](./the-road-to-next-app/src/app/onboarding/page.tsx)
+- Organization selection if there is no active organization (with limited functionality): [select-active-organization/page.tsx](./the-road-to-next-app/src/app/onboarding/select-active-organization/page.tsx)
+- Path constants for organization routes are defined in [paths.ts](./the-road-to-next-app/src/paths.ts): `organizationsPath`, `organizationCreatePath`, etc.
+- Prisma schema updated with `Organization` and `Membership` models ([schema.prisma](./the-road-to-next-app/prisma/schema.prisma)).
+  - Memberships track which users belong to which organizations and which is active.

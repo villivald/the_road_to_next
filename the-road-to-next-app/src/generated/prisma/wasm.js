@@ -120,6 +120,20 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
+exports.Prisma.OrganizationScalarFieldEnum = {
+  id: 'id',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  name: 'name'
+};
+
+exports.Prisma.MembershipScalarFieldEnum = {
+  organizationId: 'organizationId',
+  userId: 'userId',
+  joinedAt: 'joinedAt',
+  isActive: 'isActive'
+};
+
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   username: 'username',
@@ -189,6 +203,8 @@ exports.TicketStatus = exports.$Enums.TicketStatus = {
 };
 
 exports.Prisma.ModelName = {
+  Organization: 'Organization',
+  Membership: 'Membership',
   User: 'User',
   EmailVerificationToken: 'EmailVerificationToken',
   PasswordResetToken: 'PasswordResetToken',
