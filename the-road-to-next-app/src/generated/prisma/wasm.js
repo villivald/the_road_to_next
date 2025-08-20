@@ -131,7 +131,8 @@ exports.Prisma.MembershipScalarFieldEnum = {
   organizationId: 'organizationId',
   userId: 'userId',
   joinedAt: 'joinedAt',
-  isActive: 'isActive'
+  isActive: 'isActive',
+  membershipRole: 'membershipRole'
 };
 
 exports.Prisma.UserScalarFieldEnum = {
@@ -196,6 +197,11 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+exports.MembershipRole = exports.$Enums.MembershipRole = {
+  ADMIN: 'ADMIN',
+  MEMBER: 'MEMBER'
+};
+
 exports.TicketStatus = exports.$Enums.TicketStatus = {
   OPEN: 'OPEN',
   IN_PROGRESS: 'IN_PROGRESS',

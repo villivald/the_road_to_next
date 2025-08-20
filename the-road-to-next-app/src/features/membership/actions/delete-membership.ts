@@ -9,7 +9,7 @@ export const deleteMembership = async (
   organizationId: string,
   userId: string,
 ) => {
-  await getAuthOrRedirect();
+  const { user } = await getAuthOrRedirect();
 
   const memberships = await getMemberships(organizationId);
 
@@ -22,6 +22,39 @@ export const deleteMembership = async (
     );
   }
 
+  const targetMembership = (memberships ?? []).find(
+    (membership) => membership.userId === userId,
+  );
+
+  if (!targetMembership) {
+    return toActionState("ERROR", "Membership not found");
+  }
+
+  const adminMemberships = (memberships ?? []).filter(
+    (membership) => membership.membershipRole === "ADMIN",
+  );
+
+  const removesAdmin = targetMembership.membershipRole === "ADMIN";
+  const isLastAdmin = adminMemberships.length <= 1;
+
+  if (removesAdmin && isLastAdmin) {
+    return toActionState("ERROR", "Cannot delete last admin membership");
+  }
+
+  const myMembership = (memberships ?? []).find(
+    (membership) => membership.userId === user?.id,
+  );
+
+  const isMyself = myMembership?.userId === user?.id;
+  const isAdmin = myMembership?.membershipRole === "ADMIN";
+
+  if (!isAdmin && !isMyself) {
+    return toActionState(
+      "ERROR",
+      "You are not authorized to delete this membership",
+    );
+  }
+
   await prisma.membership.delete({
     where: {
       membershipId: {
@@ -31,5 +64,10 @@ export const deleteMembership = async (
     },
   });
 
-  return toActionState("SUCCESS", "Membership deleted successfully");
+  return toActionState(
+    "SUCCESS",
+    isMyself
+      ? "You have left the organization"
+      : "Membership deleted successfully",
+  );
 };

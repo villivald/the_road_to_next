@@ -428,4 +428,20 @@ Feature contains three main parts:
 - Organization selection if there is no active organization (with limited functionality): [select-active-organization/page.tsx](./the-road-to-next-app/src/app/onboarding/select-active-organization/page.tsx)
 - Path constants for organization routes are defined in [paths.ts](./the-road-to-next-app/src/paths.ts): `organizationsPath`, `organizationCreatePath`, etc.
 - Prisma schema updated with `Organization` and `Membership` models ([schema.prisma](./the-road-to-next-app/prisma/schema.prisma)).
-  - Memberships track which users belong to which organizations and which is active.
+
+## Memberships
+
+- Membership represents the relationship between users and organizations.
+- Each membership links a user to an organization and tracks:
+  - `joinedAt`: when the user joined the organization
+  - `isActive`: whether this is the user's currently active organization
+- Memberships are managed in the Prisma schema ([schema.prisma](./the-road-to-next-app/prisma/schema.prisma)) with a composite key (`organizationId`, `userId`).
+- Memberships are created automatically when a user creates a new organization, and can be switched using the organization switch button ([organization-switch-button.tsx](./the-road-to-next-app/src/features/organization/components/organization-switch-button.tsx)).
+- Only users with a membership can switch to or delete an organization ([switch-organization.ts](./the-road-to-next-app/src/features/organization/actions/switch-organization.ts), [delete-organization.ts](./the-road-to-next-app/src/features/organization/actions/delete-organization.ts)).
+- The organization list UI displays the number of members and the join date for each organization ([organization-list.tsx](./the-road-to-next-app/src/features/organization/components/organization-list.tsx)).
+
+## Roles
+
+- Membership also has a `membershipRole` field that references the `MembershipRole` enum, which defines the user's role within the organization.
+- Roles are used to restrict certain organization and membership actions (e.g., only `ADMIN` can delete an organization or membership of other persons), see [get-admin-or-redirect.ts](./the-road-to-next-app/src/features/membership/queries/get-admin-or-redirect.ts).
+- Role can be updated by organization admins using the [update-membership-role.ts](./the-road-to-next-app/src/features/membership/actions/update-membership-role.ts) action.

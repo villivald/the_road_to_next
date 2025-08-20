@@ -38,12 +38,15 @@ const OrganizationList = async ({ limitedAccess }: OrganizationListProps) => {
           <TableHead>Name</TableHead>
           <TableHead>Joined At</TableHead>
           <TableHead>Members</TableHead>
+          <TableHead>My Role</TableHead>
           <TableHead />
         </TableRow>
       </TableHeader>
       <TableBody>
         {organizations.map((organization) => {
           const isActive = organization.membershipByUser.isActive;
+          const isAdmin =
+            organization.membershipByUser.membershipRole === "ADMIN";
 
           const switchButton = (
             <OrganizationSwitchButton
@@ -88,15 +91,19 @@ const OrganizationList = async ({ limitedAccess }: OrganizationListProps) => {
             />
           );
 
+          const placeholder = (
+            <Button size="icon" disabled className="disabled:opacity-0" />
+          );
+
           const buttons = (
             <>
               {switchButton}
               {limitedAccess ? null : (
                 <>
-                  {detailButton}
-                  {editButton}
+                  {isAdmin ? detailButton : placeholder}
+                  {isAdmin ? editButton : placeholder}
                   {leaveButton}
-                  {deleteButton}
+                  {isAdmin ? deleteButton : placeholder}
                 </>
               )}
             </>
@@ -113,6 +120,9 @@ const OrganizationList = async ({ limitedAccess }: OrganizationListProps) => {
                 )}
               </TableCell>
               <TableCell>{organization._count.memberships}</TableCell>
+              <TableCell>
+                {organization.membershipByUser.membershipRole}
+              </TableCell>
               <TableCell className="flex justify-end gap-x-2">
                 {buttons}
               </TableCell>
