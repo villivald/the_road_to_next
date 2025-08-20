@@ -4,6 +4,7 @@ import {
   LucideArrowUpRightFromSquare,
   LucidePen,
 } from "lucide-react";
+import Link from "next/link";
 import { SubmitButton } from "@/components/form/submit-button";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { MembershipDeleteButton } from "@/features/membership/components/membership-delete-button";
+import { membershipsPath } from "@/paths";
 import { getOrganizationsByUser } from "../queries/get-organizations-by-user";
 import { OrganizationDeleteButton } from "./organization-delete-button";
 import { OrganizationSwitchButton } from "./organization-switch-button";
@@ -60,8 +63,10 @@ const OrganizationList = async ({ limitedAccess }: OrganizationListProps) => {
           );
 
           const detailButton = (
-            <Button variant="outline" size="icon">
-              <LucideArrowUpRightFromSquare className="h-4 w-4" />
+            <Button variant="outline" size="icon" asChild>
+              <Link href={membershipsPath(organization.id)}>
+                <LucideArrowUpRightFromSquare className="h-4 w-4" />
+              </Link>
             </Button>
           );
 
@@ -75,6 +80,14 @@ const OrganizationList = async ({ limitedAccess }: OrganizationListProps) => {
             <OrganizationDeleteButton organizationId={organization.id} />
           );
 
+          const leaveButton = (
+            <MembershipDeleteButton
+              organizationId={organization.id}
+              userId={organization.membershipByUser.userId}
+              pendingMessage="Leaving organization..."
+            />
+          );
+
           const buttons = (
             <>
               {switchButton}
@@ -82,6 +95,7 @@ const OrganizationList = async ({ limitedAccess }: OrganizationListProps) => {
                 <>
                   {detailButton}
                   {editButton}
+                  {leaveButton}
                   {deleteButton}
                 </>
               )}

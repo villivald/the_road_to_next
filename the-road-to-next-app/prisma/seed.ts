@@ -12,7 +12,7 @@ const users = [
   {
     username: "user",
     email: "maxim@villivald.com",
-    emailVerified: true,
+    emailVerified: false,
   },
 ];
 
@@ -82,6 +82,11 @@ const seed = async () => {
         userId: dbUsers[0].id,
         organizationId: dbOrganization.id,
         isActive: true,
+      },
+      {
+        userId: dbUsers[1].id,
+        organizationId: dbOrganization.id,
+        isActive: false,
       },
     ],
   });

@@ -23,6 +23,7 @@ import { Button } from "./ui/button";
 type UseConfirmDialogArgs = {
   title?: string;
   description?: string;
+  pendingMessage?: string;
   action: () => Promise<ActionState>;
   trigger: React.ReactElement | ((isPending: boolean) => React.ReactElement);
   onSuccess?: (actionState: ActionState) => void;
@@ -31,6 +32,7 @@ type UseConfirmDialogArgs = {
 const useConfirmDialog = ({
   title = "Are you absolutely sure?",
   description = "This action cannot be undone, make sure you want to proceed.",
+  pendingMessage = "Deleting...",
   action,
   trigger,
   onSuccess,
@@ -53,7 +55,7 @@ const useConfirmDialog = ({
 
   useEffect(() => {
     if (isPending) {
-      toastRef.current = toast.loading("Deleting...");
+      toastRef.current = toast.loading(pendingMessage);
     } else if (toastRef.current) {
       toast.dismiss(toastRef.current);
     }
@@ -63,7 +65,7 @@ const useConfirmDialog = ({
         toast.dismiss(toastRef.current);
       }
     };
-  }, [isPending]);
+  }, [isPending, pendingMessage]);
 
   useActionFeedback(actionState, {
     onSuccess: ({ actionState }) => {
