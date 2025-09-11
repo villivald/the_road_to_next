@@ -13,12 +13,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { deleteTicket } from "@/features/ticket/actions/delete-ticket";
-import { Ticket, TicketStatus } from "@/generated/prisma";
+import { TicketStatus } from "@/generated/prisma";
 import { updateTicketStatus } from "../actions/update-ticket-status";
 import { TICKET_STATUS_LABELS } from "../constants";
+import { TicketWithMetadata } from "../types";
 
 type TicketMoreMenuProps = {
-  ticket: Ticket;
+  ticket: TicketWithMetadata;
   trigger: React.ReactElement;
 };
 
@@ -26,7 +27,7 @@ const TicketMoreMenu = ({ ticket, trigger }: TicketMoreMenuProps) => {
   const [deleteButton, deleteDialog] = useConfirmDialog({
     action: deleteTicket.bind(null, ticket.id),
     trigger: (
-      <DropdownMenuItem>
+      <DropdownMenuItem disabled={!ticket.permissions.canDeleteTicket}>
         <LucideTrash className="mr-2 h-4 w-4" />
         <span>Delete</span>
       </DropdownMenuItem>

@@ -132,7 +132,8 @@ exports.Prisma.MembershipScalarFieldEnum = {
   userId: 'userId',
   joinedAt: 'joinedAt',
   isActive: 'isActive',
-  membershipRole: 'membershipRole'
+  membershipRole: 'membershipRole',
+  canDeleteTicket: 'canDeleteTicket'
 };
 
 exports.Prisma.UserScalarFieldEnum = {
@@ -172,7 +173,8 @@ exports.Prisma.TicketScalarFieldEnum = {
   status: 'status',
   deadline: 'deadline',
   bounty: 'bounty',
-  userId: 'userId'
+  userId: 'userId',
+  organizationId: 'organizationId'
 };
 
 exports.Prisma.CommentScalarFieldEnum = {

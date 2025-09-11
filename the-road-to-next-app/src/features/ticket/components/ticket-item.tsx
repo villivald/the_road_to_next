@@ -38,13 +38,13 @@ const TicketItem = async ({
   const { user } = await getAuth();
   const isTicketOwner = isOwner(user, ticket);
 
-  const detailButton = isTicketOwner ? (
+  const detailButton = (
     <Button asChild variant="outline" size="icon">
       <Link prefetch href={ticketPath(ticket.id)}>
         <LucideSquareArrowOutUpRight className="h4 w-4" />
       </Link>
     </Button>
-  ) : null;
+  );
 
   const editButton = isTicketOwner ? (
     <Button asChild variant="outline" size="icon">

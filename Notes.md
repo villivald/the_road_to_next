@@ -445,3 +445,28 @@ Feature contains three main parts:
 - Membership also has a `membershipRole` field that references the `MembershipRole` enum, which defines the user's role within the organization.
 - Roles are used to restrict certain organization and membership actions (e.g., only `ADMIN` can delete an organization or membership of other persons), see [get-admin-or-redirect.ts](./the-road-to-next-app/src/features/membership/queries/get-admin-or-redirect.ts).
 - Role can be updated by organization admins using the [update-membership-role.ts](./the-road-to-next-app/src/features/membership/actions/update-membership-role.ts) action.
+
+## Permissions
+
+- Organization-scoped permissions are stored on the `Membership` model in the Prisma schema ([schema.prisma](./the-road-to-next-app/prisma/schema.prisma)). Currently implemented:
+  - `canDeleteTicket: Boolean` – whether a member can delete tickets they own within the organization.
+
+- Permission resolution is centralized via a helper:
+  - [get-ticket-permissions.ts](./the-road-to-next-app/src/features/ticket/permissions/get-ticket-permissions.ts) returns membership-derived flags for a given `organizationId` and `userId`.
+
+- Permissions are always combined with ownership for safety:
+  - In ticket read models:
+    - [get-ticket.ts](./the-road-to-next-app/src/features/ticket/queries/get-ticket.ts) and
+    - [get-tickets.ts](./the-road-to-next-app/src/features/ticket/queries/get-tickets.ts)
+  - Both compute `isOwner` and expose `permissions.canDeleteTicket = isOwner && membership.canDeleteTicket`.
+
+- Mutations enforce the same checks server-side:
+  - [delete-ticket.ts](./the-road-to-next-app/src/features/ticket/actions/delete-ticket.ts) verifies the user is the owner and that `getTicketPermissions(...).canDeleteTicket` is true before deleting.
+
+- UI reacts to computed permissions:
+  - [ticket-more-menu.tsx](./the-road-to-next-app/src/features/ticket/components/ticket-more-menu.tsx) disables the Delete action when `ticket.permissions.canDeleteTicket` is false.
+
+- Admins can toggle permissions per member:
+  - Guard: [get-admin-or-redirect.ts](./the-road-to-next-app/src/features/membership/queries/get-admin-or-redirect.ts) restricts management to `ADMIN` role.
+  - Action: [toggle-permission.ts](./the-road-to-next-app/src/features/membership/actions/toggle-permission.ts) flips a given permission (currently `canDeleteTicket`) for a membership and revalidates the memberships page.
+  - UI: [membership-list.tsx](./the-road-to-next-app/src/features/membership/components/membership-list.tsx) renders a "Can Delete Ticket?" column with a [PermissionToggle](./the-road-to-next-app/src/features/membership/components/permission-toggle.tsx) control.

@@ -1537,10 +1537,12 @@ export namespace Prisma {
 
   export type OrganizationCountOutputType = {
     memberships: number
+    tickets: number
   }
 
   export type OrganizationCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     memberships?: boolean | OrganizationCountOutputTypeCountMembershipsArgs
+    tickets?: boolean | OrganizationCountOutputTypeCountTicketsArgs
   }
 
   // Custom InputTypes
@@ -1559,6 +1561,13 @@ export namespace Prisma {
    */
   export type OrganizationCountOutputTypeCountMembershipsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: MembershipWhereInput
+  }
+
+  /**
+   * OrganizationCountOutputType without action
+   */
+  export type OrganizationCountOutputTypeCountTicketsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TicketWhereInput
   }
 
 
@@ -1830,6 +1839,7 @@ export namespace Prisma {
     updatedAt?: boolean
     name?: boolean
     memberships?: boolean | Organization$membershipsArgs<ExtArgs>
+    tickets?: boolean | Organization$ticketsArgs<ExtArgs>
     _count?: boolean | OrganizationCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["organization"]>
 
@@ -1857,6 +1867,7 @@ export namespace Prisma {
   export type OrganizationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "name", ExtArgs["result"]["organization"]>
   export type OrganizationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     memberships?: boolean | Organization$membershipsArgs<ExtArgs>
+    tickets?: boolean | Organization$ticketsArgs<ExtArgs>
     _count?: boolean | OrganizationCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type OrganizationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -1866,6 +1877,7 @@ export namespace Prisma {
     name: "Organization"
     objects: {
       memberships: Prisma.$MembershipPayload<ExtArgs>[]
+      tickets: Prisma.$TicketPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2267,6 +2279,7 @@ export namespace Prisma {
   export interface Prisma__OrganizationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     memberships<T extends Organization$membershipsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$membershipsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MembershipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    tickets<T extends Organization$ticketsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$ticketsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2712,6 +2725,30 @@ export namespace Prisma {
   }
 
   /**
+   * Organization.tickets
+   */
+  export type Organization$ticketsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Ticket
+     */
+    select?: TicketSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Ticket
+     */
+    omit?: TicketOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TicketInclude<ExtArgs> | null
+    where?: TicketWhereInput
+    orderBy?: TicketOrderByWithRelationInput | TicketOrderByWithRelationInput[]
+    cursor?: TicketWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TicketScalarFieldEnum | TicketScalarFieldEnum[]
+  }
+
+  /**
    * Organization without action
    */
   export type OrganizationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2746,6 +2783,7 @@ export namespace Prisma {
     joinedAt: Date | null
     isActive: boolean | null
     membershipRole: $Enums.MembershipRole | null
+    canDeleteTicket: boolean | null
   }
 
   export type MembershipMaxAggregateOutputType = {
@@ -2754,6 +2792,7 @@ export namespace Prisma {
     joinedAt: Date | null
     isActive: boolean | null
     membershipRole: $Enums.MembershipRole | null
+    canDeleteTicket: boolean | null
   }
 
   export type MembershipCountAggregateOutputType = {
@@ -2762,6 +2801,7 @@ export namespace Prisma {
     joinedAt: number
     isActive: number
     membershipRole: number
+    canDeleteTicket: number
     _all: number
   }
 
@@ -2772,6 +2812,7 @@ export namespace Prisma {
     joinedAt?: true
     isActive?: true
     membershipRole?: true
+    canDeleteTicket?: true
   }
 
   export type MembershipMaxAggregateInputType = {
@@ -2780,6 +2821,7 @@ export namespace Prisma {
     joinedAt?: true
     isActive?: true
     membershipRole?: true
+    canDeleteTicket?: true
   }
 
   export type MembershipCountAggregateInputType = {
@@ -2788,6 +2830,7 @@ export namespace Prisma {
     joinedAt?: true
     isActive?: true
     membershipRole?: true
+    canDeleteTicket?: true
     _all?: true
   }
 
@@ -2869,6 +2912,7 @@ export namespace Prisma {
     joinedAt: Date
     isActive: boolean
     membershipRole: $Enums.MembershipRole
+    canDeleteTicket: boolean
     _count: MembershipCountAggregateOutputType | null
     _min: MembershipMinAggregateOutputType | null
     _max: MembershipMaxAggregateOutputType | null
@@ -2894,6 +2938,7 @@ export namespace Prisma {
     joinedAt?: boolean
     isActive?: boolean
     membershipRole?: boolean
+    canDeleteTicket?: boolean
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["membership"]>
@@ -2904,6 +2949,7 @@ export namespace Prisma {
     joinedAt?: boolean
     isActive?: boolean
     membershipRole?: boolean
+    canDeleteTicket?: boolean
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["membership"]>
@@ -2914,6 +2960,7 @@ export namespace Prisma {
     joinedAt?: boolean
     isActive?: boolean
     membershipRole?: boolean
+    canDeleteTicket?: boolean
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["membership"]>
@@ -2924,9 +2971,10 @@ export namespace Prisma {
     joinedAt?: boolean
     isActive?: boolean
     membershipRole?: boolean
+    canDeleteTicket?: boolean
   }
 
-  export type MembershipOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"organizationId" | "userId" | "joinedAt" | "isActive" | "membershipRole", ExtArgs["result"]["membership"]>
+  export type MembershipOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"organizationId" | "userId" | "joinedAt" | "isActive" | "membershipRole" | "canDeleteTicket", ExtArgs["result"]["membership"]>
   export type MembershipInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -2952,6 +3000,7 @@ export namespace Prisma {
       joinedAt: Date
       isActive: boolean
       membershipRole: $Enums.MembershipRole
+      canDeleteTicket: boolean
     }, ExtArgs["result"]["membership"]>
     composites: {}
   }
@@ -3382,6 +3431,7 @@ export namespace Prisma {
     readonly joinedAt: FieldRef<"Membership", 'DateTime'>
     readonly isActive: FieldRef<"Membership", 'Boolean'>
     readonly membershipRole: FieldRef<"Membership", 'MembershipRole'>
+    readonly canDeleteTicket: FieldRef<"Membership", 'Boolean'>
   }
     
 
@@ -8158,6 +8208,7 @@ export namespace Prisma {
     deadline: string | null
     bounty: number | null
     userId: string | null
+    organizationId: string | null
   }
 
   export type TicketMaxAggregateOutputType = {
@@ -8170,6 +8221,7 @@ export namespace Prisma {
     deadline: string | null
     bounty: number | null
     userId: string | null
+    organizationId: string | null
   }
 
   export type TicketCountAggregateOutputType = {
@@ -8182,6 +8234,7 @@ export namespace Prisma {
     deadline: number
     bounty: number
     userId: number
+    organizationId: number
     _all: number
   }
 
@@ -8204,6 +8257,7 @@ export namespace Prisma {
     deadline?: true
     bounty?: true
     userId?: true
+    organizationId?: true
   }
 
   export type TicketMaxAggregateInputType = {
@@ -8216,6 +8270,7 @@ export namespace Prisma {
     deadline?: true
     bounty?: true
     userId?: true
+    organizationId?: true
   }
 
   export type TicketCountAggregateInputType = {
@@ -8228,6 +8283,7 @@ export namespace Prisma {
     deadline?: true
     bounty?: true
     userId?: true
+    organizationId?: true
     _all?: true
   }
 
@@ -8327,6 +8383,7 @@ export namespace Prisma {
     deadline: string
     bounty: number
     userId: string
+    organizationId: string
     _count: TicketCountAggregateOutputType | null
     _avg: TicketAvgAggregateOutputType | null
     _sum: TicketSumAggregateOutputType | null
@@ -8358,8 +8415,10 @@ export namespace Prisma {
     deadline?: boolean
     bounty?: boolean
     userId?: boolean
+    organizationId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     comments?: boolean | Ticket$commentsArgs<ExtArgs>
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
     _count?: boolean | TicketCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["ticket"]>
 
@@ -8373,7 +8432,9 @@ export namespace Prisma {
     deadline?: boolean
     bounty?: boolean
     userId?: boolean
+    organizationId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["ticket"]>
 
   export type TicketSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -8386,7 +8447,9 @@ export namespace Prisma {
     deadline?: boolean
     bounty?: boolean
     userId?: boolean
+    organizationId?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["ticket"]>
 
   export type TicketSelectScalar = {
@@ -8399,19 +8462,23 @@ export namespace Prisma {
     deadline?: boolean
     bounty?: boolean
     userId?: boolean
+    organizationId?: boolean
   }
 
-  export type TicketOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "title" | "content" | "status" | "deadline" | "bounty" | "userId", ExtArgs["result"]["ticket"]>
+  export type TicketOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "title" | "content" | "status" | "deadline" | "bounty" | "userId" | "organizationId", ExtArgs["result"]["ticket"]>
   export type TicketInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     comments?: boolean | Ticket$commentsArgs<ExtArgs>
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
     _count?: boolean | TicketCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type TicketIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
   }
   export type TicketIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
   }
 
   export type $TicketPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8419,6 +8486,7 @@ export namespace Prisma {
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
       comments: Prisma.$CommentPayload<ExtArgs>[]
+      organization: Prisma.$OrganizationPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -8430,6 +8498,7 @@ export namespace Prisma {
       deadline: string
       bounty: number
       userId: string
+      organizationId: string
     }, ExtArgs["result"]["ticket"]>
     composites: {}
   }
@@ -8826,6 +8895,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     comments<T extends Ticket$commentsArgs<ExtArgs> = {}>(args?: Subset<T, Ticket$commentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    organization<T extends OrganizationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrganizationDefaultArgs<ExtArgs>>): Prisma__OrganizationClient<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -8864,6 +8934,7 @@ export namespace Prisma {
     readonly deadline: FieldRef<"Ticket", 'String'>
     readonly bounty: FieldRef<"Ticket", 'Int'>
     readonly userId: FieldRef<"Ticket", 'String'>
+    readonly organizationId: FieldRef<"Ticket", 'String'>
   }
     
 
@@ -10416,7 +10487,8 @@ export namespace Prisma {
     userId: 'userId',
     joinedAt: 'joinedAt',
     isActive: 'isActive',
-    membershipRole: 'membershipRole'
+    membershipRole: 'membershipRole',
+    canDeleteTicket: 'canDeleteTicket'
   };
 
   export type MembershipScalarFieldEnum = (typeof MembershipScalarFieldEnum)[keyof typeof MembershipScalarFieldEnum]
@@ -10471,7 +10543,8 @@ export namespace Prisma {
     status: 'status',
     deadline: 'deadline',
     bounty: 'bounty',
-    userId: 'userId'
+    userId: 'userId',
+    organizationId: 'organizationId'
   };
 
   export type TicketScalarFieldEnum = (typeof TicketScalarFieldEnum)[keyof typeof TicketScalarFieldEnum]
@@ -10620,6 +10693,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Organization"> | Date | string
     name?: StringFilter<"Organization"> | string
     memberships?: MembershipListRelationFilter
+    tickets?: TicketListRelationFilter
   }
 
   export type OrganizationOrderByWithRelationInput = {
@@ -10628,6 +10702,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     name?: SortOrder
     memberships?: MembershipOrderByRelationAggregateInput
+    tickets?: TicketOrderByRelationAggregateInput
   }
 
   export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
@@ -10639,6 +10714,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Organization"> | Date | string
     updatedAt?: DateTimeFilter<"Organization"> | Date | string
     memberships?: MembershipListRelationFilter
+    tickets?: TicketListRelationFilter
   }, "id" | "name">
 
   export type OrganizationOrderByWithAggregationInput = {
@@ -10670,6 +10746,7 @@ export namespace Prisma {
     joinedAt?: DateTimeFilter<"Membership"> | Date | string
     isActive?: BoolFilter<"Membership"> | boolean
     membershipRole?: EnumMembershipRoleFilter<"Membership"> | $Enums.MembershipRole
+    canDeleteTicket?: BoolFilter<"Membership"> | boolean
     organization?: XOR<OrganizationScalarRelationFilter, OrganizationWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
@@ -10680,6 +10757,7 @@ export namespace Prisma {
     joinedAt?: SortOrder
     isActive?: SortOrder
     membershipRole?: SortOrder
+    canDeleteTicket?: SortOrder
     organization?: OrganizationOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
   }
@@ -10694,6 +10772,7 @@ export namespace Prisma {
     joinedAt?: DateTimeFilter<"Membership"> | Date | string
     isActive?: BoolFilter<"Membership"> | boolean
     membershipRole?: EnumMembershipRoleFilter<"Membership"> | $Enums.MembershipRole
+    canDeleteTicket?: BoolFilter<"Membership"> | boolean
     organization?: XOR<OrganizationScalarRelationFilter, OrganizationWhereInput>
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "membershipId">
@@ -10704,6 +10783,7 @@ export namespace Prisma {
     joinedAt?: SortOrder
     isActive?: SortOrder
     membershipRole?: SortOrder
+    canDeleteTicket?: SortOrder
     _count?: MembershipCountOrderByAggregateInput
     _max?: MembershipMaxOrderByAggregateInput
     _min?: MembershipMinOrderByAggregateInput
@@ -10718,6 +10798,7 @@ export namespace Prisma {
     joinedAt?: DateTimeWithAggregatesFilter<"Membership"> | Date | string
     isActive?: BoolWithAggregatesFilter<"Membership"> | boolean
     membershipRole?: EnumMembershipRoleWithAggregatesFilter<"Membership"> | $Enums.MembershipRole
+    canDeleteTicket?: BoolWithAggregatesFilter<"Membership"> | boolean
   }
 
   export type UserWhereInput = {
@@ -10948,8 +11029,10 @@ export namespace Prisma {
     deadline?: StringFilter<"Ticket"> | string
     bounty?: IntFilter<"Ticket"> | number
     userId?: StringFilter<"Ticket"> | string
+    organizationId?: StringFilter<"Ticket"> | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     comments?: CommentListRelationFilter
+    organization?: XOR<OrganizationScalarRelationFilter, OrganizationWhereInput>
   }
 
   export type TicketOrderByWithRelationInput = {
@@ -10962,8 +11045,10 @@ export namespace Prisma {
     deadline?: SortOrder
     bounty?: SortOrder
     userId?: SortOrder
+    organizationId?: SortOrder
     user?: UserOrderByWithRelationInput
     comments?: CommentOrderByRelationAggregateInput
+    organization?: OrganizationOrderByWithRelationInput
   }
 
   export type TicketWhereUniqueInput = Prisma.AtLeast<{
@@ -10979,8 +11064,10 @@ export namespace Prisma {
     deadline?: StringFilter<"Ticket"> | string
     bounty?: IntFilter<"Ticket"> | number
     userId?: StringFilter<"Ticket"> | string
+    organizationId?: StringFilter<"Ticket"> | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     comments?: CommentListRelationFilter
+    organization?: XOR<OrganizationScalarRelationFilter, OrganizationWhereInput>
   }, "id">
 
   export type TicketOrderByWithAggregationInput = {
@@ -10993,6 +11080,7 @@ export namespace Prisma {
     deadline?: SortOrder
     bounty?: SortOrder
     userId?: SortOrder
+    organizationId?: SortOrder
     _count?: TicketCountOrderByAggregateInput
     _avg?: TicketAvgOrderByAggregateInput
     _max?: TicketMaxOrderByAggregateInput
@@ -11013,6 +11101,7 @@ export namespace Prisma {
     deadline?: StringWithAggregatesFilter<"Ticket"> | string
     bounty?: IntWithAggregatesFilter<"Ticket"> | number
     userId?: StringWithAggregatesFilter<"Ticket"> | string
+    organizationId?: StringWithAggregatesFilter<"Ticket"> | string
   }
 
   export type CommentWhereInput = {
@@ -11079,6 +11168,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     name: string
     memberships?: MembershipCreateNestedManyWithoutOrganizationInput
+    tickets?: TicketCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateInput = {
@@ -11087,6 +11177,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     name: string
     memberships?: MembershipUncheckedCreateNestedManyWithoutOrganizationInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUpdateInput = {
@@ -11095,6 +11186,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     name?: StringFieldUpdateOperationsInput | string
     memberships?: MembershipUpdateManyWithoutOrganizationNestedInput
+    tickets?: TicketUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateInput = {
@@ -11103,6 +11195,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     name?: StringFieldUpdateOperationsInput | string
     memberships?: MembershipUncheckedUpdateManyWithoutOrganizationNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationCreateManyInput = {
@@ -11130,6 +11223,7 @@ export namespace Prisma {
     joinedAt?: Date | string
     isActive: boolean
     membershipRole?: $Enums.MembershipRole
+    canDeleteTicket?: boolean
     organization: OrganizationCreateNestedOneWithoutMembershipsInput
     user: UserCreateNestedOneWithoutMembershipsInput
   }
@@ -11140,12 +11234,14 @@ export namespace Prisma {
     joinedAt?: Date | string
     isActive: boolean
     membershipRole?: $Enums.MembershipRole
+    canDeleteTicket?: boolean
   }
 
   export type MembershipUpdateInput = {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     membershipRole?: EnumMembershipRoleFieldUpdateOperationsInput | $Enums.MembershipRole
+    canDeleteTicket?: BoolFieldUpdateOperationsInput | boolean
     organization?: OrganizationUpdateOneRequiredWithoutMembershipsNestedInput
     user?: UserUpdateOneRequiredWithoutMembershipsNestedInput
   }
@@ -11156,6 +11252,7 @@ export namespace Prisma {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     membershipRole?: EnumMembershipRoleFieldUpdateOperationsInput | $Enums.MembershipRole
+    canDeleteTicket?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type MembershipCreateManyInput = {
@@ -11164,12 +11261,14 @@ export namespace Prisma {
     joinedAt?: Date | string
     isActive: boolean
     membershipRole?: $Enums.MembershipRole
+    canDeleteTicket?: boolean
   }
 
   export type MembershipUpdateManyMutationInput = {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     membershipRole?: EnumMembershipRoleFieldUpdateOperationsInput | $Enums.MembershipRole
+    canDeleteTicket?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type MembershipUncheckedUpdateManyInput = {
@@ -11178,6 +11277,7 @@ export namespace Prisma {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     membershipRole?: EnumMembershipRoleFieldUpdateOperationsInput | $Enums.MembershipRole
+    canDeleteTicket?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type UserCreateInput = {
@@ -11408,6 +11508,7 @@ export namespace Prisma {
     bounty: number
     user: UserCreateNestedOneWithoutTicketsInput
     comments?: CommentCreateNestedManyWithoutTicketInput
+    organization: OrganizationCreateNestedOneWithoutTicketsInput
   }
 
   export type TicketUncheckedCreateInput = {
@@ -11420,6 +11521,7 @@ export namespace Prisma {
     deadline: string
     bounty: number
     userId: string
+    organizationId: string
     comments?: CommentUncheckedCreateNestedManyWithoutTicketInput
   }
 
@@ -11434,6 +11536,7 @@ export namespace Prisma {
     bounty?: IntFieldUpdateOperationsInput | number
     user?: UserUpdateOneRequiredWithoutTicketsNestedInput
     comments?: CommentUpdateManyWithoutTicketNestedInput
+    organization?: OrganizationUpdateOneRequiredWithoutTicketsNestedInput
   }
 
   export type TicketUncheckedUpdateInput = {
@@ -11446,6 +11549,7 @@ export namespace Prisma {
     deadline?: StringFieldUpdateOperationsInput | string
     bounty?: IntFieldUpdateOperationsInput | number
     userId?: StringFieldUpdateOperationsInput | string
+    organizationId?: StringFieldUpdateOperationsInput | string
     comments?: CommentUncheckedUpdateManyWithoutTicketNestedInput
   }
 
@@ -11459,6 +11563,7 @@ export namespace Prisma {
     deadline: string
     bounty: number
     userId: string
+    organizationId: string
   }
 
   export type TicketUpdateManyMutationInput = {
@@ -11482,6 +11587,7 @@ export namespace Prisma {
     deadline?: StringFieldUpdateOperationsInput | string
     bounty?: IntFieldUpdateOperationsInput | number
     userId?: StringFieldUpdateOperationsInput | string
+    organizationId?: StringFieldUpdateOperationsInput | string
   }
 
   export type CommentCreateInput = {
@@ -11570,7 +11676,17 @@ export namespace Prisma {
     none?: MembershipWhereInput
   }
 
+  export type TicketListRelationFilter = {
+    every?: TicketWhereInput
+    some?: TicketWhereInput
+    none?: TicketWhereInput
+  }
+
   export type MembershipOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type TicketOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -11660,6 +11776,7 @@ export namespace Prisma {
     joinedAt?: SortOrder
     isActive?: SortOrder
     membershipRole?: SortOrder
+    canDeleteTicket?: SortOrder
   }
 
   export type MembershipMaxOrderByAggregateInput = {
@@ -11668,6 +11785,7 @@ export namespace Prisma {
     joinedAt?: SortOrder
     isActive?: SortOrder
     membershipRole?: SortOrder
+    canDeleteTicket?: SortOrder
   }
 
   export type MembershipMinOrderByAggregateInput = {
@@ -11676,6 +11794,7 @@ export namespace Prisma {
     joinedAt?: SortOrder
     isActive?: SortOrder
     membershipRole?: SortOrder
+    canDeleteTicket?: SortOrder
   }
 
   export type BoolWithAggregatesFilter<$PrismaModel = never> = {
@@ -11714,12 +11833,6 @@ export namespace Prisma {
     none?: EmailVerificationTokenWhereInput
   }
 
-  export type TicketListRelationFilter = {
-    every?: TicketWhereInput
-    some?: TicketWhereInput
-    none?: TicketWhereInput
-  }
-
   export type CommentListRelationFilter = {
     every?: CommentWhereInput
     some?: CommentWhereInput
@@ -11735,10 +11848,6 @@ export namespace Prisma {
   }
 
   export type EmailVerificationTokenOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type TicketOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -11858,6 +11967,7 @@ export namespace Prisma {
     deadline?: SortOrder
     bounty?: SortOrder
     userId?: SortOrder
+    organizationId?: SortOrder
   }
 
   export type TicketAvgOrderByAggregateInput = {
@@ -11874,6 +11984,7 @@ export namespace Prisma {
     deadline?: SortOrder
     bounty?: SortOrder
     userId?: SortOrder
+    organizationId?: SortOrder
   }
 
   export type TicketMinOrderByAggregateInput = {
@@ -11886,6 +11997,7 @@ export namespace Prisma {
     deadline?: SortOrder
     bounty?: SortOrder
     userId?: SortOrder
+    organizationId?: SortOrder
   }
 
   export type TicketSumOrderByAggregateInput = {
@@ -11997,11 +12109,25 @@ export namespace Prisma {
     connect?: MembershipWhereUniqueInput | MembershipWhereUniqueInput[]
   }
 
+  export type TicketCreateNestedManyWithoutOrganizationInput = {
+    create?: XOR<TicketCreateWithoutOrganizationInput, TicketUncheckedCreateWithoutOrganizationInput> | TicketCreateWithoutOrganizationInput[] | TicketUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutOrganizationInput | TicketCreateOrConnectWithoutOrganizationInput[]
+    createMany?: TicketCreateManyOrganizationInputEnvelope
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+  }
+
   export type MembershipUncheckedCreateNestedManyWithoutOrganizationInput = {
     create?: XOR<MembershipCreateWithoutOrganizationInput, MembershipUncheckedCreateWithoutOrganizationInput> | MembershipCreateWithoutOrganizationInput[] | MembershipUncheckedCreateWithoutOrganizationInput[]
     connectOrCreate?: MembershipCreateOrConnectWithoutOrganizationInput | MembershipCreateOrConnectWithoutOrganizationInput[]
     createMany?: MembershipCreateManyOrganizationInputEnvelope
     connect?: MembershipWhereUniqueInput | MembershipWhereUniqueInput[]
+  }
+
+  export type TicketUncheckedCreateNestedManyWithoutOrganizationInput = {
+    create?: XOR<TicketCreateWithoutOrganizationInput, TicketUncheckedCreateWithoutOrganizationInput> | TicketCreateWithoutOrganizationInput[] | TicketUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutOrganizationInput | TicketCreateOrConnectWithoutOrganizationInput[]
+    createMany?: TicketCreateManyOrganizationInputEnvelope
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -12026,6 +12152,20 @@ export namespace Prisma {
     deleteMany?: MembershipScalarWhereInput | MembershipScalarWhereInput[]
   }
 
+  export type TicketUpdateManyWithoutOrganizationNestedInput = {
+    create?: XOR<TicketCreateWithoutOrganizationInput, TicketUncheckedCreateWithoutOrganizationInput> | TicketCreateWithoutOrganizationInput[] | TicketUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutOrganizationInput | TicketCreateOrConnectWithoutOrganizationInput[]
+    upsert?: TicketUpsertWithWhereUniqueWithoutOrganizationInput | TicketUpsertWithWhereUniqueWithoutOrganizationInput[]
+    createMany?: TicketCreateManyOrganizationInputEnvelope
+    set?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    disconnect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    delete?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    update?: TicketUpdateWithWhereUniqueWithoutOrganizationInput | TicketUpdateWithWhereUniqueWithoutOrganizationInput[]
+    updateMany?: TicketUpdateManyWithWhereWithoutOrganizationInput | TicketUpdateManyWithWhereWithoutOrganizationInput[]
+    deleteMany?: TicketScalarWhereInput | TicketScalarWhereInput[]
+  }
+
   export type MembershipUncheckedUpdateManyWithoutOrganizationNestedInput = {
     create?: XOR<MembershipCreateWithoutOrganizationInput, MembershipUncheckedCreateWithoutOrganizationInput> | MembershipCreateWithoutOrganizationInput[] | MembershipUncheckedCreateWithoutOrganizationInput[]
     connectOrCreate?: MembershipCreateOrConnectWithoutOrganizationInput | MembershipCreateOrConnectWithoutOrganizationInput[]
@@ -12038,6 +12178,20 @@ export namespace Prisma {
     update?: MembershipUpdateWithWhereUniqueWithoutOrganizationInput | MembershipUpdateWithWhereUniqueWithoutOrganizationInput[]
     updateMany?: MembershipUpdateManyWithWhereWithoutOrganizationInput | MembershipUpdateManyWithWhereWithoutOrganizationInput[]
     deleteMany?: MembershipScalarWhereInput | MembershipScalarWhereInput[]
+  }
+
+  export type TicketUncheckedUpdateManyWithoutOrganizationNestedInput = {
+    create?: XOR<TicketCreateWithoutOrganizationInput, TicketUncheckedCreateWithoutOrganizationInput> | TicketCreateWithoutOrganizationInput[] | TicketUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: TicketCreateOrConnectWithoutOrganizationInput | TicketCreateOrConnectWithoutOrganizationInput[]
+    upsert?: TicketUpsertWithWhereUniqueWithoutOrganizationInput | TicketUpsertWithWhereUniqueWithoutOrganizationInput[]
+    createMany?: TicketCreateManyOrganizationInputEnvelope
+    set?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    disconnect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    delete?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    connect?: TicketWhereUniqueInput | TicketWhereUniqueInput[]
+    update?: TicketUpdateWithWhereUniqueWithoutOrganizationInput | TicketUpdateWithWhereUniqueWithoutOrganizationInput[]
+    updateMany?: TicketUpdateManyWithWhereWithoutOrganizationInput | TicketUpdateManyWithWhereWithoutOrganizationInput[]
+    deleteMany?: TicketScalarWhereInput | TicketScalarWhereInput[]
   }
 
   export type OrganizationCreateNestedOneWithoutMembershipsInput = {
@@ -12383,6 +12537,12 @@ export namespace Prisma {
     connect?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
   }
 
+  export type OrganizationCreateNestedOneWithoutTicketsInput = {
+    create?: XOR<OrganizationCreateWithoutTicketsInput, OrganizationUncheckedCreateWithoutTicketsInput>
+    connectOrCreate?: OrganizationCreateOrConnectWithoutTicketsInput
+    connect?: OrganizationWhereUniqueInput
+  }
+
   export type CommentUncheckedCreateNestedManyWithoutTicketInput = {
     create?: XOR<CommentCreateWithoutTicketInput, CommentUncheckedCreateWithoutTicketInput> | CommentCreateWithoutTicketInput[] | CommentUncheckedCreateWithoutTicketInput[]
     connectOrCreate?: CommentCreateOrConnectWithoutTicketInput | CommentCreateOrConnectWithoutTicketInput[]
@@ -12422,6 +12582,14 @@ export namespace Prisma {
     update?: CommentUpdateWithWhereUniqueWithoutTicketInput | CommentUpdateWithWhereUniqueWithoutTicketInput[]
     updateMany?: CommentUpdateManyWithWhereWithoutTicketInput | CommentUpdateManyWithWhereWithoutTicketInput[]
     deleteMany?: CommentScalarWhereInput | CommentScalarWhereInput[]
+  }
+
+  export type OrganizationUpdateOneRequiredWithoutTicketsNestedInput = {
+    create?: XOR<OrganizationCreateWithoutTicketsInput, OrganizationUncheckedCreateWithoutTicketsInput>
+    connectOrCreate?: OrganizationCreateOrConnectWithoutTicketsInput
+    upsert?: OrganizationUpsertWithoutTicketsInput
+    connect?: OrganizationWhereUniqueInput
+    update?: XOR<XOR<OrganizationUpdateToOneWithWhereWithoutTicketsInput, OrganizationUpdateWithoutTicketsInput>, OrganizationUncheckedUpdateWithoutTicketsInput>
   }
 
   export type CommentUncheckedUpdateManyWithoutTicketNestedInput = {
@@ -12659,6 +12827,7 @@ export namespace Prisma {
     joinedAt?: Date | string
     isActive: boolean
     membershipRole?: $Enums.MembershipRole
+    canDeleteTicket?: boolean
     user: UserCreateNestedOneWithoutMembershipsInput
   }
 
@@ -12667,6 +12836,7 @@ export namespace Prisma {
     joinedAt?: Date | string
     isActive: boolean
     membershipRole?: $Enums.MembershipRole
+    canDeleteTicket?: boolean
   }
 
   export type MembershipCreateOrConnectWithoutOrganizationInput = {
@@ -12676,6 +12846,42 @@ export namespace Prisma {
 
   export type MembershipCreateManyOrganizationInputEnvelope = {
     data: MembershipCreateManyOrganizationInput | MembershipCreateManyOrganizationInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TicketCreateWithoutOrganizationInput = {
+    id?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    title: string
+    content: string
+    status?: $Enums.TicketStatus
+    deadline: string
+    bounty: number
+    user: UserCreateNestedOneWithoutTicketsInput
+    comments?: CommentCreateNestedManyWithoutTicketInput
+  }
+
+  export type TicketUncheckedCreateWithoutOrganizationInput = {
+    id?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    title: string
+    content: string
+    status?: $Enums.TicketStatus
+    deadline: string
+    bounty: number
+    userId: string
+    comments?: CommentUncheckedCreateNestedManyWithoutTicketInput
+  }
+
+  export type TicketCreateOrConnectWithoutOrganizationInput = {
+    where: TicketWhereUniqueInput
+    create: XOR<TicketCreateWithoutOrganizationInput, TicketUncheckedCreateWithoutOrganizationInput>
+  }
+
+  export type TicketCreateManyOrganizationInputEnvelope = {
+    data: TicketCreateManyOrganizationInput | TicketCreateManyOrganizationInput[]
     skipDuplicates?: boolean
   }
 
@@ -12704,6 +12910,39 @@ export namespace Prisma {
     joinedAt?: DateTimeFilter<"Membership"> | Date | string
     isActive?: BoolFilter<"Membership"> | boolean
     membershipRole?: EnumMembershipRoleFilter<"Membership"> | $Enums.MembershipRole
+    canDeleteTicket?: BoolFilter<"Membership"> | boolean
+  }
+
+  export type TicketUpsertWithWhereUniqueWithoutOrganizationInput = {
+    where: TicketWhereUniqueInput
+    update: XOR<TicketUpdateWithoutOrganizationInput, TicketUncheckedUpdateWithoutOrganizationInput>
+    create: XOR<TicketCreateWithoutOrganizationInput, TicketUncheckedCreateWithoutOrganizationInput>
+  }
+
+  export type TicketUpdateWithWhereUniqueWithoutOrganizationInput = {
+    where: TicketWhereUniqueInput
+    data: XOR<TicketUpdateWithoutOrganizationInput, TicketUncheckedUpdateWithoutOrganizationInput>
+  }
+
+  export type TicketUpdateManyWithWhereWithoutOrganizationInput = {
+    where: TicketScalarWhereInput
+    data: XOR<TicketUpdateManyMutationInput, TicketUncheckedUpdateManyWithoutOrganizationInput>
+  }
+
+  export type TicketScalarWhereInput = {
+    AND?: TicketScalarWhereInput | TicketScalarWhereInput[]
+    OR?: TicketScalarWhereInput[]
+    NOT?: TicketScalarWhereInput | TicketScalarWhereInput[]
+    id?: StringFilter<"Ticket"> | string
+    createdAt?: DateTimeFilter<"Ticket"> | Date | string
+    updatedAt?: DateTimeFilter<"Ticket"> | Date | string
+    title?: StringFilter<"Ticket"> | string
+    content?: StringFilter<"Ticket"> | string
+    status?: EnumTicketStatusFilter<"Ticket"> | $Enums.TicketStatus
+    deadline?: StringFilter<"Ticket"> | string
+    bounty?: IntFilter<"Ticket"> | number
+    userId?: StringFilter<"Ticket"> | string
+    organizationId?: StringFilter<"Ticket"> | string
   }
 
   export type OrganizationCreateWithoutMembershipsInput = {
@@ -12711,6 +12950,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     name: string
+    tickets?: TicketCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutMembershipsInput = {
@@ -12718,6 +12958,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     name: string
+    tickets?: TicketUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutMembershipsInput = {
@@ -12772,6 +13013,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     name?: StringFieldUpdateOperationsInput | string
+    tickets?: TicketUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutMembershipsInput = {
@@ -12779,6 +13021,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     name?: StringFieldUpdateOperationsInput | string
+    tickets?: TicketUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserUpsertWithoutMembershipsInput = {
@@ -12886,6 +13129,7 @@ export namespace Prisma {
     joinedAt?: Date | string
     isActive: boolean
     membershipRole?: $Enums.MembershipRole
+    canDeleteTicket?: boolean
     organization: OrganizationCreateNestedOneWithoutMembershipsInput
   }
 
@@ -12894,6 +13138,7 @@ export namespace Prisma {
     joinedAt?: Date | string
     isActive: boolean
     membershipRole?: $Enums.MembershipRole
+    canDeleteTicket?: boolean
   }
 
   export type MembershipCreateOrConnectWithoutUserInput = {
@@ -12916,6 +13161,7 @@ export namespace Prisma {
     deadline: string
     bounty: number
     comments?: CommentCreateNestedManyWithoutTicketInput
+    organization: OrganizationCreateNestedOneWithoutTicketsInput
   }
 
   export type TicketUncheckedCreateWithoutUserInput = {
@@ -12927,6 +13173,7 @@ export namespace Prisma {
     status?: $Enums.TicketStatus
     deadline: string
     bounty: number
+    organizationId: string
     comments?: CommentUncheckedCreateNestedManyWithoutTicketInput
   }
 
@@ -13071,21 +13318,6 @@ export namespace Prisma {
   export type TicketUpdateManyWithWhereWithoutUserInput = {
     where: TicketScalarWhereInput
     data: XOR<TicketUpdateManyMutationInput, TicketUncheckedUpdateManyWithoutUserInput>
-  }
-
-  export type TicketScalarWhereInput = {
-    AND?: TicketScalarWhereInput | TicketScalarWhereInput[]
-    OR?: TicketScalarWhereInput[]
-    NOT?: TicketScalarWhereInput | TicketScalarWhereInput[]
-    id?: StringFilter<"Ticket"> | string
-    createdAt?: DateTimeFilter<"Ticket"> | Date | string
-    updatedAt?: DateTimeFilter<"Ticket"> | Date | string
-    title?: StringFilter<"Ticket"> | string
-    content?: StringFilter<"Ticket"> | string
-    status?: EnumTicketStatusFilter<"Ticket"> | $Enums.TicketStatus
-    deadline?: StringFilter<"Ticket"> | string
-    bounty?: IntFilter<"Ticket"> | number
-    userId?: StringFilter<"Ticket"> | string
   }
 
   export type CommentUpsertWithWhereUniqueWithoutUserInput = {
@@ -13374,6 +13606,27 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type OrganizationCreateWithoutTicketsInput = {
+    id?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    name: string
+    memberships?: MembershipCreateNestedManyWithoutOrganizationInput
+  }
+
+  export type OrganizationUncheckedCreateWithoutTicketsInput = {
+    id?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    name: string
+    memberships?: MembershipUncheckedCreateNestedManyWithoutOrganizationInput
+  }
+
+  export type OrganizationCreateOrConnectWithoutTicketsInput = {
+    where: OrganizationWhereUniqueInput
+    create: XOR<OrganizationCreateWithoutTicketsInput, OrganizationUncheckedCreateWithoutTicketsInput>
+  }
+
   export type UserUpsertWithoutTicketsInput = {
     update: XOR<UserUpdateWithoutTicketsInput, UserUncheckedUpdateWithoutTicketsInput>
     create: XOR<UserCreateWithoutTicketsInput, UserUncheckedCreateWithoutTicketsInput>
@@ -13427,6 +13680,33 @@ export namespace Prisma {
     data: XOR<CommentUpdateManyMutationInput, CommentUncheckedUpdateManyWithoutTicketInput>
   }
 
+  export type OrganizationUpsertWithoutTicketsInput = {
+    update: XOR<OrganizationUpdateWithoutTicketsInput, OrganizationUncheckedUpdateWithoutTicketsInput>
+    create: XOR<OrganizationCreateWithoutTicketsInput, OrganizationUncheckedCreateWithoutTicketsInput>
+    where?: OrganizationWhereInput
+  }
+
+  export type OrganizationUpdateToOneWithWhereWithoutTicketsInput = {
+    where?: OrganizationWhereInput
+    data: XOR<OrganizationUpdateWithoutTicketsInput, OrganizationUncheckedUpdateWithoutTicketsInput>
+  }
+
+  export type OrganizationUpdateWithoutTicketsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    name?: StringFieldUpdateOperationsInput | string
+    memberships?: MembershipUpdateManyWithoutOrganizationNestedInput
+  }
+
+  export type OrganizationUncheckedUpdateWithoutTicketsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    name?: StringFieldUpdateOperationsInput | string
+    memberships?: MembershipUncheckedUpdateManyWithoutOrganizationNestedInput
+  }
+
   export type TicketCreateWithoutCommentsInput = {
     id?: string
     createdAt?: Date | string
@@ -13437,6 +13717,7 @@ export namespace Prisma {
     deadline: string
     bounty: number
     user: UserCreateNestedOneWithoutTicketsInput
+    organization: OrganizationCreateNestedOneWithoutTicketsInput
   }
 
   export type TicketUncheckedCreateWithoutCommentsInput = {
@@ -13449,6 +13730,7 @@ export namespace Prisma {
     deadline: string
     bounty: number
     userId: string
+    organizationId: string
   }
 
   export type TicketCreateOrConnectWithoutCommentsInput = {
@@ -13508,6 +13790,7 @@ export namespace Prisma {
     deadline?: StringFieldUpdateOperationsInput | string
     bounty?: IntFieldUpdateOperationsInput | number
     user?: UserUpdateOneRequiredWithoutTicketsNestedInput
+    organization?: OrganizationUpdateOneRequiredWithoutTicketsNestedInput
   }
 
   export type TicketUncheckedUpdateWithoutCommentsInput = {
@@ -13520,6 +13803,7 @@ export namespace Prisma {
     deadline?: StringFieldUpdateOperationsInput | string
     bounty?: IntFieldUpdateOperationsInput | number
     userId?: StringFieldUpdateOperationsInput | string
+    organizationId?: StringFieldUpdateOperationsInput | string
   }
 
   export type UserUpsertWithoutCommentsInput = {
@@ -13564,12 +13848,26 @@ export namespace Prisma {
     joinedAt?: Date | string
     isActive: boolean
     membershipRole?: $Enums.MembershipRole
+    canDeleteTicket?: boolean
+  }
+
+  export type TicketCreateManyOrganizationInput = {
+    id?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    title: string
+    content: string
+    status?: $Enums.TicketStatus
+    deadline: string
+    bounty: number
+    userId: string
   }
 
   export type MembershipUpdateWithoutOrganizationInput = {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     membershipRole?: EnumMembershipRoleFieldUpdateOperationsInput | $Enums.MembershipRole
+    canDeleteTicket?: BoolFieldUpdateOperationsInput | boolean
     user?: UserUpdateOneRequiredWithoutMembershipsNestedInput
   }
 
@@ -13578,6 +13876,7 @@ export namespace Prisma {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     membershipRole?: EnumMembershipRoleFieldUpdateOperationsInput | $Enums.MembershipRole
+    canDeleteTicket?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type MembershipUncheckedUpdateManyWithoutOrganizationInput = {
@@ -13585,6 +13884,45 @@ export namespace Prisma {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     membershipRole?: EnumMembershipRoleFieldUpdateOperationsInput | $Enums.MembershipRole
+    canDeleteTicket?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type TicketUpdateWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    title?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    status?: EnumTicketStatusFieldUpdateOperationsInput | $Enums.TicketStatus
+    deadline?: StringFieldUpdateOperationsInput | string
+    bounty?: IntFieldUpdateOperationsInput | number
+    user?: UserUpdateOneRequiredWithoutTicketsNestedInput
+    comments?: CommentUpdateManyWithoutTicketNestedInput
+  }
+
+  export type TicketUncheckedUpdateWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    title?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    status?: EnumTicketStatusFieldUpdateOperationsInput | $Enums.TicketStatus
+    deadline?: StringFieldUpdateOperationsInput | string
+    bounty?: IntFieldUpdateOperationsInput | number
+    userId?: StringFieldUpdateOperationsInput | string
+    comments?: CommentUncheckedUpdateManyWithoutTicketNestedInput
+  }
+
+  export type TicketUncheckedUpdateManyWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    title?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    status?: EnumTicketStatusFieldUpdateOperationsInput | $Enums.TicketStatus
+    deadline?: StringFieldUpdateOperationsInput | string
+    bounty?: IntFieldUpdateOperationsInput | number
+    userId?: StringFieldUpdateOperationsInput | string
   }
 
   export type SessionCreateManyUserInput = {
@@ -13609,6 +13947,7 @@ export namespace Prisma {
     joinedAt?: Date | string
     isActive: boolean
     membershipRole?: $Enums.MembershipRole
+    canDeleteTicket?: boolean
   }
 
   export type TicketCreateManyUserInput = {
@@ -13620,6 +13959,7 @@ export namespace Prisma {
     status?: $Enums.TicketStatus
     deadline: string
     bounty: number
+    organizationId: string
   }
 
   export type CommentCreateManyUserInput = {
@@ -13684,6 +14024,7 @@ export namespace Prisma {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     membershipRole?: EnumMembershipRoleFieldUpdateOperationsInput | $Enums.MembershipRole
+    canDeleteTicket?: BoolFieldUpdateOperationsInput | boolean
     organization?: OrganizationUpdateOneRequiredWithoutMembershipsNestedInput
   }
 
@@ -13692,6 +14033,7 @@ export namespace Prisma {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     membershipRole?: EnumMembershipRoleFieldUpdateOperationsInput | $Enums.MembershipRole
+    canDeleteTicket?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type MembershipUncheckedUpdateManyWithoutUserInput = {
@@ -13699,6 +14041,7 @@ export namespace Prisma {
     joinedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isActive?: BoolFieldUpdateOperationsInput | boolean
     membershipRole?: EnumMembershipRoleFieldUpdateOperationsInput | $Enums.MembershipRole
+    canDeleteTicket?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type TicketUpdateWithoutUserInput = {
@@ -13711,6 +14054,7 @@ export namespace Prisma {
     deadline?: StringFieldUpdateOperationsInput | string
     bounty?: IntFieldUpdateOperationsInput | number
     comments?: CommentUpdateManyWithoutTicketNestedInput
+    organization?: OrganizationUpdateOneRequiredWithoutTicketsNestedInput
   }
 
   export type TicketUncheckedUpdateWithoutUserInput = {
@@ -13722,6 +14066,7 @@ export namespace Prisma {
     status?: EnumTicketStatusFieldUpdateOperationsInput | $Enums.TicketStatus
     deadline?: StringFieldUpdateOperationsInput | string
     bounty?: IntFieldUpdateOperationsInput | number
+    organizationId?: StringFieldUpdateOperationsInput | string
     comments?: CommentUncheckedUpdateManyWithoutTicketNestedInput
   }
 
@@ -13734,6 +14079,7 @@ export namespace Prisma {
     status?: EnumTicketStatusFieldUpdateOperationsInput | $Enums.TicketStatus
     deadline?: StringFieldUpdateOperationsInput | string
     bounty?: IntFieldUpdateOperationsInput | number
+    organizationId?: StringFieldUpdateOperationsInput | string
   }
 
   export type CommentUpdateWithoutUserInput = {
