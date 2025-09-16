@@ -470,3 +470,53 @@ Feature contains three main parts:
   - Guard: [get-admin-or-redirect.ts](./the-road-to-next-app/src/features/membership/queries/get-admin-or-redirect.ts) restricts management to `ADMIN` role.
   - Action: [toggle-permission.ts](./the-road-to-next-app/src/features/membership/actions/toggle-permission.ts) flips a given permission (currently `canDeleteTicket`) for a membership and revalidates the memberships page.
   - UI: [membership-list.tsx](./the-road-to-next-app/src/features/membership/components/membership-list.tsx) renders a "Can Delete Ticket?" column with a [PermissionToggle](./the-road-to-next-app/src/features/membership/components/permission-toggle.tsx) control.
+
+## Invitations
+
+- Purpose: invite users by email to join an organization. Works whether the target email already has an account or not.
+
+- Prisma schema ([schema.prisma](./the-road-to-next-app/prisma/schema.prisma)):
+  - `Invitation` model with relations to `Organization` and optional `invitedByUser`.
+  - Composite primary key `@@id([email, organizationId])` and unique `tokenHash` for lookup via emailed token.
+  - `InvitationStatus` enum: `PENDING`, `ACCEPTED_WITHOUT_ACCOUNT`.
+
+- Paths ([paths.ts](./the-road-to-next-app/src/paths.ts)):
+  - `invitationsPath(organizationId)` – admin page to manage invitations.
+  - `emailInvitationPath` – public accept route base (`/email-invitation/[tokenId]`).
+
+- Create invitation
+  - Guard: [get-admin-or-redirect.ts](./the-road-to-next-app/src/features/membership/queries/get-admin-or-redirect.ts).
+  - Action: [create-invitation.ts](./the-road-to-next-app/src/features/invitation/actions/create-invitation.ts)
+    - Generates link with [generate-invitation-link.ts](./the-road-to-next-app/src/features/invitation/utils/generate-invitation-link.ts):
+      - Deletes prior invitations for the same email, creates a new `Invitation` (stores `tokenHash`).
+      - Returns URL `getBaseUrl() + emailInvitationPath + "/{tokenId}"`.
+    - Sends `app/invitation.created` event via Inngest with link payload.
+    - Revalidates `invitationsPath` and returns action state.
+  - UI: [invitation-create-button.tsx](./the-road-to-next-app/src/features/invitation/components/invitation-create-button.tsx) – modal form on the admin page.
+  - Page: [organization/[organizationId]/(admin)/invitations/page.tsx](./the-road-to-next-app/src/app/(authenticated)/organization/[organizationId]/(admin)/invitations/page.tsx)
+    renders heading and [InvitationList](./the-road-to-next-app/src/features/invitation/components/invitation-list.tsx).
+
+- Email delivery
+  - Event handler: [event-invitation-event.ts](./the-road-to-next-app/src/features/invitation/events/event-invitation-event.ts)
+    - Resolves inviting `user` and `organization` and calls sender.
+  - Sender: [send-email-invitation.tsx](./the-road-to-next-app/src/features/invitation/emails/send-email-invitation.tsx)
+    uses React Email template [email-invitation.tsx](./the-road-to-next-app/src/emails/invitation/email-invitation.tsx).
+  - Inngest route registers function: [api/inngest/route.ts](./the-road-to-next-app/src/app/api/inngest/route.ts).
+
+- Accept invitation
+  - Public route: [email-invitation/[tokenId]/page.tsx](./the-road-to-next-app/src/app/email-invitation/[tokenId]/page.tsx)
+    renders [InvitationAcceptForm](./the-road-to-next-app/src/features/invitation/components/invitation-accept-form.tsx).
+  - Action: [accept-invitation.ts](./the-road-to-next-app/src/features/invitation/actions/accept-invitation.ts)
+    - Hashes `tokenId` and finds `Invitation` by `tokenHash`.
+    - If a `User` with the invitation email exists: deletes the invitation and creates a `Membership` (role `MEMBER`, `isActive: false`).
+    - If no account exists yet: marks invitation `status = ACCEPTED_WITHOUT_ACCOUNT`.
+    - Sets a toast cookie and redirects to `signInPath`.
+  - Sign-up backfill: [sign-up.ts](./the-road-to-next-app/src/features/auth/actions/sign-up.ts)
+    collects all invitations for the new user's email, deletes them, and creates corresponding memberships.
+
+- Listing & management
+  - Query: [get-invitations.ts](./the-road-to-next-app/src/features/invitation/queries/get-invitations.ts)
+    requires admin guard and selects inviter details.
+  - UI: [invitation-list.tsx](./the-road-to-next-app/src/features/invitation/components/invitation-list.tsx) shows email, invited at, invited by with delete action.
+  - Delete: [delete-invitation.ts](./the-road-to-next-app/src/features/invitation/actions/delete-invitation.ts)
+    checks admin, deletes by composite id; button: [invitation-delete-button.tsx](./the-road-to-next-app/src/features/invitation/components/invitation-delete-button.tsx).

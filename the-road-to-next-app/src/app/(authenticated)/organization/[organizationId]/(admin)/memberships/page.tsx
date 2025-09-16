@@ -1,7 +1,9 @@
 import { Suspense } from "react";
 import Heading from "@/components/heading";
 import Spinner from "@/components/spinner";
+import { InvitationCreateButton } from "@/features/invitation/components/invitation-create-button";
 import MembershipList from "@/features/membership/components/membership-list";
+import OrganizationBreadcrumbs from "../_navigation/tabs";
 
 type MembershipsPageProps = {
   params: Promise<{
@@ -17,6 +19,8 @@ const MembershipsPage = async ({ params }: MembershipsPageProps) => {
       <Heading
         title="Memberships"
         description="Manage your organization's members"
+        tabs={<OrganizationBreadcrumbs />}
+        actions={<InvitationCreateButton organizationId={organizationId} />}
       />
 
       <Suspense fallback={<Spinner />}>

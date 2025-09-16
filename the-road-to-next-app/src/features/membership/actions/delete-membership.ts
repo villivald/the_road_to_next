@@ -45,7 +45,7 @@ export const deleteMembership = async (
     (membership) => membership.userId === user?.id,
   );
 
-  const isMyself = myMembership?.userId === user?.id;
+  const isMyself = myMembership?.userId === userId;
   const isAdmin = myMembership?.membershipRole === "ADMIN";
 
   if (!isAdmin && !isMyself) {

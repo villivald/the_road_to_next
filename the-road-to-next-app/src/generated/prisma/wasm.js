@@ -127,6 +127,16 @@ exports.Prisma.OrganizationScalarFieldEnum = {
   name: 'name'
 };
 
+exports.Prisma.InvitationScalarFieldEnum = {
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  tokenHash: 'tokenHash',
+  email: 'email',
+  organizationId: 'organizationId',
+  invitedByUserId: 'invitedByUserId',
+  status: 'status'
+};
+
 exports.Prisma.MembershipScalarFieldEnum = {
   organizationId: 'organizationId',
   userId: 'userId',
@@ -199,6 +209,11 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+exports.InvitationStatus = exports.$Enums.InvitationStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED_WITHOUT_ACCOUNT: 'ACCEPTED_WITHOUT_ACCOUNT'
+};
+
 exports.MembershipRole = exports.$Enums.MembershipRole = {
   ADMIN: 'ADMIN',
   MEMBER: 'MEMBER'
@@ -212,6 +227,7 @@ exports.TicketStatus = exports.$Enums.TicketStatus = {
 
 exports.Prisma.ModelName = {
   Organization: 'Organization',
+  Invitation: 'Invitation',
   Membership: 'Membership',
   User: 'User',
   EmailVerificationToken: 'EmailVerificationToken',
