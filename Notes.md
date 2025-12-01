@@ -520,3 +520,52 @@ Feature contains three main parts:
   - UI: [invitation-list.tsx](./the-road-to-next-app/src/features/invitation/components/invitation-list.tsx) shows email, invited at, invited by with delete action.
   - Delete: [delete-invitation.ts](./the-road-to-next-app/src/features/invitation/actions/delete-invitation.ts)
     checks admin, deletes by composite id; button: [invitation-delete-button.tsx](./the-road-to-next-app/src/features/invitation/components/invitation-delete-button.tsx).
+
+## Attachments
+
+- Purpose: allow ticket owners to attach files (images and PDFs) to tickets, stored in AWS S3.
+
+- Prisma schema ([schema.prisma](./the-road-to-next-app/prisma/schema.prisma)):
+  - `Attachment` model with `id`, `name`, `ticketId` (relation to `Ticket` with cascade delete).
+  - Index on `ticketId` for efficient queries.
+
+- AWS S3 setup:
+  - Install AWS SDK: `npm i @aws-sdk/client-s3 @aws-sdk/s3-request-presigner`
+  - Initialize S3 client in [lib/aws.ts](./the-road-to-next-app/src/lib/aws.ts) with credentials from environment variables (`AWS_ACCESS_KEY`, `AWS_SECRET_KEY`, `AWS_BUCKET_NAME`, `AWS_REGION`).
+  - Add environment variables to [environment.d.ts](./the-road-to-next-app/environment.d.ts) for TypeScript type safety.
+
+- File upload:
+  - Constants: [constants.ts](./the-road-to-next-app/src/features/attachments/constants.ts) defines `ACCEPTED` file types (images: PNG, JPEG, JPG, WebP, AVIF; PDF) and `MAX_SIZE` (4MB).
+  - Action: [create-attachments.ts](./the-road-to-next-app/src/features/attachments/actions/create-attachments.ts)
+    - Validates files (size, type, non-empty) using Zod schema.
+    - Checks ticket ownership via [is-owner.ts](./the-road-to-next-app/src/features/auth/utils/is-owner.ts).
+    - Creates attachment records in DB, uploads files to S3 using [generate-s3-key.ts](./the-road-to-next-app/src/features/attachments/utils/generate-s3-key.ts) for structured keys (`{organizationId}/{ticketId}/{filename}-{attachmentId}`).
+    - Implements rollback: on error, deletes uploaded S3 objects and DB records.
+    - Revalidates ticket page after successful upload.
+  - Form: [attachment-create-form.tsx](./the-road-to-next-app/src/features/attachments/components/attachment-create-form.tsx) uses `useActionState` hook with file input (multiple files supported).
+  - Utility: [size.ts](./the-road-to-next-app/src/features/attachments/utils/size.ts) converts bytes to MB for validation.
+
+- File download:
+  - API route: [api/aws/s3/attachments/[attachmentId]/route.ts](./the-road-to-next-app/src/app/api/aws/s3/attachments/[attachmentId]/route.ts)
+    - Requires authentication via [get-auth-or-redirect.ts](./the-road-to-next-app/src/features/auth/queries/get-auth-or-redirect.ts).
+    - Generates presigned S3 URL (5-minute expiration) using `getSignedUrl`.
+    - Fetches file and returns with `content-disposition` header for download.
+  - Path constant: [paths.ts](./the-road-to-next-app/src/paths.ts) defines `attachmentDownloadPath(attachmentId)`.
+  - Component: [attachment-item.tsx](./the-road-to-next-app/src/features/attachments/components/attachment-item.tsx) renders attachment name with download link.
+
+- File deletion:
+  - Action: [delete-attachment.ts](./the-road-to-next-app/src/features/attachments/actions/delete-attachment.ts)
+    - Checks ticket ownership before deletion.
+    - Deletes attachment record from DB.
+    - Triggers Inngest event `app/attachment.deleted` with attachment metadata.
+  - Event handler: [event-attachment-deleted.ts](./the-road-to-next-app/src/features/attachments/events/event-attachment-deleted.ts)
+    - Registered in [api/inngest/route.ts](./the-road-to-next-app/src/app/api/inngest/route.ts).
+    - Deletes file from S3 using the same key generation logic.
+  - UI: [attachment-delete-button.tsx](./the-road-to-next-app/src/features/attachments/components/attachment-delete-button.tsx) uses [confirm-dialog.tsx](./the-road-to-next-app/src/components/confirm-dialog.tsx) for confirmation, refreshes page on success.
+
+- Query:
+  - [get-attachments.ts](./the-road-to-next-app/src/features/attachments/queries/get-attachments.ts) fetches all attachments for a ticket.
+
+- UI integration:
+  - Main component: [attachments.tsx](./the-road-to-next-app/src/features/attachments/components/attachments.tsx) renders list of attachments and upload form (only for ticket owners).
+  - Used in ticket detail page: [tickets/[ticketId]/page.tsx](./the-road-to-next-app/src/app/(authenticated)/tickets/[ticketId]/page.tsx) passes `isOwner` prop to control upload/delete visibility.

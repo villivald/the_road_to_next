@@ -27,6 +27,7 @@ import { TicketMoreMenu } from "./ticket-more-menu";
 type TicketItemProps = {
   ticket: TicketWithMetadata;
   isDetail?: boolean;
+  attachments?: React.ReactNode;
   paginatedComments?: PaginatedData<CommentWithMetadata>;
 };
 
@@ -34,6 +35,7 @@ const TicketItem = async ({
   ticket,
   isDetail,
   paginatedComments,
+  attachments,
 }: TicketItemProps) => {
   const { user } = await getAuth();
   const isTicketOwner = isOwner(user, ticket);
@@ -112,6 +114,8 @@ const TicketItem = async ({
           )}
         </div>
       </div>
+
+      {attachments}
 
       {isDetail && paginatedComments ? (
         <Comments

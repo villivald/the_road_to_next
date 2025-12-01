@@ -27,3 +27,6 @@ export const invitationsPath = (organizationId: string) =>
 export const onboardingPath = "/onboarding";
 export const selectActiveOrganizationPath =
   "/onboarding/select-active-organization";
+
+export const attachmentDownloadPath = (attachmentId: string) =>
+  `/api/aws/s3/attachments/${attachmentId}`;

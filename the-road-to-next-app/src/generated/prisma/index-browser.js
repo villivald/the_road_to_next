@@ -187,6 +187,12 @@ exports.Prisma.TicketScalarFieldEnum = {
   organizationId: 'organizationId'
 };
 
+exports.Prisma.AttachmentScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  ticketId: 'ticketId'
+};
+
 exports.Prisma.CommentScalarFieldEnum = {
   id: 'id',
   createdAt: 'createdAt',
@@ -234,6 +240,7 @@ exports.Prisma.ModelName = {
   PasswordResetToken: 'PasswordResetToken',
   Session: 'Session',
   Ticket: 'Ticket',
+  Attachment: 'Attachment',
   Comment: 'Comment'
 };
 
