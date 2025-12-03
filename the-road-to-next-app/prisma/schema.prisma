@@ -46,17 +46,17 @@ enum InvitationStatus {
 }
 
 model Membership {
-  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String
   user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String
 
-  joinedAt       DateTime @default(now())
+  joinedAt       DateTime       @default(now())
   isActive       Boolean
   membershipRole MembershipRole @default(MEMBER)
 
   // permissions
-  canDeleteTicket Boolean @default(true)
+  canDeleteTicket Boolean       @default(true)
 
   @@id(name: "membershipId", [organizationId, userId ])
   @@index([userId])
@@ -132,22 +132,28 @@ model Ticket {
 }
 
 model Attachment {
-  id         String         @id @default(cuid())
+  id         String           @id @default(cuid())
   name       String
-  ticket     Ticket         @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  ticketId   String
+
+  entity     AttachmentEntity
+  ticket     Ticket?          @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId   String?
+  comment    Comment?         @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  commentId  String?
 
   @@index([ticketId])
+  @@index([commentId])
 }
 
 model Comment {
-  id         String         @id @default(cuid())
-  createdAt  DateTime       @default(now())
-  content    String         @db.VarChar(1024)
-  ticket     Ticket         @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  ticketId   String
-  user       User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
-  userId     String?
+  id          String         @id @default(cuid())
+  createdAt   DateTime       @default(now())
+  content     String         @db.VarChar(1024)
+  ticket      Ticket         @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId    String
+  user        User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId      String?
+  attachments Attachment[]
 
   @@index([ticketId])
   @@index([userId])
@@ -157,4 +163,9 @@ enum TicketStatus {
   OPEN
   IN_PROGRESS
   DONE
+}
+
+enum AttachmentEntity {
+  TICKET
+  COMMENT
 }

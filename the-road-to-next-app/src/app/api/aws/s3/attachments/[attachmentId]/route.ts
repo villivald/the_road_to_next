@@ -2,6 +2,7 @@ import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { NextRequest } from "next/server";
 import { generateS3Key } from "@/features/attachments/utils/generate-s3-key";
+import { getOrganizationIdByAttachment } from "@/features/attachments/utils/helper";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import { s3 } from "@/lib/aws";
 import { prisma } from "@/lib/prisma";
@@ -20,16 +21,31 @@ export async function GET(
     },
     include: {
       ticket: true,
+      comment: {
+        include: { ticket: true },
+      },
     },
   });
+
+  const subject = attachment.comment ?? attachment.ticket;
+
+  if (!subject) {
+    throw new Error("Subject not found");
+  }
+
+  const organizationId = getOrganizationIdByAttachment(
+    attachment.entity,
+    subject,
+  );
 
   const presignedUrl = await getSignedUrl(
     s3,
     new GetObjectCommand({
       Bucket: process.env.AWS_BUCKET_NAME,
       Key: generateS3Key({
-        organizationId: attachment.ticket.organizationId,
-        ticketId: attachment.ticket.id,
+        organizationId,
+        entityId: subject.id,
+        entity: attachment.entity,
         filename: attachment.name,
         attachmentId: attachment.id,
       }),

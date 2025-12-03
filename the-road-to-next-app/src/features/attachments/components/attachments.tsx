@@ -1,16 +1,18 @@
 import { CardCompact } from "@/components/card-compact";
+import { AttachmentEntity } from "@/generated/prisma";
 import { getAttachments } from "../queries/get-attachments";
 import { AttachmentCreateForm } from "./attachment-create-form";
 import { AttachmentDeleteButton } from "./attachment-delete-button";
-import { AttachmentItem } from "./attachment-item";
+import { AttachmentList } from "./attachment-list";
 
 type AttachmentsProps = {
-  ticketId: string;
+  entityId: string;
+  entity: AttachmentEntity;
   isOwner: boolean;
 };
 
-const Attachments = async ({ ticketId, isOwner }: AttachmentsProps) => {
-  const attachments = await getAttachments(ticketId);
+const Attachments = async ({ entityId, entity, isOwner }: AttachmentsProps) => {
+  const attachments = await getAttachments(entityId, entity);
 
   return (
     <CardCompact
@@ -18,23 +20,18 @@ const Attachments = async ({ ticketId, isOwner }: AttachmentsProps) => {
       description="Attached images or PDFs"
       content={
         <>
-          <div className="mx-2 mb-4 flex flex-col gap-y-2">
-            {attachments.map((attachment) => (
-              <AttachmentItem
-                key={attachment.id}
-                attachment={attachment}
-                buttons={[
-                  isOwner ? (
-                    <AttachmentDeleteButton key="0" id={attachment.id} />
-                  ) : (
-                    []
-                  ),
-                ]}
-              />
-            ))}
-          </div>
+          <AttachmentList
+            attachments={attachments}
+            buttons={(attachmentId: string) => [
+              ...(isOwner
+                ? [<AttachmentDeleteButton key="0" id={attachmentId} />]
+                : []),
+            ]}
+          />
 
-          {isOwner && <AttachmentCreateForm ticketId={ticketId} />}
+          {isOwner && (
+            <AttachmentCreateForm entityId={entityId} entity={entity} />
+          )}
         </>
       }
     />

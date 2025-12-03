@@ -190,7 +190,9 @@ exports.Prisma.TicketScalarFieldEnum = {
 exports.Prisma.AttachmentScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  ticketId: 'ticketId'
+  entity: 'entity',
+  ticketId: 'ticketId',
+  commentId: 'commentId'
 };
 
 exports.Prisma.CommentScalarFieldEnum = {
@@ -229,6 +231,11 @@ exports.TicketStatus = exports.$Enums.TicketStatus = {
   OPEN: 'OPEN',
   IN_PROGRESS: 'IN_PROGRESS',
   DONE: 'DONE'
+};
+
+exports.AttachmentEntity = exports.$Enums.AttachmentEntity = {
+  TICKET: 'TICKET',
+  COMMENT: 'COMMENT'
 };
 
 exports.Prisma.ModelName = {

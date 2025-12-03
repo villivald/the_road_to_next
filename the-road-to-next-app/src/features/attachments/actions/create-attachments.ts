@@ -10,11 +10,14 @@ import {
 } from "@/components/form/utils/to-action-state";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import { isOwner } from "@/features/auth/utils/is-owner";
+import { AttachmentEntity } from "@/generated/prisma";
 import { s3 } from "@/lib/aws";
 import { prisma } from "@/lib/prisma";
 import { ticketPath } from "@/paths";
 import { ACCEPTED, MAX_SIZE } from "../constants";
+import { isComment, isTicket } from "../types";
 import { generateS3Key } from "../utils/generate-s3-key";
+import { getOrganizationIdByAttachment } from "../utils/helper";
 import { sizeInMb } from "../utils/size";
 
 const createAttachmentsSchema = z.object({
@@ -33,25 +36,42 @@ const createAttachmentsSchema = z.object({
     .refine((files) => files.length !== 0, "File is required"),
 });
 
+type CreateAttachmentArgs = {
+  entityId: string;
+  entity: AttachmentEntity;
+};
+
 export const createAttachments = async (
-  ticketId: string,
+  { entityId, entity }: CreateAttachmentArgs,
   _actionState: ActionState,
   formData: FormData,
 ) => {
   const { user } = await getAuthOrRedirect();
 
-  const ticket = await prisma.ticket.findUnique({
-    where: {
-      id: ticketId,
-    },
-  });
+  let subject;
 
-  if (!ticket) {
-    return toActionState("ERROR", "Ticket not found");
+  switch (entity) {
+    case "TICKET":
+      subject = await prisma.ticket.findUnique({
+        where: { id: entityId },
+      });
+      break;
+    case "COMMENT":
+      subject = await prisma.comment.findUnique({
+        where: { id: entityId },
+        include: { ticket: true },
+      });
+      break;
+    default:
+      return toActionState("ERROR", "Subject not found");
   }
 
-  if (!isOwner(user, ticket)) {
-    return toActionState("ERROR", "Not the owner of this ticket");
+  if (!subject) {
+    return toActionState("ERROR", "Subject not found");
+  }
+
+  if (!isOwner(user, subject)) {
+    return toActionState("ERROR", "Not the owner of this subject");
   }
 
   const attachments = [];
@@ -67,14 +87,32 @@ export const createAttachments = async (
 
       const attachment = await prisma.attachment.create({
         data: {
-          ticketId: ticket.id,
           name: file.name,
+          ...(entity === "TICKET" ? { ticketId: entityId } : {}),
+          ...(entity === "COMMENT" ? { commentId: entityId } : {}),
+          entity,
         },
       });
 
+      let organizationId = getOrganizationIdByAttachment(entity, subject);
+
+      switch (entity) {
+        case "TICKET":
+          if (isTicket(subject)) {
+            organizationId = subject.organizationId;
+          }
+          break;
+        case "COMMENT":
+          if (isComment(subject)) {
+            organizationId = subject.ticket.organizationId;
+          }
+          break;
+      }
+
       const key = generateS3Key({
-        organizationId: ticket.organizationId,
-        ticketId,
+        organizationId,
+        entityId,
+        entity,
         filename: file.name,
         attachmentId: attachment.id,
       });
@@ -117,7 +155,18 @@ export const createAttachments = async (
     return fromErrorToActionState(error);
   }
 
-  revalidatePath(ticketPath(ticketId));
+  switch (entity) {
+    case "TICKET":
+      if (isTicket(subject)) {
+        revalidatePath(ticketPath(subject.id));
+      }
+      break;
+    case "COMMENT":
+      if (isComment(subject)) {
+        revalidatePath(ticketPath(subject.ticket.id));
+      }
+      break;
+  }
 
   return toActionState("SUCCESS", "Attachment(s) uploaded");
 };
