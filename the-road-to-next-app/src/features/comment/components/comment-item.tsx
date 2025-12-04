@@ -14,7 +14,6 @@ type CommentItemProps = {
   sections: { label: string; content: React.ReactNode }[];
   onDeleteComment?: (id: string) => void;
   onUpdateComment?: (updatedComment: CommentWithMetadata) => void;
-  onCreateAttachment?: (commentId: string) => void;
 };
 
 const CommentItem = ({
@@ -23,7 +22,6 @@ const CommentItem = ({
   sections,
   onDeleteComment,
   onUpdateComment,
-  onCreateAttachment,
 }: CommentItemProps) => {
   const [isInEditMode, setIsInEditMode] = useState("");
 
@@ -66,7 +64,6 @@ const CommentItem = ({
             id={comment.id}
             setIsInEditMode={setIsInEditMode}
             onDeleteComment={onDeleteComment}
-            onCreateAttachment={onCreateAttachment}
           />
         ) : null}
       </div>

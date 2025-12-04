@@ -123,7 +123,6 @@ const Comments = ({ ticketId, paginatedComments, user }: CommentsProps) => {
               isOwner={isOwner(user, comment)}
               onDeleteComment={handleInvalidateQueries}
               onUpdateComment={handleInvalidateQueries}
-              onCreateAttachment={handleInvalidateQueries}
             />
           );
         })}

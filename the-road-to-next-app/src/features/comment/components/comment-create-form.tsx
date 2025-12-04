@@ -8,7 +8,9 @@ import {
   ActionState,
   EMPTY_ACTION_STATE,
 } from "@/components/form/utils/to-action-state";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ACCEPTED } from "@/features/attachments/constants";
 import { createComment } from "../actions/create-comment";
 import { CommentWithMetadata } from "../types";
 
@@ -34,6 +36,15 @@ const CommentCreateForm = ({
     <Form action={action} actionState={actionState} onSuccess={handleSuccess}>
       <Textarea name="content" placeholder="Write your comment here..." />
       <FieldError name="content" actionState={actionState} />
+
+      <Input
+        name="files"
+        id="files"
+        type="file"
+        multiple
+        accept={ACCEPTED.join(",")}
+      />
+      <FieldError name="files" actionState={actionState} />
 
       <SubmitButton label="Comment" />
     </Form>
