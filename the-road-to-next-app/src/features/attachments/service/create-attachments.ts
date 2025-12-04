@@ -1,7 +1,7 @@
 import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { AttachmentEntity } from "@/generated/prisma";
 import { s3 } from "@/lib/aws";
-import { prisma } from "@/lib/prisma";
+import * as attachmentData from "../data";
 import { AttachmentSubject, isComment, isTicket } from "../types";
 import { generateS3Key } from "../utils/generate-s3-key";
 import { getOrganizationIdByAttachment } from "../utils/helper";
@@ -26,13 +26,10 @@ export const createAttachments = async ({
     for (const file of files) {
       const buffer = await Buffer.from(await file.arrayBuffer());
 
-      const attachment = await prisma.attachment.create({
-        data: {
-          name: file.name,
-          ...(entity === "TICKET" ? { ticketId: entityId } : {}),
-          ...(entity === "COMMENT" ? { commentId: entityId } : {}),
-          entity,
-        },
+      const attachment = await attachmentData.createAttachment({
+        name: file.name,
+        entity,
+        entityId,
       });
 
       let organizationId = getOrganizationIdByAttachment(entity, subject);
@@ -87,9 +84,7 @@ export const createAttachments = async ({
     );
 
     // Rollback DB entries
-    await Promise.all(
-      attachments.map((id) => prisma.attachment.deleteMany({ where: { id } })),
-    );
+    attachmentData.deleteAttachment({ attachments });
 
     throw error;
   }
