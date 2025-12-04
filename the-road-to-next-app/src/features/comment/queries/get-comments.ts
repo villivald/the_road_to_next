@@ -1,5 +1,7 @@
 "use server";
 
+import { getAuth } from "@/features/auth/actions/get-auth";
+import { isOwner } from "@/features/auth/utils/is-owner";
 import { prisma } from "@/lib/prisma";
 
 export const getComments = async (
@@ -9,6 +11,8 @@ export const getComments = async (
     createdAt: number;
   },
 ) => {
+  const { user } = await getAuth();
+
   const where = {
     ticketId,
   };
@@ -33,6 +37,7 @@ export const getComments = async (
             username: true,
           },
         },
+        attachments: true,
       },
       orderBy: [
         {
@@ -55,7 +60,10 @@ export const getComments = async (
   const lastComment = comments.at(-1);
 
   return {
-    list: comments,
+    list: comments.map((comment) => ({
+      ...comment,
+      isOwner: isOwner(user, comment),
+    })),
     metadata: {
       count,
       hasNextPage,

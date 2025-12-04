@@ -3,22 +3,27 @@
 import { format } from "date-fns";
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { CommentWithMetadata } from "../types";
 import { CommentButtons } from "./comment-buttons";
 import { CommentUpdateForm } from "./comment-update-form";
 
 type CommentItemProps = {
   comment: CommentWithMetadata;
-  isOwner?: boolean;
+  isOwner: boolean;
+  sections: { label: string; content: React.ReactNode }[];
   onDeleteComment?: (id: string) => void;
   onUpdateComment?: (updatedComment: CommentWithMetadata) => void;
+  onCreateAttachment?: (commentId: string) => void;
 };
 
 const CommentItem = ({
   comment,
   isOwner,
+  sections,
   onDeleteComment,
   onUpdateComment,
+  onCreateAttachment,
 }: CommentItemProps) => {
   const [isInEditMode, setIsInEditMode] = useState("");
 
@@ -45,6 +50,14 @@ const CommentItem = ({
           </p>
         </div>
         <p className="whitespace-pre-line">{comment.content}</p>
+
+        {sections.map((section) => (
+          <div key={section.label} className="mt-2 space-y-2">
+            <Separator />
+            <h4 className="text-sm text-muted-foreground">{section.label}</h4>
+            <div>{section.content}</div>
+          </div>
+        ))}
       </Card>
 
       <div className="flex flex-col gap-y-1">
@@ -53,6 +66,7 @@ const CommentItem = ({
             id={comment.id}
             setIsInEditMode={setIsInEditMode}
             onDeleteComment={onDeleteComment}
+            onCreateAttachment={onCreateAttachment}
           />
         ) : null}
       </div>

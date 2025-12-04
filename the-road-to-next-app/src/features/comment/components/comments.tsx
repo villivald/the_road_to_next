@@ -5,6 +5,8 @@ import { useState } from "react";
 import { CardCompact } from "@/components/card-compact";
 import { fromErrorToActionState } from "@/components/form/utils/to-action-state";
 import { Button } from "@/components/ui/button";
+import { AttachmentDeleteButton } from "@/features/attachments/components/attachment-delete-button";
+import { AttachmentList } from "@/features/attachments/components/attachment-list";
 import { isOwner } from "@/features/auth/utils/is-owner";
 import { User } from "@/generated/prisma";
 import { PaginatedData } from "@/types/pagination";
@@ -88,15 +90,43 @@ const Comments = ({ ticketId, paginatedComments, user }: CommentsProps) => {
       />
 
       <div className="ml-8 flex flex-col gap-y-2">
-        {comments.map((comment) => (
-          <CommentItem
-            key={comment.id}
-            comment={comment}
-            isOwner={isOwner(user, comment)}
-            onDeleteComment={handleInvalidateQueries}
-            onUpdateComment={handleInvalidateQueries}
-          />
-        ))}
+        {comments.map((comment) => {
+          const sections = [];
+
+          if (comment.attachments.length) {
+            sections.push({
+              label: "Attachments",
+              content: (
+                <AttachmentList
+                  attachments={comment.attachments}
+                  buttons={(attachmentId) => [
+                    ...(comment.isOwner
+                      ? [
+                          <AttachmentDeleteButton
+                            key="0"
+                            id={attachmentId}
+                            onDeleteAttachment={handleInvalidateQueries}
+                          />,
+                        ]
+                      : []),
+                  ]}
+                />
+              ),
+            });
+          }
+
+          return (
+            <CommentItem
+              key={comment.id}
+              comment={comment}
+              sections={sections}
+              isOwner={isOwner(user, comment)}
+              onDeleteComment={handleInvalidateQueries}
+              onUpdateComment={handleInvalidateQueries}
+              onCreateAttachment={handleInvalidateQueries}
+            />
+          );
+        })}
       </div>
 
       {hasNextPage && (
