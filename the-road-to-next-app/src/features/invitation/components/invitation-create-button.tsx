@@ -31,7 +31,7 @@ const InvitationCreateButton = ({
   const [open, setOpen] = useState(false);
 
   const [actionState, action] = useActionState(
-    createInvitation.bind(null, organizationId),
+    createInvitation,
     EMPTY_ACTION_STATE,
   );
 
@@ -55,6 +55,7 @@ const InvitationCreateButton = ({
           </DialogDescription>
         </DialogHeader>
         <Form action={action} actionState={actionState} onSuccess={handleClose}>
+          <input type="hidden" name="organizationId" value={organizationId} />
           <div className="grid gap-4 py-4">
             <div>
               <div className="grid grid-cols-4 items-center gap-4">

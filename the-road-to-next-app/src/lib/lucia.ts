@@ -28,7 +28,9 @@ export const validateSession = async (sessionToken: string) => {
       id: sessionId,
     },
     include: {
-      user: true,
+      user: {
+        select: { id: true, username: true, email: true, emailVerified: true },
+      },
     },
   });
 
@@ -42,7 +44,7 @@ export const validateSession = async (sessionToken: string) => {
   // if the session is expired, delete it
   if (Date.now() >= session.expiresAt.getTime()) {
     // or your ORM of choice
-    await prisma.session.delete({
+    await prisma.session.deleteMany({
       where: {
         id: sessionId,
       },
@@ -55,7 +57,7 @@ export const validateSession = async (sessionToken: string) => {
   if (Date.now() >= session.expiresAt.getTime() - SESSION_REFRESH_INTERVAL_MS) {
     session.expiresAt = new Date(Date.now() + SESSION_MAX_DURATION_MS);
 
-    await prisma.session.update({
+    const refreshed = await prisma.session.updateMany({
       where: {
         id: sessionId,
       },
@@ -63,13 +65,14 @@ export const validateSession = async (sessionToken: string) => {
         expiresAt: session.expiresAt,
       },
     });
+    if (refreshed.count === 0) return { session: null, user: null };
   }
 
   return { session, user };
 };
 
 export const invalidateSession = async (sessionId: string) => {
-  await prisma.session.delete({
+  await prisma.session.deleteMany({
     where: {
       id: sessionId,
     },

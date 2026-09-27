@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { createOrganization } from "../actions/create-organization";
 
 const OrganizationCreateForm = () => {
-  // @ts-expect-error-next-line
   const [actionState, action] = useActionState(
     createOrganization,
     EMPTY_ACTION_STATE,
@@ -19,6 +18,7 @@ const OrganizationCreateForm = () => {
     <Form action={action} actionState={actionState}>
       <Input
         name="name"
+        aria-label="Enter organization name"
         placeholder="Enter organization name"
         defaultValue={actionState.payload?.get("name") as string}
       />

@@ -19,10 +19,10 @@ const createCommentSchema = z.object({
 });
 
 export const createComment = async (
-  ticketId: string,
   _actionState: ActionState,
   formData: FormData,
 ) => {
+  const ticketId = formData.get("ticketId")?.toString() ?? "";
   const { user } = await getAuthOrRedirect();
 
   let comment;

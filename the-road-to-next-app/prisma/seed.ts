@@ -1,7 +1,5 @@
 import { hash } from "@node-rs/argon2";
-import { PrismaClient } from "@/generated/prisma";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 const users = [
   {
@@ -53,6 +51,12 @@ const comments = [
 ];
 
 const seed = async () => {
+  if (!process.argv.includes("--reset")) {
+    throw new Error(
+      "Seed deletes application data. Use npm run prisma-seed -- --reset with a development DATABASE_URL.",
+    );
+  }
+
   const t0 = performance.now();
 
   await prisma.comment.deleteMany();
@@ -113,4 +117,9 @@ const seed = async () => {
   console.log(`Seeded ${tickets.length} tickets in ${t1 - t0} ms`);
 };
 
-seed();
+seed()
+  .catch((error: unknown) => {
+    console.error(error);
+    process.exitCode = 1;
+  })
+  .finally(() => prisma.$disconnect());

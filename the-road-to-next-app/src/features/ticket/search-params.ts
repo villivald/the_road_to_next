@@ -2,6 +2,7 @@ import {
   createSearchParamsCache,
   parseAsInteger,
   parseAsString,
+  parseAsStringLiteral,
 } from "nuqs/server";
 
 export const searchParser = parseAsString.withDefault("").withOptions({
@@ -10,8 +11,12 @@ export const searchParser = parseAsString.withDefault("").withOptions({
 });
 
 export const sortParser = {
-  sortKey: parseAsString.withDefault("createdAt"),
-  sortValue: parseAsString.withDefault("desc"),
+  sortKey: parseAsStringLiteral([
+    "createdAt",
+    "bounty",
+    "title",
+  ] as const).withDefault("createdAt"),
+  sortValue: parseAsStringLiteral(["asc", "desc"] as const).withDefault("desc"),
 };
 
 export const sortOptions = {

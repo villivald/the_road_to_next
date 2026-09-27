@@ -24,7 +24,7 @@ const CommentCreateForm = ({
   onCreateComment,
 }: CommentCreateFormProps) => {
   const [actionState, action] = useActionState(
-    createComment.bind(null, ticketId),
+    createComment,
     EMPTY_ACTION_STATE,
   );
 
@@ -34,7 +34,12 @@ const CommentCreateForm = ({
 
   return (
     <Form action={action} actionState={actionState} onSuccess={handleSuccess}>
-      <Textarea name="content" placeholder="Write your comment here..." />
+      <input type="hidden" name="ticketId" value={ticketId} />
+      <Textarea
+        name="content"
+        aria-label="Write your comment here..."
+        placeholder="Write your comment here..."
+      />
       <FieldError name="content" actionState={actionState} />
 
       <Input

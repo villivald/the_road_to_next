@@ -8,7 +8,7 @@ import { TicketUpsertForm } from "@/features/ticket/components/ticket-upsert-for
 import { searchParamsCache } from "@/features/ticket/search-params";
 
 type TicketsByOrganizationProps = {
-  searchParams: SearchParams;
+  searchParams: Promise<SearchParams>;
 };
 
 const TicketsByOrganization = async ({
@@ -31,7 +31,7 @@ const TicketsByOrganization = async ({
       <Suspense fallback={<Spinner />}>
         <TicketList
           byOrganization
-          searchParams={await searchParamsCache.parse(searchParams)}
+          searchParams={await searchParamsCache.parse(await searchParams)}
         />
       </Suspense>
     </div>

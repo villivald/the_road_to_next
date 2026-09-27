@@ -1,4 +1,4 @@
-import { Prisma } from "@/generated/prisma";
+import { Prisma } from "@/generated/prisma/client";
 
 type AttachmentSubjectTicket = Prisma.TicketGetPayload<{
   select: {
@@ -20,8 +20,7 @@ type AttachmentSubjectComment = Prisma.CommentGetPayload<{
 }>;
 
 export type AttachmentSubject =
-  | AttachmentSubjectTicket
-  | AttachmentSubjectComment;
+  AttachmentSubjectTicket | AttachmentSubjectComment;
 
 export const isTicket = (
   subject: AttachmentSubject,

@@ -6,7 +6,7 @@ import {
 } from "@/components/form/utils/to-action-state";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import { isOwner } from "@/features/auth/utils/is-owner";
-import { inngest } from "@/lib/inngest";
+import { attachmentDeleted, inngest } from "@/lib/inngest";
 import { prisma } from "@/lib/prisma";
 import { getOrganizationIdByAttachment } from "../utils/helper";
 
@@ -45,16 +45,15 @@ export const deleteAttachment = async (id: string) => {
       subject,
     );
 
-    await inngest.send({
-      name: "app/attachment.deleted",
-      data: {
+    await inngest.send(
+      attachmentDeleted.create({
         organizationId,
         entityId: subject.id,
         entity: attachment.entity,
         filename: attachment.name,
         attachmentId: id,
-      },
-    });
+      }),
+    );
   } catch (error) {
     return fromErrorToActionState(error);
   }

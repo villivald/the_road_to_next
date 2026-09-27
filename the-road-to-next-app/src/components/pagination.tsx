@@ -24,7 +24,7 @@ const Pagination = ({
   onPagination,
   paginatedTicketMetadata: { count, hasNextPage },
 }: PaginationProps) => {
-  const startOffset = pagination.page * pagination.size + 1;
+  const startOffset = count === 0 ? 0 : pagination.page * pagination.size + 1;
   const endOffset = startOffset - 1 + pagination.size;
   const actualEndOffset = Math.min(endOffset, count);
 
@@ -70,11 +70,8 @@ const Pagination = ({
   );
 
   const sizeButton = (
-    <Select
-      defaultValue={pagination.size.toString()}
-      onValueChange={handleChangeSize}
-    >
-      <SelectTrigger className="max-h-[32px]">
+    <Select value={pagination.size.toString()} onValueChange={handleChangeSize}>
+      <SelectTrigger aria-label="Tickets per page" className="max-h-[32px]">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

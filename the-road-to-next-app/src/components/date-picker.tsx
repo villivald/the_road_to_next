@@ -1,6 +1,6 @@
 "use client";
 
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useImperativeHandle, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,7 @@ const DatePicker = ({
   imperativeHandleRef,
 }: DatePickerProps) => {
   const [date, setDate] = useState<Date | undefined>(
-    defaultValue ? new Date(defaultValue) : new Date(),
+    defaultValue ? parseISO(defaultValue) : new Date(),
   );
 
   useImperativeHandle(imperativeHandleRef, () => ({
@@ -51,6 +51,7 @@ const DatePicker = ({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger className="w-full" id={id} asChild>
         <Button
+          type="button"
           variant={"outline"}
           className="justify-start text-left font-normal"
         >
@@ -64,7 +65,7 @@ const DatePicker = ({
           mode="single"
           selected={date}
           onSelect={handleSelect}
-          initialFocus
+          autoFocus
         />
       </PopoverContent>
     </Popover>

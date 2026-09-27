@@ -17,7 +17,7 @@ import { setSessionCookie } from "../utils/session-cookie";
 import { validateEmailVerificationCode } from "../utils/validate-email-verification-code";
 
 const emailVerificationSchema = z.object({
-  code: z.string().length(8, "Code must be exactly 6 characters long"),
+  code: z.string().length(8, "Code must be exactly 8 characters long"),
 });
 
 export const emailVerification = async (
@@ -34,8 +34,6 @@ export const emailVerification = async (
     const { code } = emailVerificationSchema.parse(
       Object.fromEntries(formData),
     );
-
-    console.log(code);
 
     const validCode = await validateEmailVerificationCode(
       user.id,
@@ -70,6 +68,6 @@ export const emailVerification = async (
     return fromErrorToActionState(error, formData);
   }
 
-  await setCookieByKey("toast", "Emil verified successfully");
+  await setCookieByKey("toast", "Email verified successfully");
   redirect(ticketsPath);
 };

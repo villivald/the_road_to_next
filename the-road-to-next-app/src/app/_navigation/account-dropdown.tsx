@@ -10,11 +10,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { signOut } from "@/features/auth/actions/sign-out";
-import { User } from "@/generated/prisma";
+import type { AuthUser } from "@/features/auth/types";
 import { accountPasswordPath, accountProfilePath } from "@/paths";
 
 type AccountDropdownProps = {
-  user: User;
+  user: AuthUser;
 };
 
 const AccountDropdown = ({ user }: AccountDropdownProps) => {

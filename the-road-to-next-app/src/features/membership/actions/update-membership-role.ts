@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { toActionState } from "@/components/form/utils/to-action-state";
-import { MembershipRole } from "@/generated/prisma";
+import { MembershipRole } from "@/generated/prisma/browser";
 import { prisma } from "@/lib/prisma";
 import { membershipsPath } from "@/paths";
 import { getAdminOrRedirect } from "../queries/get-admin-or-redirect";

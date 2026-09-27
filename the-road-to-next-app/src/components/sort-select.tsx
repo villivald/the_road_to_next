@@ -9,14 +9,14 @@ import {
 } from "./ui/select";
 
 export type SortSelectOption = {
-  sortKey: string;
-  sortValue: string;
+  sortKey: "createdAt" | "bounty" | "title";
+  sortValue: "asc" | "desc";
   label: string;
 };
 
 type SortObject = {
-  sortKey: string;
-  sortValue: string;
+  sortKey: "createdAt" | "bounty" | "title";
+  sortValue: "asc" | "desc";
 };
 
 type SortSelectProps = {
@@ -29,12 +29,18 @@ const SortSelect = ({ value, options, onChange }: SortSelectProps) => {
   const handleSort = (compositeKey: string) => {
     const [sortKey, sortValue] = compositeKey.split("_");
 
-    onChange({ sortKey, sortValue });
+    if (
+      (sortKey === "createdAt" ||
+        sortKey === "bounty" ||
+        sortKey === "title") &&
+      (sortValue === "asc" || sortValue === "desc")
+    )
+      onChange({ sortKey, sortValue });
   };
 
   return (
     <Select
-      defaultValue={value.sortKey + "_" + value.sortValue}
+      value={`${value.sortKey}_${value.sortValue}`}
       onValueChange={handleSort}
     >
       <SelectTrigger>
@@ -43,8 +49,8 @@ const SortSelect = ({ value, options, onChange }: SortSelectProps) => {
       <SelectContent>
         {options.map((option) => (
           <SelectItem
-            key={option.sortKey + option.sortValue}
-            value={option.sortKey + "_" + option.sortValue}
+            key={`${option.sortKey}_${option.sortValue}`}
+            value={`${option.sortKey}_${option.sortValue}`}
           >
             {option.label}
           </SelectItem>

@@ -41,7 +41,7 @@ export const createOrganization = async (
         },
       });
 
-      await prisma.membership.updateMany({
+      await tx.membership.updateMany({
         where: {
           userId: user.id,
           organizationId: {

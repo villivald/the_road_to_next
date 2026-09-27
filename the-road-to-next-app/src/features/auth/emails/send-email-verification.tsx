@@ -7,7 +7,7 @@ export const sendEmailVerification = async (
   verificationCode: string,
 ) => {
   return await resend.emails.send({
-    from: "no-reply@create-react-app.com",
+    from: process.env.EMAIL_FROM ?? "TicketBounty <onboarding@resend.dev>",
     to: email,
     subject: "Email Verification",
     react: <EmailVerification toName={username} code={verificationCode} />,

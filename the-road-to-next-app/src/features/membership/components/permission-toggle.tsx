@@ -21,16 +21,15 @@ const PermissionToggle = ({
   permissionValue,
 }: PermissionToggleProps) => {
   const [actionState, action] = useActionState(
-    togglePermission.bind(null, {
-      userId,
-      organizationId,
-      permissionKey,
-    }),
+    togglePermission,
     EMPTY_ACTION_STATE,
   );
 
   return (
     <Form action={action} actionState={actionState}>
+      <input type="hidden" name="userId" value={userId} />
+      <input type="hidden" name="organizationId" value={organizationId} />
+      <input type="hidden" name="permissionKey" value={permissionKey} />
       <SubmitButton
         icon={permissionValue ? <CheckIcon /> : <BanIcon />}
         size="icon"

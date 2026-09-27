@@ -1,4 +1,4 @@
-import { AttachmentEntity } from "@/generated/prisma";
+import { AttachmentEntity } from "@/generated/prisma/browser";
 
 type GenerateKeyArgs = {
   organizationId: string;

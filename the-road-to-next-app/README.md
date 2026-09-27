@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Run locally
 
-## Getting Started
-
-First, run the development server:
+Requires Node.js 24, npm, and PostgreSQL. Docker Compose can run PostgreSQL for you. Run these commands from `the-road-to-next-app`; skip `cp` if `.env` already exists:
 
 ```bash
+nvm use
+cp .env.example .env
+npm ci
+docker compose up -d --wait
+npm run db:push
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+If `.env` already exists, add any missing variables from `.env.example`. Set `DATABASE_URL` and `DIRECT_URL` to your own PostgreSQL instance if you are not using Docker. Keep `.env` private. `db:push` changes the configured database schema, so use a development database.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Start Inngest in another terminal using the command below. The app's `.env` must contain `INNGEST_DEV=1` for local jobs; restart `npm run dev` after changing `.env`. Email delivery needs `RESEND_API_KEY` and `EMAIL_FROM`; attachments need the `AWS_*` settings shown in `.env.example`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Services
 
-## Learn More
+| Service                | Start                         | Access                                  |
+| ---------------------- | ----------------------------- | --------------------------------------- |
+| App                    | `npm run dev`                 | [localhost:3000](http://localhost:3000) |
+| PostgreSQL             | `docker compose up -d --wait` | `localhost:5432`                        |
+| Inngest                | `npm run inngest`             | [localhost:8288](http://localhost:8288) |
+| Email template preview | `npm run email`               | [localhost:3001](http://localhost:3001) |
+| Prisma Studio          | `npm run db:studio`           | [localhost:5555](http://localhost:5555) |
 
-To learn more about Next.js, take a look at the following resources:
+The email preview displays templates; sending emails requires Resend. Stop PostgreSQL with `docker compose down` (data is retained).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Test
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run check
+npm run build
+```
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`check` runs linting, formatting, types, and unit tests. To test app workflows against a dedicated local database, first run `npm run prisma-seed -- --reset`, start the app, then run `npm run test:smoke`. **The seed deletes existing application data in the configured database; the smoke test creates records.**

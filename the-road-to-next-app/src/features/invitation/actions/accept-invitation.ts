@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { setCookieByKey } from "@/actions/cookies";
 import {
+  ActionState,
   fromErrorToActionState,
   toActionState,
 } from "@/components/form/utils/to-action-state";
@@ -10,7 +11,11 @@ import { prisma } from "@/lib/prisma";
 import { signInPath } from "@/paths";
 import { hashToken } from "@/utils/crypto";
 
-export const acceptInvitation = async (tokenId: string) => {
+export const acceptInvitation = async (
+  _actionState: ActionState,
+  formData: FormData,
+) => {
+  const tokenId = formData.get("tokenId")?.toString() ?? "";
   try {
     const tokenHash = hashToken(tokenId);
 

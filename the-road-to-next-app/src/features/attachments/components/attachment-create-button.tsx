@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { AttachmentEntity } from "@/generated/prisma";
+import { AttachmentEntity } from "@/generated/prisma/browser";
 import { AttachmentCreateForm } from "./attachment-create-form";
 
 type AttachmentCreateButtonProps = {

@@ -18,6 +18,7 @@ const PasswordChangeForm = () => {
     <Form action={action} actionState={actionState}>
       <Input
         name="password"
+        aria-label="Password"
         placeholder="Password"
         defaultValue={actionState?.payload?.get("password") as string}
       />

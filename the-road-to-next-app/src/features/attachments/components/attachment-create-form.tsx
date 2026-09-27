@@ -6,7 +6,7 @@ import { Form } from "@/components/form/form";
 import { SubmitButton } from "@/components/form/submit-button";
 import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
 import { Input } from "@/components/ui/input";
-import { AttachmentEntity } from "@/generated/prisma";
+import { AttachmentEntity } from "@/generated/prisma/browser";
 import { createAttachments } from "../actions/create-attachments";
 import { ACCEPTED } from "../constants";
 
@@ -24,12 +24,14 @@ const AttachmentCreateForm = ({
   onSuccess,
 }: AttachmentCreateFormProps) => {
   const [actionState, action] = useActionState(
-    createAttachments.bind(null, { entityId, entity }),
+    createAttachments,
     EMPTY_ACTION_STATE,
   );
 
   return (
     <Form action={action} actionState={actionState} onSuccess={onSuccess}>
+      <input type="hidden" name="entityId" value={entityId} />
+      <input type="hidden" name="entity" value={entity} />
       <Input
         name="files"
         id="files"

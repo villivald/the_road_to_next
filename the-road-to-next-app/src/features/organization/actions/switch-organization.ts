@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import {
+  ActionState,
   fromErrorToActionState,
   toActionState,
 } from "@/components/form/utils/to-action-state";
@@ -10,7 +11,11 @@ import { prisma } from "@/lib/prisma";
 import { organizationsPath } from "@/paths";
 import { getOrganizationsByUser } from "../queries/get-organizations-by-user";
 
-export const switchOrganization = async (organizationId: string) => {
+export const switchOrganization = async (
+  _actionState: ActionState,
+  formData: FormData,
+) => {
+  const organizationId = formData.get("organizationId")?.toString() ?? "";
   const { user } = await getAuthOrRedirect({
     checkActiveOrganization: false,
   });

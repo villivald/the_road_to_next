@@ -1,4 +1,4 @@
-import { inngest } from "@/lib/inngest";
+import { inngest, invitationCreated } from "@/lib/inngest";
 import { prisma } from "@/lib/prisma";
 import { sendEmailInvitation } from "../emails/send-email-invitation";
 
@@ -12,8 +12,7 @@ export type InvitationCreateEventArgs = {
 };
 
 export const invitationCreatedEvent = inngest.createFunction(
-  { id: "invitation-created" },
-  { event: "app/invitation.created" },
+  { id: "invitation-created", triggers: [invitationCreated] },
   async ({ event }) => {
     const { userId, organizationId, email, emailInvitationLink } = event.data;
 

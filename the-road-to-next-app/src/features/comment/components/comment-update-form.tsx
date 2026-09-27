@@ -30,7 +30,7 @@ const CommentUpdateForm = ({
   onUpdateComment,
 }: CommentUpdateProps) => {
   const [actionState, action] = useActionState(
-    updateComment.bind(null, comment?.id),
+    updateComment,
     EMPTY_ACTION_STATE,
   );
 
@@ -41,9 +41,6 @@ const CommentUpdateForm = ({
       content: actionState.data as string,
     });
   };
-
-  const sudbitButtonIsDisabled =
-    actionState.status === "PENDING" || actionState.status === "ERROR";
 
   return (
     <div className="flex gap-x-2">
@@ -62,6 +59,7 @@ const CommentUpdateForm = ({
           actionState={actionState}
           onSuccess={handleSuccess}
         >
+          <input type="hidden" name="commentId" value={comment.id} />
           <Label htmlFor="content">Content</Label>
           <Textarea
             id="content"
@@ -72,11 +70,12 @@ const CommentUpdateForm = ({
 
           {isOwner ? (
             <div className="flex items-center justify-end gap-x-2">
-              <SubmitButton
-                isDisabled={sudbitButtonIsDisabled}
-                label="Update"
-              />
-              <Button variant="outline" onClick={() => setIsInEditMode?.("")}>
+              <SubmitButton label="Update" />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsInEditMode?.("")}
+              >
                 Cancel
               </Button>
             </div>

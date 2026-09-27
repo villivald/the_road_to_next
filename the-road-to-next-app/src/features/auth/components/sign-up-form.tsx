@@ -15,6 +15,7 @@ const SignUpForm = () => {
     <Form action={action} actionState={actionState}>
       <Input
         name="username"
+        aria-label="Username"
         placeholder="Username"
         defaultValue={actionState?.payload?.get("username") as string}
       />
@@ -22,6 +23,7 @@ const SignUpForm = () => {
 
       <Input
         name="email"
+        aria-label="Email"
         placeholder="Email"
         defaultValue={actionState?.payload?.get("email") as string}
       />
@@ -29,6 +31,7 @@ const SignUpForm = () => {
 
       <Input
         name="password"
+        aria-label="Password"
         placeholder="Password"
         type="password"
         defaultValue={actionState?.payload?.get("password") as string}
@@ -37,6 +40,7 @@ const SignUpForm = () => {
 
       <Input
         name="confirmPassword"
+        aria-label="Confirm Password"
         placeholder="Confirm Password"
         type="password"
         defaultValue={actionState?.payload?.get("confirmPassword") as string}

@@ -15,6 +15,7 @@ const SignInForm = () => {
     <Form action={action} actionState={actionState}>
       <Input
         name="email"
+        aria-label="Email"
         placeholder="Email"
         defaultValue={actionState?.payload?.get("email") as string}
       />
@@ -22,6 +23,7 @@ const SignInForm = () => {
 
       <Input
         name="password"
+        aria-label="Password"
         placeholder="Password"
         type="password"
         defaultValue={actionState?.payload?.get("password") as string}

@@ -7,7 +7,8 @@ import {
   toActionState,
 } from "@/components/form/utils/to-action-state";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
-import { inngest } from "@/lib/inngest";
+import { inngest, passwordResetRequested } from "@/lib/inngest";
+import { prisma } from "@/lib/prisma";
 import { verifyPasswordHash } from "../utils/hash-and-verify";
 
 const passwordChangeSchema = z.object({
@@ -25,19 +26,18 @@ export const passwordChange = async (
       password: formData.get("password"),
     });
 
-    const validPassword = await verifyPasswordHash(
-      auth.user.passwordHash,
-      password,
-    );
+    const user = await prisma.user.findUniqueOrThrow({
+      where: { id: auth.user.id },
+      select: { passwordHash: true },
+    });
+
+    const validPassword = await verifyPasswordHash(user.passwordHash, password);
 
     if (!validPassword) {
       return toActionState("ERROR", "Incorrect password", formData);
     }
 
-    await inngest.send({
-      name: "app/password.password-reset",
-      data: { userId: auth.user.id },
-    });
+    await inngest.send(passwordResetRequested.create({ userId: auth.user.id }));
   } catch (error) {
     return fromErrorToActionState(error, formData);
   }

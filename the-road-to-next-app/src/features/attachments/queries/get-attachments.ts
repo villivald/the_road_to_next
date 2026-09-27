@@ -1,4 +1,4 @@
-import { AttachmentEntity } from "@/generated/prisma";
+import { AttachmentEntity } from "@/generated/prisma/browser";
 import { prisma } from "@/lib/prisma";
 
 export const getAttachments = async (

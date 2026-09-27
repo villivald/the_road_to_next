@@ -14,15 +14,17 @@ type PasswordResetFormProps = {
 
 const PasswordResetForm = ({ tokenId }: PasswordResetFormProps) => {
   const [actionState, action] = useActionState(
-    passwordReset.bind(null, tokenId),
+    passwordReset,
     EMPTY_ACTION_STATE,
   );
 
   return (
     <Form action={action} actionState={actionState}>
+      <input type="hidden" name="tokenId" value={tokenId} />
       <Input
         type="password"
         name="password"
+        aria-label="Password"
         placeholder="Password"
         defaultValue={actionState.payload?.get("password") as string}
       />
@@ -31,6 +33,7 @@ const PasswordResetForm = ({ tokenId }: PasswordResetFormProps) => {
       <Input
         type="password"
         name="confirmPassword"
+        aria-label="Confirm Password"
         placeholder="Confirm Password"
         defaultValue={actionState.payload?.get("confirmPassword") as string}
       />

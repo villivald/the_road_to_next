@@ -15,11 +15,12 @@ const OrganizationSwitchButton = ({
   trigger,
 }: OrganizationSwitchButtonProps) => {
   const [actionState, action] = useActionState(
-    switchOrganization.bind(null, organizationId),
+    switchOrganization,
     EMPTY_ACTION_STATE,
   );
   return (
     <Form action={action} actionState={actionState}>
+      <input type="hidden" name="organizationId" value={organizationId} />
       {trigger}
     </Form>
   );

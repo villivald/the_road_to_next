@@ -1,16 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  agentRules: false,
   experimental: {
     staleTimes: {
       dynamic: 30, // 30 seconds
     },
     serverActions: {
-      bodySizeLimit: "4mb",
+      bodySizeLimit: "5mb",
     },
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
   },
 };
 

@@ -8,7 +8,7 @@ import {
   toActionState,
 } from "@/components/form/utils/to-action-state";
 import { getAdminOrRedirect } from "@/features/membership/queries/get-admin-or-redirect";
-import { inngest } from "@/lib/inngest";
+import { inngest, invitationCreated } from "@/lib/inngest";
 import { prisma } from "@/lib/prisma";
 import { invitationsPath } from "@/paths";
 import { generateInvitationLink } from "../utils/generate-invitation-link";
@@ -18,10 +18,10 @@ const createInvitationSchema = z.object({
 });
 
 export const createInvitation = async (
-  organizationId: string,
   _actionState: ActionState,
   formData: FormData,
 ) => {
+  const organizationId = formData.get("organizationId")?.toString() ?? "";
   const { user } = await getAdminOrRedirect(organizationId);
 
   try {
@@ -51,15 +51,14 @@ export const createInvitation = async (
       email,
     );
 
-    await inngest.send({
-      name: "app/invitation.created",
-      data: {
+    await inngest.send(
+      invitationCreated.create({
         userId: user.id,
         organizationId,
         email,
         emailInvitationLink,
-      },
-    });
+      }),
+    );
   } catch (error) {
     return fromErrorToActionState(error);
   }

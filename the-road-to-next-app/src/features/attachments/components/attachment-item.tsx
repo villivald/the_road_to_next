@@ -1,6 +1,6 @@
 import { LucideArrowUpRightFromSquare } from "lucide-react";
 import Link from "next/link";
-import { Attachment } from "@/generated/prisma";
+import { Attachment } from "@/generated/prisma/browser";
 import { attachmentDownloadPath } from "@/paths";
 
 type AttachmentItemProps = {

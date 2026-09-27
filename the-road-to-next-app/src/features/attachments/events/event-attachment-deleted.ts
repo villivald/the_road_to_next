@@ -1,7 +1,7 @@
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { AttachmentEntity } from "@/generated/prisma";
+import { AttachmentEntity } from "@/generated/prisma/browser";
 import { s3 } from "@/lib/aws";
-import { inngest } from "@/lib/inngest";
+import { attachmentDeleted, inngest } from "@/lib/inngest";
 import { generateS3Key } from "../utils/generate-s3-key";
 
 export type AttachmentDeleteEventArgs = {
@@ -14,9 +14,8 @@ export type AttachmentDeleteEventArgs = {
   };
 };
 
-export const attahcmentDeletedEvent = inngest.createFunction(
-  { id: "attachment-deleted" },
-  { event: "app/attachment.deleted" },
+export const attachmentDeletedEvent = inngest.createFunction(
+  { id: "attachment-deleted", triggers: [attachmentDeleted] },
   async ({ event }) => {
     const { organizationId, entityId, entity, filename, attachmentId } =
       event.data;
@@ -36,7 +35,7 @@ export const attahcmentDeletedEvent = inngest.createFunction(
       );
     } catch (error) {
       console.error("Error deleting attachment from S3:", error);
-      return { event, body: false };
+      throw error;
     }
 
     return { event, body: true };

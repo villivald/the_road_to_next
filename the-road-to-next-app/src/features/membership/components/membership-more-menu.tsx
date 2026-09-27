@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MembershipRole } from "@/generated/prisma";
+import { MembershipRole } from "@/generated/prisma/browser";
 import { updateMembershipRole } from "../actions/update-membership-role";
 
 type MembershipMoreMenuProps = {

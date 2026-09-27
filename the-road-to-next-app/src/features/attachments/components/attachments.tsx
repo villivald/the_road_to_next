@@ -1,5 +1,5 @@
 import { CardCompact } from "@/components/card-compact";
-import { AttachmentEntity } from "@/generated/prisma";
+import { AttachmentEntity } from "@/generated/prisma/browser";
 import { getAttachments } from "../queries/get-attachments";
 import { AttachmentCreateForm } from "./attachment-create-form";
 import { AttachmentDeleteButton } from "./attachment-delete-button";

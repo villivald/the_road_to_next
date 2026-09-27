@@ -2,7 +2,6 @@ import { format } from "date-fns";
 import {
   LucideArrowLeftRight,
   LucideArrowUpRightFromSquare,
-  LucidePen,
 } from "lucide-react";
 import Link from "next/link";
 import { SubmitButton } from "@/components/form/submit-button";
@@ -73,12 +72,6 @@ const OrganizationList = async ({ limitedAccess }: OrganizationListProps) => {
             </Button>
           );
 
-          const editButton = (
-            <Button variant="outline" size="icon">
-              <LucidePen className="h-4 w-4" />
-            </Button>
-          );
-
           const deleteButton = (
             <OrganizationDeleteButton organizationId={organization.id} />
           );
@@ -101,7 +94,6 @@ const OrganizationList = async ({ limitedAccess }: OrganizationListProps) => {
               {limitedAccess ? null : (
                 <>
                   {isAdmin ? detailButton : placeholder}
-                  {isAdmin ? editButton : placeholder}
                   {leaveButton}
                   {isAdmin ? deleteButton : placeholder}
                 </>

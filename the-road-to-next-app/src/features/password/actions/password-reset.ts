@@ -29,10 +29,10 @@ const passwordResetSchema = z
   });
 
 export const passwordReset = async (
-  tokenId: string,
   _actionState: ActionState,
   formData: FormData,
 ) => {
+  const tokenId = formData.get("tokenId")?.toString() ?? "";
   try {
     const { password } = passwordResetSchema.parse({
       password: formData.get("password"),

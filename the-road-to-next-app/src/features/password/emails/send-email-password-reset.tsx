@@ -7,7 +7,7 @@ export const sendEmailPasswordReset = async (
   passwordResetLink: string,
 ) => {
   return await resend.emails.send({
-    from: "no-reply@create-react-app.com",
+    from: process.env.EMAIL_FROM ?? "TicketBounty <onboarding@resend.dev>",
     to: email,
     subject: "Password Reset Request",
     react: <EmailPasswordReset toName={username} url={passwordResetLink} />,

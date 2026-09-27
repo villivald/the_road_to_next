@@ -7,5 +7,7 @@ export async function GET(
   const { ticketId } = await params;
   const ticket = await getTicket(ticketId);
 
-  return Response.json(ticket);
+  return ticket
+    ? Response.json(ticket)
+    : Response.json({ error: "Ticket not found" }, { status: 404 });
 }

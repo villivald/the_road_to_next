@@ -8,14 +8,14 @@ import { s3 } from "@/lib/aws";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ attachmentId: string }> },
 ) {
   await getAuthOrRedirect();
 
   const { attachmentId } = await params;
 
-  const attachment = await prisma.attachment.findUniqueOrThrow({
+  const attachment = await prisma.attachment.findUnique({
     where: {
       id: attachmentId,
     },
@@ -27,10 +27,13 @@ export async function GET(
     },
   });
 
+  if (!attachment)
+    return Response.json({ error: "Attachment not found" }, { status: 404 });
+
   const subject = attachment.comment ?? attachment.ticket;
 
   if (!subject) {
-    throw new Error("Subject not found");
+    return Response.json({ error: "Subject not found" }, { status: 404 });
   }
 
   const organizationId = getOrganizationIdByAttachment(
@@ -55,10 +58,17 @@ export async function GET(
 
   const response = await fetch(presignedUrl);
 
-  const headers = new Headers();
+  if (!response.ok)
+    return Response.json({ error: "File unavailable" }, { status: 502 });
+
+  const headers = new Headers({
+    "Content-Type":
+      response.headers.get("content-type") ?? "application/octet-stream",
+    "X-Content-Type-Options": "nosniff",
+  });
   headers.append(
     "content-disposition",
-    `attachment; filename="${attachment.name}"`,
+    `attachment; filename*=UTF-8''${encodeURIComponent(attachment.name)}`,
   );
 
   return new Response(response.body, {

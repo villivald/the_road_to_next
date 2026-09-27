@@ -1,5 +1,5 @@
 import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
-import { AttachmentEntity } from "@/generated/prisma";
+import { AttachmentEntity } from "@/generated/prisma/browser";
 import { s3 } from "@/lib/aws";
 import * as attachmentData from "../data";
 import { AttachmentSubject, isComment, isTicket } from "../types";
@@ -24,7 +24,7 @@ export const createAttachments = async ({
 
   try {
     for (const file of files) {
-      const buffer = await Buffer.from(await file.arrayBuffer());
+      const buffer = Buffer.from(await file.arrayBuffer());
 
       const attachment = await attachmentData.createAttachment({
         name: file.name,
@@ -84,7 +84,7 @@ export const createAttachments = async ({
     );
 
     // Rollback DB entries
-    attachmentData.deleteAttachment({ attachments });
+    await attachmentData.deleteAttachment({ attachments });
 
     throw error;
   }

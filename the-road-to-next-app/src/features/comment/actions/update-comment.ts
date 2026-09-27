@@ -16,25 +16,28 @@ const updateCommentSchema = z.object({
 });
 
 export const updateComment = async (
-  commentId: string,
   _actionState: ActionState,
   formData: FormData,
 ) => {
+  const commentId = formData.get("commentId")?.toString() ?? "";
   const { user } = await getAuthOrRedirect();
 
   let data;
+  let ticketId;
 
   try {
     data = updateCommentSchema.parse(Object.fromEntries(formData));
 
     const comment = await prisma.comment.findUnique({
       where: { id: commentId },
-      select: { userId: true },
+      select: { userId: true, ticketId: true },
     });
 
     if (!comment || comment.userId !== user.id) {
       throw new Error("You are not authorized to update this comment");
     }
+
+    ticketId = comment.ticketId;
 
     await prisma.comment.update({
       where: { id: commentId },
@@ -44,7 +47,7 @@ export const updateComment = async (
     return fromErrorToActionState(error);
   }
 
-  revalidatePath(ticketPath(commentId));
+  revalidatePath(ticketPath(ticketId));
 
   return toActionState(
     "SUCCESS",

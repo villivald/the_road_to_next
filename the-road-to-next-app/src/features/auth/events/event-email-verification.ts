@@ -1,4 +1,4 @@
-import { inngest } from "@/lib/inngest";
+import { inngest, signedUp } from "@/lib/inngest";
 import { prisma } from "@/lib/prisma";
 import { sendEmailVerification } from "../emails/send-email-verification";
 import { generateEmailVerificationCode } from "../utils/generate-email-verification-code";
@@ -10,8 +10,7 @@ export type EmailVerificationEventArgs = {
 };
 
 export const emailVerificationEvent = inngest.createFunction(
-  { id: "email-verification" },
-  { event: "app/auth.sign-up" },
+  { id: "email-verification", triggers: [signedUp] },
   async ({ event }) => {
     const { userId } = event.data;
 

@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { deleteTicket } from "@/features/ticket/actions/delete-ticket";
-import { TicketStatus } from "@/generated/prisma";
+import { TicketStatus } from "@/generated/prisma/browser";
 import { updateTicketStatus } from "../actions/update-ticket-status";
 import { TICKET_STATUS_LABELS } from "../constants";
 import { TicketWithMetadata } from "../types";

@@ -8,8 +8,8 @@ import {
   toActionState,
 } from "@/components/form/utils/to-action-state";
 import { hashPassword } from "@/features/password/utils/hash-and-verify";
-import { Prisma } from "@/generated/prisma";
-import { inngest } from "@/lib/inngest";
+import { Prisma } from "@/generated/prisma/client";
+import { inngest, signedUp } from "@/lib/inngest";
 import { createSession } from "@/lib/lucia";
 import { prisma } from "@/lib/prisma";
 import { ticketsPath } from "@/paths";
@@ -79,12 +79,11 @@ export const signUp = async (_actionState: ActionState, formData: FormData) => {
       }),
     ]);
 
-    await inngest.send({
-      name: "app/auth.sign-up",
-      data: {
+    await inngest.send(
+      signedUp.create({
         userId: user.id,
-      },
-    });
+      }),
+    );
 
     const sessionToken = generateRandomToken();
     const session = await createSession(sessionToken, user.id);

@@ -24,7 +24,14 @@ const EmailVerificationForm = () => {
   return (
     <Form action={action} actionState={actionState}>
       <div className="flex justify-center">
-        <InputOTP maxLength={8} name="code" defaultValue={defaultCode}>
+        <InputOTP
+          aria-label="Verification code"
+          inputMode="text"
+          pattern="[A-Z]*"
+          maxLength={8}
+          name="code"
+          defaultValue={defaultCode}
+        >
           <InputOTPGroup>
             <InputOTPSlot index={0} />
             <InputOTPSlot index={1} />

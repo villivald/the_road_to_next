@@ -10,18 +10,16 @@ type SearchInputProps = {
 };
 
 const SearchInput = ({ value, placeholder, onChange }: SearchInputProps) => {
-  const handleSearch = useDebouncedCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      onChange(event.target.value);
-    },
-    250,
-  );
+  const handleSearch = useDebouncedCallback((search: string) => {
+    onChange(search);
+  }, 250);
 
   return (
     <Input
       defaultValue={value}
       placeholder={placeholder}
-      onChange={handleSearch}
+      aria-label={placeholder}
+      onChange={(event) => handleSearch(event.target.value)}
     />
   );
 };

@@ -6,7 +6,7 @@ import TicketList from "@/features/ticket/components/ticket-list";
 import { searchParamsCache } from "@/features/ticket/search-params";
 
 type HomePageProps = {
-  searchParams: SearchParams;
+  searchParams: Promise<SearchParams>;
 };
 
 const HomePage = async ({ searchParams }: HomePageProps) => {
@@ -16,7 +16,7 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
 
       <Suspense fallback={<Spinner />}>
         <TicketList
-          searchParams={await searchParamsCache.parse(searchParams)}
+          searchParams={await searchParamsCache.parse(await searchParams)}
         />
       </Suspense>
     </div>

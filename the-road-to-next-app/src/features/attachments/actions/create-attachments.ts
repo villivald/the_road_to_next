@@ -9,7 +9,6 @@ import {
 } from "@/components/form/utils/to-action-state";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import { isOwner } from "@/features/auth/utils/is-owner";
-import { AttachmentEntity } from "@/generated/prisma";
 import { ticketPath } from "@/paths";
 import { fileSchema } from "../schema/files";
 import * as attachmentService from "../service";
@@ -19,17 +18,15 @@ const createAttachmentsSchema = z.object({
   files: fileSchema.refine((files) => files.length !== 0, "File is required"),
 });
 
-type CreateAttachmentArgs = {
-  entityId: string;
-  entity: AttachmentEntity;
-};
-
 export const createAttachments = async (
-  { entityId, entity }: CreateAttachmentArgs,
   _actionState: ActionState,
   formData: FormData,
 ) => {
   const { user } = await getAuthOrRedirect();
+  const entityId = formData.get("entityId")?.toString() ?? "";
+  const entity = formData.get("entity");
+  if (entity !== "TICKET" && entity !== "COMMENT")
+    return toActionState("ERROR", "Invalid attachment entity");
 
   const subject = await attachmentService.getAttachmentSubject(
     entityId,

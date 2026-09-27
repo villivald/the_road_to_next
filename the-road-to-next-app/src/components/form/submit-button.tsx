@@ -1,20 +1,14 @@
 "use client";
 
 import { LucideLoaderCircle } from "lucide-react";
-import { cloneElement } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 
 type SubmitButtonProps = {
   label?: string;
-  icon?: React.ReactElement<HTMLElement>;
+  icon?: React.ReactNode;
   variant?:
-    | "default"
-    | "destructive"
-    | "outline"
-    | "secondary"
-    | "ghost"
-    | "link";
+    "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
   size?: "default" | "sm" | "lg" | "icon";
   isDisabled?: boolean;
 };
@@ -38,7 +32,7 @@ export const SubmitButton = ({
       {pending ? (
         <LucideLoaderCircle className="h-4 w-4 animate-spin" />
       ) : icon ? (
-        <>{cloneElement(icon, { className: "h-4 w-4" })}</>
+        <span className="[&>svg]:size-4">{icon}</span>
       ) : null}
       {label}
     </Button>

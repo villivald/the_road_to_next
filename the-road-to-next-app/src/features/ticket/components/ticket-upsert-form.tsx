@@ -12,7 +12,7 @@ import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Ticket } from "@/generated/prisma";
+import { Ticket } from "@/generated/prisma/browser";
 import { fromCent } from "@/utils/currency";
 import { upsertTicket } from "../actions/upsert-ticket";
 
@@ -22,7 +22,7 @@ type TicketUpsertProps = {
 
 const TicketUpsertForm = ({ ticket }: TicketUpsertProps) => {
   const [actionState, action] = useActionState(
-    upsertTicket.bind(null, ticket?.id),
+    upsertTicket,
     EMPTY_ACTION_STATE,
   );
 
@@ -35,6 +35,7 @@ const TicketUpsertForm = ({ ticket }: TicketUpsertProps) => {
 
   return (
     <Form action={action} actionState={actionState} onSuccess={handleSuccess}>
+      <input type="hidden" name="ticketId" value={ticket?.id ?? ""} />
       <div>
         <Label className="mb-2 block" htmlFor="title">
           Title
@@ -66,7 +67,7 @@ const TicketUpsertForm = ({ ticket }: TicketUpsertProps) => {
 
       <div className="mb-1 flex gap-x-2">
         <div className="w-1/2">
-          <Label htmlFor="title" className="mb-2 block">
+          <Label htmlFor="deadline" className="mb-2 block">
             Deadline
           </Label>
           <DatePicker
@@ -82,7 +83,7 @@ const TicketUpsertForm = ({ ticket }: TicketUpsertProps) => {
         </div>
 
         <div className="w-1/2">
-          <Label htmlFor="title" className="mb-2 block">
+          <Label htmlFor="bounty" className="mb-2 block">
             Bounty ($)
           </Label>
           <Input

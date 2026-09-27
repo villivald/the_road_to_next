@@ -18,6 +18,7 @@ const PasswordForgotForm = () => {
     <Form action={action} actionState={actionState}>
       <Input
         name="email"
+        aria-label="Email"
         placeholder="Email"
         defaultValue={actionState?.payload?.get("email") as string}
       />

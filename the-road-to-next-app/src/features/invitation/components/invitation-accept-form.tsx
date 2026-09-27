@@ -12,12 +12,13 @@ type InvitationAcceptFormProps = {
 
 const InvitationAcceptForm = ({ tokenId }: InvitationAcceptFormProps) => {
   const [actionState, action] = useActionState(
-    acceptInvitation.bind(null, tokenId),
+    acceptInvitation,
     EMPTY_ACTION_STATE,
   );
 
   return (
     <Form action={action} actionState={actionState}>
+      <input type="hidden" name="tokenId" value={tokenId} />
       <SubmitButton label="Accept" />
     </Form>
   );

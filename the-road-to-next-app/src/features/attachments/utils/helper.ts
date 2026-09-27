@@ -1,4 +1,4 @@
-import { AttachmentEntity } from "@/generated/prisma";
+import { AttachmentEntity } from "@/generated/prisma/browser";
 import { AttachmentSubject, isComment, isTicket } from "../types";
 
 export const getOrganizationIdByAttachment = (

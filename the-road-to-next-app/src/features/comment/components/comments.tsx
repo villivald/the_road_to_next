@@ -7,8 +7,8 @@ import { fromErrorToActionState } from "@/components/form/utils/to-action-state"
 import { Button } from "@/components/ui/button";
 import { AttachmentDeleteButton } from "@/features/attachments/components/attachment-delete-button";
 import { AttachmentList } from "@/features/attachments/components/attachment-list";
+import type { AuthUser } from "@/features/auth/types";
 import { isOwner } from "@/features/auth/utils/is-owner";
-import { User } from "@/generated/prisma";
 import { PaginatedData } from "@/types/pagination";
 import { getComments } from "../queries/get-comments";
 import { CommentWithMetadata } from "../types";
@@ -17,7 +17,7 @@ import { CommentItem } from "./comment-item";
 
 type CommentsProps = {
   ticketId: string;
-  user: User | null;
+  user: AuthUser | null;
   paginatedComments: PaginatedData<CommentWithMetadata>;
 };
 
@@ -31,8 +31,7 @@ const Comments = ({ ticketId, paginatedComments, user }: CommentsProps) => {
       queryKey,
       queryFn: ({ pageParam }) => getComments(ticketId, pageParam),
       initialPageParam: undefined as
-        | { id: string; createdAt: number }
-        | undefined,
+        { id: string; createdAt: number } | undefined,
       getNextPageParam: (lastPage) =>
         lastPage.metadata.hasNextPage ? lastPage.metadata.cursor : undefined,
       initialData: {
@@ -61,6 +60,7 @@ const Comments = ({ ticketId, paginatedComments, user }: CommentsProps) => {
       let hasMore: boolean = hasNextPage;
       while (hasMore) {
         const result = await fetchNextPage();
+        if (result.isError) break;
         const lastPage = result.data?.pages[result.data.pages.length - 1];
 
         hasMore = !!lastPage?.metadata.hasNextPage;

@@ -1,4 +1,4 @@
-import { Attachment } from "@/generated/prisma";
+import { Attachment } from "@/generated/prisma/browser";
 import { AttachmentItem } from "./attachment-item";
 
 type AttachmentListProps = {
