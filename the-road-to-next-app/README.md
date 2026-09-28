@@ -34,4 +34,13 @@ npm run check
 npm run build
 ```
 
-`check` runs linting, formatting, types, and unit tests. To test app workflows against a dedicated local database, first run `npm run prisma-seed -- --reset`, start the app, then run `npm run test:smoke`. **The seed deletes existing application data in the configured database; the smoke test creates records.**
+`check` runs linting, formatting, types, and unit tests.
+
+For isolated desktop/mobile browser checks, start Docker Desktop, then run:
+
+```bash
+npx playwright install chromium
+npm run test:e2e
+```
+
+This prepares `wishlist_test` on port 55433, replaces its named test fixtures, builds the app, and starts its own server on port 3017. It uses no real service credentials. Stop the rebuild databases with `npm run db:rebuild:down`; the test database is disposable and the separate development volume is retained.
