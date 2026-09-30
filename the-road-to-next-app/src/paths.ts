@@ -2,6 +2,11 @@ export const homePath = "/";
 
 export const listsPath = "/lists";
 
+export const newListPath = `${listsPath}/new`;
+
+export const listPath = (id: string) =>
+  `${listsPath}/${encodeURIComponent(id)}`;
+
 export const signUpPath = "/sign-up";
 
 export const signInPath = "/sign-in";

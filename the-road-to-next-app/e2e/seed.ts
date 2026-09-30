@@ -29,7 +29,19 @@ export const resetFixtures = async () => {
   try {
     const passwordHash = await hashPassword(accounts.owner.password);
     await prisma.$transaction(async (tx) => {
-      await tx.wishlist.deleteMany({ where: { id: { startsWith: "e2e-" } } });
+      await tx.wishlist.deleteMany({
+        where: {
+          OR: [
+            { id: { startsWith: "e2e-" } },
+            {
+              ownerId: {
+                in: Object.keys(accounts).map((role) => `e2e-${role}`),
+              },
+            },
+            { owner: { email: newAccount.email } },
+          ],
+        },
+      });
       await tx.user.deleteMany({
         where: {
           OR: [{ id: { startsWith: "e2e-" } }, { email: newAccount.email }],

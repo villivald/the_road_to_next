@@ -1,13 +1,8 @@
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
-import { prisma } from "@/lib/prisma";
+import { readOwnedWishlists } from "../service/lists";
 
-export const getMyLists = async () => {
+export const getMyLists = async (page = 1) => {
   const { user } = await getAuthOrRedirect();
 
-  return prisma.wishlist.findMany({
-    where: { ownerId: user.id, archivedAt: null },
-    select: { id: true, title: true, publication: true, visibility: true },
-    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-    take: 50,
-  });
+  return readOwnedWishlists(user.id, page);
 };
