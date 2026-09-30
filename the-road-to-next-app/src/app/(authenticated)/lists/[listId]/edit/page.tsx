@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import styles from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
+import { ImageEditor } from "@/features/media/components/image-editor";
 import { ListForm } from "@/features/wishlist/components/list-form";
 import { readManagedWishlist } from "@/features/wishlist/service/lists";
 
@@ -30,6 +31,7 @@ export default async function EditListPage({
         Update the details and reservation settings for your list.
       </p>
       <ListForm list={list} />
+      <ImageEditor target={{ kind: "list", listId }} image={list.image} />
     </section>
   );
 }

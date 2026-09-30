@@ -26,6 +26,10 @@ Skip the copy if `.env.local` already exists. It takes precedence over `.env`. K
 
 Register in the app, then open the local inbox for verification codes and reset links. Local email is captured by Mailpit; it is not delivered to recipients. For real delivery, unset `MAILPIT_URL` and configure `RESEND_API_KEY` and `EMAIL_FROM`. Hosted Inngest needs its event/signing keys with `INNGEST_DEV` unset.
 
+Images use private files in `.local/media` locally (no extra service). To use cloud storage, create a **private** Vercel Blob store, set `MEDIA_STORAGE=vercel` and its `BLOB_READ_WRITE_TOKEN` in `.env.local`, then restart. Use separate stores for development/preview and production. Upload images from Edit list, Edit wish, or Your account.
+
+Inngest retries media cleanup every five minutes; run `npm run media:cleanup` to process one batch manually. Keep Inngest running for automatic cleanup.
+
 Stop the local services with `npm run db:rebuild:down`; development database data is retained.
 
 ## Test

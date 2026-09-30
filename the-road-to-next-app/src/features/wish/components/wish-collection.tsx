@@ -1,5 +1,6 @@
 import Link from "next/link";
 import styles from "@/components/shell.module.css";
+import { MediaImage } from "@/features/media/components/media-image";
 import { listPath, newWishPath, wishPath } from "@/paths";
 import { readListWishes } from "../service/wishes";
 import { formatWishPrice } from "../utils/money";
@@ -70,6 +71,7 @@ export async function WishCollection({
         <ul className={styles["list-grid"]}>
           {wishes.map((wish) => (
             <li key={wish.id} className={styles["list-card"]}>
+              <MediaImage image={wish.image} compact />
               <h3 className={styles["wish-title"]}>
                 <Link href={wishPath(listId, wish.id)}>{wish.title}</Link>
               </h3>

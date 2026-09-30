@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/form/action-form";
 import styles from "@/components/shell.module.css";
 import { getAuth } from "@/features/auth/actions/get-auth";
+import { MediaImage } from "@/features/media/components/media-image";
 import { changeWishState } from "@/features/wish/actions/manage-wish";
 import { WishPriority } from "@/features/wish/components/wish-priority";
 import { readWish } from "@/features/wish/service/wishes";
@@ -71,6 +72,8 @@ export default async function WishPage({
           )}
         </div>
       )}
+
+      <MediaImage image={wish.image} />
 
       <p className={styles.description}>
         {wish.description || "No description added."}

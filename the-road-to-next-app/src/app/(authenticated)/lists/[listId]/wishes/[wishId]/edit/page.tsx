@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import styles from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
+import { ImageEditor } from "@/features/media/components/image-editor";
 import { WishForm } from "@/features/wish/components/wish-form";
 import { readWish } from "@/features/wish/service/wishes";
 
@@ -30,6 +31,10 @@ export default async function EditWishPage({
         In “{wish.wishlist.title}”. Only the title is required.
       </p>
       <WishForm listId={listId} wish={wish} />
+      <ImageEditor
+        target={{ kind: "wish", listId, wishId }}
+        image={wish.image}
+      />
     </section>
   );
 }

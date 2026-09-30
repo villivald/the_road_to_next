@@ -1,10 +1,14 @@
 import Link from "next/link";
 import styles from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
+import { ImageEditor } from "@/features/media/components/image-editor";
+import { readAvatar } from "@/features/media/service/media";
 import { accountPasswordPath } from "@/paths";
 
 export default async function AccountPage() {
   const { user } = await getAuthOrRedirect();
+
+  const image = await readAvatar(user.id);
 
   return (
     <section className={styles["account-panel"]}>
@@ -23,6 +27,11 @@ export default async function AccountPage() {
           <dd>Verified</dd>
         </div>
       </dl>
+      <ImageEditor
+        target={{ kind: "avatar" }}
+        image={image}
+        label="Your avatar"
+      />
       <Link href={accountPasswordPath}>Change password</Link>
     </section>
   );

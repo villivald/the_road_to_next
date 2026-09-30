@@ -121,6 +121,7 @@ describe("wishlist management and authorization", () => {
     await setWishlistPublication("e2e-owner", list.id, "PUBLISHED");
     expect(await readWishlist(list.id, null)).toEqual({
       id: list.id,
+      image: null,
       ...input,
       publication: "PUBLISHED",
       visibility: "PUBLIC",

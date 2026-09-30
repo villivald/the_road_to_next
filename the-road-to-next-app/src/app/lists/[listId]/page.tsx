@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/form/action-form";
 import styles from "@/components/shell.module.css";
 import { getAuth } from "@/features/auth/actions/get-auth";
+import { MediaImage } from "@/features/media/components/media-image";
 import { WishCollection } from "@/features/wish/components/wish-collection";
 import { changePublication } from "@/features/wishlist/actions/manage-list";
 import { readWishlist } from "@/features/wishlist/service/lists";
@@ -64,6 +65,8 @@ export default async function ListPage({
           </Link>
         )}
       </div>
+
+      <MediaImage image={list.image} />
 
       <p className={styles.description}>
         {list.description || "No description yet."}

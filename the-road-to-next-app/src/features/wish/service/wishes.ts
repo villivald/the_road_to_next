@@ -1,3 +1,4 @@
+import { imageSelection } from "@/features/media/types";
 import { manageableLists } from "@/features/wishlist/service/access";
 import { lockManagedWishlist } from "@/features/wishlist/service/lists";
 import { wishlistIdSchema } from "@/features/wishlist/service/schemas";
@@ -14,6 +15,7 @@ import {
 export class WishError extends Error {}
 
 const wishFields = {
+  image: imageSelection,
   id: true,
   title: true,
   description: true,

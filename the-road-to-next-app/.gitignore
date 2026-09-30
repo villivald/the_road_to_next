@@ -46,3 +46,6 @@ next-env.d.ts
 /src/generated/
 
 PLAN.md
+
+# Private local uploads
+/.local/

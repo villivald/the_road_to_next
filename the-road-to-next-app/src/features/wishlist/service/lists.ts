@@ -1,3 +1,4 @@
+import { imageSelection } from "@/features/media/types";
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { manageableLists, readableLists } from "./access";
@@ -6,6 +7,7 @@ import { publicationSchema, wishlistIdSchema, wishlistSchema } from "./schemas";
 export class WishlistError extends Error {}
 
 const listFields = {
+  image: imageSelection,
   id: true,
   title: true,
   description: true,

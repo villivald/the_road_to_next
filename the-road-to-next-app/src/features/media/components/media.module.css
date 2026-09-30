@@ -1,0 +1,22 @@
+.editor {
+  display: grid;
+  gap: 1rem;
+  padding-block: 1.5rem;
+}
+
+.image,
+.thumbnail {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  object-fit: contain;
+}
+
+.image {
+  max-width: 40rem;
+}
+
+.thumbnail {
+  max-width: 18rem;
+}
