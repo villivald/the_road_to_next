@@ -37,6 +37,7 @@ const refreshList = (id: string) => {
   revalidatePath(listPath(id));
   revalidatePath(`${listPath(id)}/edit`);
   revalidatePath(`${listPath(id)}/delete`);
+  revalidatePath("/lists/[listId]/wishes/[wishId]", "page");
 };
 
 export const createList = async (_state: ActionState, data: FormData) => {

@@ -8,7 +8,7 @@ import {
 import styles from "@/components/shell.module.css";
 import { ActionFeedback } from "./action-feedback";
 
-export function ListActionForm({
+export function ActionForm({
   action,
   label,
   pendingLabel,

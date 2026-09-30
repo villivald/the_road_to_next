@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ActionForm } from "@/components/form/action-form";
 import styles from "@/components/shell.module.css";
 import { getAuth } from "@/features/auth/actions/get-auth";
+import { WishCollection } from "@/features/wish/components/wish-collection";
 import { changePublication } from "@/features/wishlist/actions/manage-list";
-import { ListActionForm } from "@/features/wishlist/components/list-action-form";
 import { readWishlist } from "@/features/wishlist/service/lists";
 import { listPath, listsPath } from "@/paths";
 
@@ -18,7 +19,14 @@ export default async function ListPage({
   searchParams,
 }: {
   params: Promise<{ listId: string }>;
-  searchParams: Promise<{ created?: string; saved?: string }>;
+  searchParams: Promise<{
+    created?: string;
+    saved?: string;
+    wishDeleted?: string;
+    sort?: string;
+    view?: string;
+    page?: string;
+  }>;
 }) {
   const { user } = await getAuth();
   const { listId } = await params;
@@ -28,7 +36,8 @@ export default async function ListPage({
     notFound();
   }
 
-  const { created, saved } = await searchParams;
+  const query = await searchParams;
+  const { created, saved, wishDeleted } = query;
   const published = list.publication === "PUBLISHED";
 
   return (
@@ -60,6 +69,19 @@ export default async function ListPage({
         {list.description || "No description yet."}
       </p>
 
+      {list.canManage && wishDeleted === "1" && (
+        <p role="status" className={styles.notice}>
+          Wish deleted.
+        </p>
+      )}
+
+      <WishCollection
+        listId={list.id}
+        userId={user?.id ?? null}
+        canManage={list.canManage}
+        searchParams={query}
+      />
+
       {list.canManage && (
         <section
           className={styles["list-settings"]}
@@ -78,7 +100,7 @@ export default async function ListPage({
             {!published && list.reservationsEnabled ? " when published" : ""}.
           </p>
 
-          <ListActionForm
+          <ActionForm
             action={changePublication.bind(null, list.id)}
             label={published ? "Move to drafts" : "Publish list"}
             pendingLabel="Updating…"
@@ -94,7 +116,7 @@ export default async function ListPage({
                 reservations.
               </p>
             )}
-          </ListActionForm>
+          </ActionForm>
 
           <Link href={`${listPath(list.id)}/delete`}>Delete list</Link>
         </section>

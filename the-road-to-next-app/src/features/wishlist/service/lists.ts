@@ -102,7 +102,7 @@ export const createWishlist = async (userId: string, input: unknown) => {
   });
 };
 
-const lockManagedWishlist = async (
+export const lockManagedWishlist = async (
   tx: Prisma.TransactionClient,
   id: string,
   userId: string,
@@ -116,7 +116,7 @@ const lockManagedWishlist = async (
     throw new Error("Invalid database schema");
   }
 
-  // All list lifecycle writes share this lock; future wish/reservation writes must too.
+  // List and wish lifecycle writes share this lock; reservation writes must too.
   const table = Prisma.raw(`"${schema}"."Wishlist"`);
   await tx.$queryRaw(
     Prisma.sql`SELECT "id" FROM ${table} WHERE "id" = ${id} FOR UPDATE`,

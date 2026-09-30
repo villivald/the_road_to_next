@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useActionState, useId } from "react";
+import { ActionFeedback } from "@/components/form/action-feedback";
 import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
 import styles from "@/components/shell.module.css";
 import { listPath, listsPath } from "@/paths";
 import { createList, updateList } from "../actions/manage-list";
-import { ActionFeedback } from "./action-feedback";
 
 type ListValues = {
   id: string;

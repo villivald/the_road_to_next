@@ -4,37 +4,37 @@ import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/form/action-form";
 import styles from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
-import { deleteList } from "@/features/wishlist/actions/manage-list";
-import { readManagedWishlist } from "@/features/wishlist/service/lists";
-import { listPath } from "@/paths";
+import { removeWish } from "@/features/wish/actions/manage-wish";
+import { readWish } from "@/features/wish/service/wishes";
+import { wishPath } from "@/paths";
 
 export const metadata: Metadata = {
-  title: "Delete list",
+  title: "Delete wish",
   robots: { index: false, follow: false },
 };
 
-export default async function DeleteListPage({
+export default async function DeleteWishPage({
   params,
 }: {
-  params: Promise<{ listId: string }>;
+  params: Promise<{ listId: string; wishId: string }>;
 }) {
   const { user } = await getAuthOrRedirect();
-  const { listId } = await params;
-  const list = await readManagedWishlist(listId, user.id);
+  const { listId, wishId } = await params;
+  const wish = await readWish(listId, wishId, user.id, true);
 
-  if (!list) {
+  if (!wish) {
     notFound();
   }
 
   return (
     <section className={styles.editor}>
-      <h1>Delete list?</h1>
+      <h1>Delete wish?</h1>
       <p className={styles.description}>
-        “{list.title}” and all its wishes and reservations will be permanently
-        deleted. This cannot be undone.
+        “{wish.title}” and its reservations will be permanently deleted. This
+        cannot be undone.
       </p>
       <ActionForm
-        action={deleteList.bind(null, list.id)}
+        action={removeWish.bind(null, listId, wishId)}
         label="Delete permanently"
         pendingLabel="Deleting…"
         destructive
@@ -44,7 +44,7 @@ export default async function DeleteListPage({
           understand this cannot be undone
         </label>
       </ActionForm>
-      <Link href={listPath(list.id)}>Cancel and keep list</Link>
+      <Link href={wishPath(listId, wishId)}>Cancel and keep wish</Link>
     </section>
   );
 }

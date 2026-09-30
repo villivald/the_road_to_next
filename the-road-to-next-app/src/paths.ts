@@ -7,6 +7,11 @@ export const newListPath = `${listsPath}/new`;
 export const listPath = (id: string) =>
   `${listsPath}/${encodeURIComponent(id)}`;
 
+export const newWishPath = (listId: string) => `${listPath(listId)}/wishes/new`;
+
+export const wishPath = (listId: string, wishId: string) =>
+  `${listPath(listId)}/wishes/${encodeURIComponent(wishId)}`;
+
 export const signUpPath = "/sign-up";
 
 export const signInPath = "/sign-in";

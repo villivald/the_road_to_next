@@ -115,7 +115,8 @@
 }
 
 .field input,
-.field textarea {
+.field textarea,
+.field select {
   width: 100%;
   min-width: 0;
   min-height: 46px;
@@ -132,7 +133,8 @@
 }
 
 .field input[aria-invalid="true"],
-.field textarea[aria-invalid="true"] {
+.field textarea[aria-invalid="true"],
+.field select[aria-invalid="true"] {
   border-color: var(--destructive);
 }
 
@@ -272,6 +274,27 @@
 .form-fields:disabled {
   opacity: 0.6;
   cursor: wait;
+}
+
+.form-row,
+.wish-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  align-items: start;
+  gap: 1rem;
+  width: 100%;
+}
+
+.wish-toolbar {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.wish-title {
+  font-size: 1.125rem;
+  font-weight: 650;
 }
 
 .checkbox-label {
