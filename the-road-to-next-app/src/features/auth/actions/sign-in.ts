@@ -1,50 +1,27 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { z } from "zod";
-import {
-  ActionState,
-  fromErrorToActionState,
-  toActionState,
-} from "@/components/form/utils/to-action-state";
-import { verifyPasswordHash } from "@/features/password/utils/hash-and-verify";
-import { createSession } from "@/lib/lucia";
-import { prisma } from "@/lib/prisma";
-import { ticketsPath } from "@/paths";
-import { generateRandomToken } from "@/utils/crypto";
+import type { ActionState } from "@/components/form/utils/to-action-state";
+import { emailVerificationPath, listsPath } from "@/paths";
+import { authenticate } from "../service/accounts";
+import { authActionError } from "../service/action-error";
+import { limitAuthRequest } from "../service/request-limit";
+import { signInSchema } from "../service/schemas";
 import { setSessionCookie } from "../utils/session-cookie";
 
-const signInSchema = z.object({
-  email: z.string().min(1, { message: "Email is required" }).max(191).email(),
-  password: z.string().min(6).max(191),
-});
+export const signIn = async (_state: ActionState, data: FormData) => {
+  let verified = false;
 
-export const signIn = async (_actionState: ActionState, formData: FormData) => {
   try {
-    const { email, password } = signInSchema.parse(
-      Object.fromEntries(formData),
-    );
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    const input = signInSchema.parse(Object.fromEntries(data));
 
-    if (!user) {
-      return toActionState("ERROR", "Incorrect email or password", formData);
-    }
+    await limitAuthRequest("sign-in", input.email);
 
-    const validPassword = await verifyPasswordHash(user.passwordHash, password);
-
-    if (!validPassword) {
-      return toActionState("ERROR", "Incorrect email or password", formData);
-    }
-
-    const sessionToken = generateRandomToken();
-    const session = await createSession(sessionToken, user.id);
-
-    await setSessionCookie(sessionToken, session.expiresAt);
+    const result = await authenticate(input.email, input.password);
+    await setSessionCookie(result.token, result.session.expiresAt);
+    verified = result.user.emailVerified;
   } catch (error) {
-    return fromErrorToActionState(error, formData);
+    return authActionError(error, data);
   }
-
-  redirect(ticketsPath);
+  redirect(verified ? listsPath : emailVerificationPath);
 };

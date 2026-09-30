@@ -1,16 +1,29 @@
-import Heading from "@/components/heading";
-import AccountTabs from "../_navigation/tabs";
+import Link from "next/link";
+import styles from "@/components/shell.module.css";
+import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
+import { accountPasswordPath } from "@/paths";
 
-const ProfilePage = () => {
+export default async function AccountPage() {
+  const { user } = await getAuthOrRedirect();
+
   return (
-    <div className="flex flex-1 flex-col gap-y-8">
-      <Heading
-        title="Profile"
-        description="Manage your profile settings"
-        tabs={<AccountTabs />}
-      />
-    </div>
+    <section className={styles["account-panel"]}>
+      <h1>Your account</h1>
+      <dl className={styles.details}>
+        <div>
+          <dt>Username</dt>
+          <dd>{user.username}</dd>
+        </div>
+        <div>
+          <dt>Email</dt>
+          <dd>{user.email}</dd>
+        </div>
+        <div>
+          <dt>Email status</dt>
+          <dd>Verified</dd>
+        </div>
+      </dl>
+      <Link href={accountPasswordPath}>Change password</Link>
+    </section>
   );
-};
-
-export default ProfilePage;
+}

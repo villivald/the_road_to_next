@@ -1,33 +1,30 @@
 import Link from "next/link";
-import { CardCompact } from "@/components/card-compact";
-import SignInForm from "@/features/auth/components/sign-in-form";
+import { AccountForm } from "@/components/account-form";
+import { AccountPanel } from "@/components/account-panel";
 import { passwordForgotPath, signUpPath } from "@/paths";
 
-const SignUp = () => {
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reset?: string }>;
+}) {
+  const { reset } = await searchParams;
   return (
-    <div className="flex flex-1 flex-col items-center justify-center">
-      <CardCompact
-        title="Sign In"
-        description="Sign in to your account"
-        className="w-full max-w-[420px] animate-fade-from-top"
-        content={<SignInForm />}
-        footer={
-          <div className="flex w-full items-center justify-between">
-            <Link href={signUpPath} className="text-sm text-muted-foreground">
-              No account yet? Sign up
-            </Link>
-
-            <Link
-              href={passwordForgotPath}
-              className="text-sm text-muted-foreground"
-            >
-              Forgot password?
-            </Link>
-          </div>
-        }
-      />
-    </div>
+    <AccountPanel
+      title="Welcome back"
+      description={
+        reset === "success"
+          ? "Your password has been reset. Sign in with your new password."
+          : "Sign in to your Wishlist account."
+      }
+      footer={
+        <>
+          <Link href={signUpPath}>Create an account</Link>
+          <Link href={passwordForgotPath}>Forgot password?</Link>
+        </>
+      }
+    >
+      <AccountForm mode="signIn" />
+    </AccountPanel>
   );
-};
-
-export default SignUp;
+}

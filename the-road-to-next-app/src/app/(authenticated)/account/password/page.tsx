@@ -1,27 +1,16 @@
-import { CardCompact } from "@/components/card-compact";
-import Heading from "@/components/heading";
-import PasswordChangeForm from "@/features/password/components/password-change-form";
-import AccountTabs from "../_navigation/tabs";
+import Link from "next/link";
+import { AccountForm } from "@/components/account-form";
+import { AccountPanel } from "@/components/account-panel";
+import { accountProfilePath } from "@/paths";
 
-const PasswordPage = () => {
+export default function PasswordPage() {
   return (
-    <div className="flex flex-1 flex-col gap-y-8">
-      <Heading
-        title="Password"
-        description="Change your password"
-        tabs={<AccountTabs />}
-      />
-
-      <div className="flex flex-1 flex-col items-center">
-        <CardCompact
-          title="Change Password"
-          description="Enter your current password"
-          className="w-full max-w-[420px] animate-fade-from-top"
-          content={<PasswordChangeForm />}
-        />
-      </div>
-    </div>
+    <AccountPanel
+      title="Change password"
+      description="Your current password is required. Changing it signs out your other sessions."
+      footer={<Link href={accountProfilePath}>Back to account</Link>}
+    >
+      <AccountForm mode="passwordChange" />
+    </AccountPanel>
   );
-};
-
-export default PasswordPage;
+}

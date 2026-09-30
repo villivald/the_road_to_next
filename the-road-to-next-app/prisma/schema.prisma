@@ -1,64 +1,131 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
 }
 
-model Organization {
-  id           String   @id @default(cuid())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  name         String   @unique
-  memberships  Membership[]
-  tickets      Ticket[]
-  invitations  Invitation[]
+model User {
+  id                      String                   @id @default(cuid())
+  createdAt               DateTime                 @default(now())
+  username                String                   @unique @db.VarChar(40)
+  email                   String                   @unique @db.VarChar(254)
+  emailVerified           Boolean                  @default(false)
+  passwordHash            String
+  sessions                Session[]
+  passwordResetTokens     PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
+  ownedLists              Wishlist[]               @relation("ListOwner")
+  authoredWishes          Wish[]                   @relation("WishAuthor")
+  memberships             Membership[]
+  reservations            Reservation[]
 }
 
-model Invitation {
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  tokenHash       String        @unique
-  email           String
-  organization    Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  organizationId  String
-  invitedByUser   User?         @relation(fields: [invitedByUserId], references: [id], onDelete: SetNull)
-  invitedByUserId String?
-  status          InvitationStatus  @default(PENDING)
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@id(name: "invitationId", [email, organizationId])
-  @@index([organizationId])
+  @@index([userId])
+  @@index([expiresAt])
 }
 
-enum InvitationStatus {
-  PENDING
-  ACCEPTED_WITHOUT_ACCOUNT
+model EmailVerificationToken {
+  userId    String   @id
+  codeHash  String
+  email     String   @db.VarChar(254)
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+}
+
+model PasswordResetToken {
+  tokenHash String   @id
+  userId    String   @unique
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+}
+
+model AuthRateLimit {
+  key       String   @id
+  attempts  Int      @default(1)
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}
+
+model Wishlist {
+  id                  String         @id @default(cuid())
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  title               String         @db.VarChar(200)
+  description         String?        @db.VarChar(2000)
+  publication         Publication    @default(DRAFT)
+  visibility          ListVisibility @default(PUBLIC)
+  reservationsEnabled Boolean        @default(false)
+  archivedAt          DateTime?
+  ownerId             String?
+  owner               User?          @relation("ListOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  memberships         Membership[]
+  wishes              Wish[]
+
+  @@index([ownerId, archivedAt, createdAt])
+  @@index([visibility, publication, archivedAt, createdAt])
 }
 
 model Membership {
-  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  organizationId String
-  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         String
+  id         String         @id @default(cuid())
+  joinedAt   DateTime       @default(now())
+  role       MembershipRole @default(MEMBER)
+  wishlistId String
+  userId     String
+  wishlist   Wishlist       @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  joinedAt       DateTime       @default(now())
-  isActive       Boolean
-  membershipRole MembershipRole @default(MEMBER)
+  @@unique([wishlistId, userId])
+  @@index([userId, joinedAt])
+}
 
-  // permissions
-  canDeleteTicket Boolean       @default(true)
+model Wish {
+  id           String        @id @default(cuid())
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  title        String        @db.VarChar(200)
+  description  String?       @db.VarChar(4000)
+  externalUrl  String?       @db.VarChar(2048)
+  priceMinor   Int?
+  currency     Currency?
+  priority     Int?          @db.SmallInt
+  hidden       Boolean       @default(false)
+  fulfilledAt  DateTime?
+  wishlistId   String
+  authorId     String?
+  wishlist     Wishlist      @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  author       User?         @relation("WishAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  reservations Reservation[]
 
-  @@id(name: "membershipId", [organizationId, userId ])
-  @@index([userId])
-  @@index([organizationId])
+  @@index([wishlistId, hidden, fulfilledAt, createdAt])
+  @@index([authorId])
+}
+
+model Reservation {
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  endedAt   DateTime?
+  wishId    String
+  userId    String
+  wish      Wish      @relation(fields: [wishId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // A partial unique index in the migration permits one active reservation per wish.
+  @@index([wishId, endedAt])
+  @@index([userId, endedAt, createdAt])
 }
 
 enum MembershipRole {
@@ -66,104 +133,18 @@ enum MembershipRole {
   MEMBER
 }
 
-model User {
-  id                     String         @id @default(cuid())
-  username               String         @unique
-  email                  String         @unique
-  emailVerified           Boolean        @default(false)
-  passwordHash           String
-  sessions               Session[]
-  passwordResetTokens    PasswordResetToken[]
-  emailVerificationTokens EmailVerificationToken[]
-  memberships            Membership[]
-  tickets                Ticket[]
-  comments               Comment[]
-  invitesByUser          Invitation[]
+enum Publication {
+  DRAFT
+  PUBLISHED
 }
 
-model EmailVerificationToken {
-  id         String         @id @default(cuid())
-  code       String
-  userId     String
-  expiresAt  DateTime
-  email      String
-  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-model PasswordResetToken {
-  tokenHash  String         @id
-  userId     String
-  expiresAt  DateTime
-  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
+enum ListVisibility {
+  PUBLIC
+  PRIVATE
 }
 
-model Session {
-  id         String         @id
-  expiresAt  DateTime
-  userId     String
-  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-model Ticket {
-  id             String         @id @default(cuid())
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  title          String
-  content        String         @db.VarChar(1024)
-  status         TicketStatus   @default(OPEN)
-  deadline       String
-  bounty         Int
-  userId         String
-  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  comments       Comment[]
-  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  organizationId String
-  attachments    Attachment[]
-
-  @@index([userId])
-  @@index([organizationId])
-}
-
-model Attachment {
-  id         String           @id @default(cuid())
-  name       String
-
-  entity     AttachmentEntity
-  ticket     Ticket?          @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  ticketId   String?
-  comment    Comment?         @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  commentId  String?
-
-  @@index([ticketId])
-  @@index([commentId])
-}
-
-model Comment {
-  id          String         @id @default(cuid())
-  createdAt   DateTime       @default(now())
-  content     String         @db.VarChar(1024)
-  ticket      Ticket         @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  ticketId    String
-  user        User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
-  userId      String?
-  attachments Attachment[]
-
-  @@index([ticketId])
-  @@index([userId])
-}
-
-enum TicketStatus {
-  OPEN
-  IN_PROGRESS
-  DONE
-}
-
-enum AttachmentEntity {
-  TICKET
-  COMMENT
+enum Currency {
+  EUR
+  USD
+  GBP
 }

@@ -1,25 +1,21 @@
-import { CardCompact } from "@/components/card-compact";
-import PasswordResetForm from "@/features/password/components/password-reset-form";
+import Link from "next/link";
+import { AccountForm } from "@/components/account-form";
+import { AccountPanel } from "@/components/account-panel";
+import { passwordForgotPath } from "@/paths";
 
-type ForgotResetPageProps = {
-  params: Promise<{
-    tokenId: string;
-  }>;
-};
-
-const ForgotResetPage = async ({ params }: ForgotResetPageProps) => {
+export default async function PasswordResetPage({
+  params,
+}: {
+  params: Promise<{ tokenId: string }>;
+}) {
   const { tokenId } = await params;
-
   return (
-    <div className="flex flex-1 flex-col items-center justify-center">
-      <CardCompact
-        title="News Password"
-        description="Enter a new password to reset your account"
-        className="w-full max-w-[420px] animate-fade-from-top"
-        content={<PasswordResetForm tokenId={tokenId} />}
-      />
-    </div>
+    <AccountPanel
+      title="Reset your password"
+      description="Choose a new password. Reset links expire after 30 minutes and can be used once."
+      footer={<Link href={passwordForgotPath}>Request a new link</Link>}
+    >
+      <AccountForm mode="passwordReset" tokenId={tokenId} />
+    </AccountPanel>
   );
-};
-
-export default ForgotResetPage;
+}

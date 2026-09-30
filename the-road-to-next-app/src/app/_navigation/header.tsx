@@ -1,59 +1,50 @@
-"use client";
-
-import { LucideKanban } from "lucide-react";
 import Link from "next/link";
+import styles from "@/components/shell.module.css";
 import ThemeSwitcher from "@/components/theme/theme-switcher";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { useAuth } from "@/features/auth/hooks/use-auth";
-import { homePath, signInPath, signUpPath } from "@/paths";
-import { AccountDropdown } from "./account-dropdown";
+import { getAuth } from "@/features/auth/actions/get-auth";
+import { signOut } from "@/features/auth/actions/sign-out";
+import {
+  accountProfilePath,
+  emailVerificationPath,
+  listsPath,
+  signInPath,
+  signUpPath,
+} from "@/paths";
 
-const Header = () => {
-  const { user, isFetched } = useAuth();
-
-  if (!isFetched) {
-    return null;
-  }
-
-  const navItems = user ? (
-    <AccountDropdown user={user} />
-  ) : (
-    <>
-      <Link
-        href={signUpPath}
-        className={buttonVariants({
-          variant: "outline",
-        })}
-      >
-        Sign Up
-      </Link>
-      <Link
-        href={signInPath}
-        className={buttonVariants({
-          variant: "default",
-        })}
-      >
-        Sign In
-      </Link>
-    </>
-  );
-
+export default async function Header() {
+  const { user } = await getAuth();
   return (
-    <nav className="fixed top-0 right-0 left-0 z-20 flex w-full animate-header-from-top justify-between border-b bg-background/95 px-5 py-2.5 backdrop-blur supports-backdrop-blur:bg-background/60">
-      <div className="align-items flex gap-x-2">
-        <Button asChild variant="ghost">
-          <Link href={homePath}>
-            <LucideKanban />
-            <h1 className="text-lg font-semibold">TicketBounty</h1>
-          </Link>
-        </Button>
+    <header className={styles.header}>
+      <div className={styles["header-inner"]}>
+        <Link href="/" className={styles.brand}>
+          Wishlist
+        </Link>
+        <nav aria-label="Main navigation" className={styles.navigation}>
+          {user ? (
+            <>
+              <Link
+                href={user.emailVerified ? listsPath : emailVerificationPath}
+              >
+                {user.emailVerified ? "My lists" : "Verify email"}
+              </Link>
+              {user.emailVerified && (
+                <Link href={accountProfilePath}>Account</Link>
+              )}
+              <form action={signOut}>
+                <button type="submit" className={styles["text-button"]}>
+                  Sign out
+                </button>
+              </form>
+            </>
+          ) : (
+            <>
+              <Link href={signInPath}>Sign in</Link>
+              <Link href={signUpPath}>Create account</Link>
+            </>
+          )}
+          <ThemeSwitcher />
+        </nav>
       </div>
-      <div className="align-items flex gap-x-2">
-        <ThemeSwitcher />
-        {navItems}
-      </div>
-    </nav>
+    </header>
   );
-};
-
-export default Header;
+}

@@ -1,80 +1,42 @@
+import type { Prisma } from "@/generated/prisma/client";
 import { hashToken } from "@/utils/crypto";
 import { prisma } from "./prisma";
 
-const SESSION_REFRESH_INTERVAL_MS = 1000 * 60 * 60 * 24 * 15; // 15 days
-const SESSION_MAX_DURATION_MS = SESSION_REFRESH_INTERVAL_MS * 2; // 30 days
+// Fixed lifetime keeps database and browser expiry aligned without writes during rendering.
+export const SESSION_LIFETIME_MS = 30 * 24 * 60 * 60 * 1000;
 
-export const createSession = async (sessionToken: string, userId: string) => {
-  const sessionId = hashToken(sessionToken);
-
-  const session = {
-    id: sessionId,
-    userId,
-    expiresAt: new Date(Date.now() + SESSION_MAX_DURATION_MS),
-  };
-
-  await prisma.session.create({
-    data: session,
+export const createSession = async (
+  token: string,
+  userId: string,
+  db: Prisma.TransactionClient = prisma,
+) =>
+  db.session.create({
+    data: {
+      id: hashToken(token),
+      userId,
+      expiresAt: new Date(Date.now() + SESSION_LIFETIME_MS),
+    },
   });
 
-  return session;
-};
-
-export const validateSession = async (sessionToken: string) => {
-  const sessionId = hashToken(sessionToken);
-
+export const validateSession = async (token: string) => {
   const result = await prisma.session.findUnique({
-    where: {
-      id: sessionId,
-    },
+    where: { id: hashToken(token) },
     include: {
       user: {
         select: { id: true, username: true, email: true, emailVerified: true },
       },
     },
   });
-
-  // if there is no session, return null
   if (!result) {
-    return { session: null, user: null };
+    return { user: null, session: null };
   }
-
+  if (result.expiresAt.getTime() <= Date.now()) {
+    await prisma.session.deleteMany({ where: { id: result.id } });
+    return { user: null, session: null };
+  }
   const { user, ...session } = result;
-
-  // if the session is expired, delete it
-  if (Date.now() >= session.expiresAt.getTime()) {
-    // or your ORM of choice
-    await prisma.session.deleteMany({
-      where: {
-        id: sessionId,
-      },
-    });
-
-    return { session: null, user: null };
-  }
-
-  // if 15 days are left until the session expires, refresh the session
-  if (Date.now() >= session.expiresAt.getTime() - SESSION_REFRESH_INTERVAL_MS) {
-    session.expiresAt = new Date(Date.now() + SESSION_MAX_DURATION_MS);
-
-    const refreshed = await prisma.session.updateMany({
-      where: {
-        id: sessionId,
-      },
-      data: {
-        expiresAt: session.expiresAt,
-      },
-    });
-    if (refreshed.count === 0) return { session: null, user: null };
-  }
-
-  return { session, user };
+  return { user, session };
 };
 
-export const invalidateSession = async (sessionId: string) => {
-  await prisma.session.deleteMany({
-    where: {
-      id: sessionId,
-    },
-  });
-};
+export const invalidateSession = async (id: string) =>
+  prisma.session.deleteMany({ where: { id } });

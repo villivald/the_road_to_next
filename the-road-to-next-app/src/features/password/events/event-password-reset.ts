@@ -3,34 +3,17 @@ import { prisma } from "@/lib/prisma";
 import { sendEmailPasswordReset } from "../emails/send-email-password-reset";
 import { generatePasswordResetLink } from "../utils/generate-password-reset-link";
 
-export type PasswordResetEventArgs = {
-  data: { userId: string };
-};
-
 export const passwordResetEvent = inngest.createFunction(
   { id: "password-reset", triggers: [passwordResetRequested] },
   async ({ event }) => {
-    const { userId } = event.data;
-
-    const user = await prisma.user.findUniqueOrThrow({
-      where: { id: userId },
+    const user = await prisma.user.findUnique({
+      where: { id: event.data.userId },
     });
-
-    const passwordResetLink = await generatePasswordResetLink(user.id);
-
-    const result = await sendEmailPasswordReset(
-      user.username,
-      user.email,
-      passwordResetLink,
-    );
-
-    if (result.error) {
-      throw new Error(`${result.error.name}: ${result.error.message}`);
+    if (!user) {
+      return { skipped: true };
     }
-
-    return {
-      event,
-      body: result,
-    };
+    const url = await generatePasswordResetLink(user.id);
+    await sendEmailPasswordReset(user.username, user.email, url);
+    return { sent: true };
   },
 );

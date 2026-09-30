@@ -1,5 +1,5 @@
-import { hash } from "@node-rs/argon2";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { hashPassword } from "../src/features/password/utils/hash-and-verify";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { assertTestDatabase, testDatabaseUrl } from "./environment";
 
@@ -8,57 +8,65 @@ export const accounts = {
   member: { email: "member@example.test", password: "Fixture-only-password!" },
 };
 
-export const fixtureTicket = {
-  id: "e2e-ticket",
-  title: "Baseline ticket",
-  content: "A repeatable ticket for browser checks.",
+export const newAccount = {
+  username: "e2e-new-user",
+  email: "new-user@example.test",
+  password: "New-account-password!",
+};
+
+export const testPrisma = () => {
+  assertTestDatabase(process.env);
+  return new PrismaClient({
+    adapter: new PrismaPg(
+      { connectionString: testDatabaseUrl },
+      { schema: "wishlist" },
+    ),
+  });
 };
 
 export const resetFixtures = async () => {
-  assertTestDatabase(process.env);
-  const prisma = new PrismaClient({
-    adapter: new PrismaPg({ connectionString: testDatabaseUrl }),
-  });
-
+  const prisma = testPrisma();
   try {
-    const passwordHash = await hash(accounts.owner.password);
+    const passwordHash = await hashPassword(accounts.owner.password);
     await prisma.$transaction(async (tx) => {
-      await tx.organization.deleteMany({ where: { id: "e2e-organization" } });
+      await tx.wishlist.deleteMany({ where: { id: { startsWith: "e2e-" } } });
       await tx.user.deleteMany({
-        where: { id: { in: ["e2e-owner", "e2e-member"] } },
+        where: {
+          OR: [{ id: { startsWith: "e2e-" } }, { email: newAccount.email }],
+        },
       });
+      await tx.authRateLimit.deleteMany();
       await tx.user.createMany({
         data: Object.entries(accounts).map(([role, account]) => ({
           id: `e2e-${role}`,
-          username: `test-${role}`,
+          username: `e2e-${role}`,
           email: account.email,
           emailVerified: true,
           passwordHash,
         })),
       });
-      await tx.organization.create({
+      await tx.wishlist.create({
         data: {
-          id: "e2e-organization",
-          name: "Browser Test Organization",
-          memberships: {
-            create: [
-              { userId: "e2e-owner", membershipRole: "ADMIN", isActive: true },
-              {
-                userId: "e2e-member",
-                membershipRole: "MEMBER",
-                isActive: true,
-              },
-            ],
-          },
-          tickets: {
+          id: "e2e-private-list",
+          title: "Another person's private list",
+          ownerId: "e2e-member",
+          visibility: "PRIVATE",
+          memberships: { create: { userId: "e2e-member", role: "ADMIN" } },
+          wishes: {
             create: {
-              ...fixtureTicket,
-              userId: "e2e-owner",
-              status: "OPEN",
-              bounty: 1999,
-              deadline: "2030-01-15",
+              id: "e2e-wish",
+              title: "Private wish",
+              authorId: "e2e-member",
             },
           },
+        },
+      });
+      await tx.wishlist.create({
+        data: {
+          id: "e2e-archived-list",
+          title: "Archived list",
+          ownerId: "e2e-owner",
+          archivedAt: new Date(),
         },
       });
     });

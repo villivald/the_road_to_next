@@ -9,11 +9,10 @@ import { getAuth } from "./get-auth";
 export const signOut = async () => {
   const { session } = await getAuth();
 
-  if (!session) {
-    redirect(signInPath);
+  if (session) {
+    await invalidateSession(session.id);
   }
 
-  await invalidateSession(session.id);
   await deleteSessionCookie();
 
   redirect(signInPath);

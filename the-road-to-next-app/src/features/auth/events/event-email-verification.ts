@@ -3,39 +3,17 @@ import { prisma } from "@/lib/prisma";
 import { sendEmailVerification } from "../emails/send-email-verification";
 import { generateEmailVerificationCode } from "../utils/generate-email-verification-code";
 
-export type EmailVerificationEventArgs = {
-  data: {
-    userId: string;
-  };
-};
-
 export const emailVerificationEvent = inngest.createFunction(
   { id: "email-verification", triggers: [signedUp] },
   async ({ event }) => {
-    const { userId } = event.data;
-
-    const user = await prisma.user.findUniqueOrThrow({
-      where: { id: userId },
+    const user = await prisma.user.findUnique({
+      where: { id: event.data.userId },
     });
-
-    const verificationCode = await generateEmailVerificationCode(
-      user.id,
-      user.email,
-    );
-
-    const result = await sendEmailVerification(
-      user.username,
-      user.email,
-      verificationCode,
-    );
-
-    if (result.error) {
-      throw new Error(`${result.error.name}: ${result.error.message}`);
+    if (!user || user.emailVerified) {
+      return { skipped: true };
     }
-
-    return {
-      event,
-      body: result,
-    };
+    const code = await generateEmailVerificationCode(user.id, user.email);
+    await sendEmailVerification(user.username, user.email, code);
+    return { sent: true };
   },
 );

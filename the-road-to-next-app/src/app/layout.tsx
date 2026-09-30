@@ -1,54 +1,35 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { Geist } from "next/font/google";
 import Header from "@/app/_navigation/header";
-import { Sidebar } from "@/app/_navigation/sidebar/components/sidebar";
-import { RedirectToast } from "@/components/redirect-toast";
+import styles from "@/components/shell.module.css";
 import ThemeProvider from "@/components/theme/theme-provider";
-import { Toaster } from "@/components/ui/sonner";
-import { ReactQueryProvider } from "./_providers/react-query/react-query-provider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const geist = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "The Road to Next.js",
-  description: "My Road to Next.js application",
+  title: { default: "Wishlist", template: "%s · Wishlist" },
+  description: "A place for the things you wish for.",
+  referrer: "no-referrer",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <NuqsAdapter>
-          <ThemeProvider>
-            <ReactQueryProvider>
-              <Header />
-              <div className="flex h-screen border-collapse overflow-hidden">
-                <Sidebar />
-                <main className="flex min-h-screen flex-1 flex-col overflow-x-hidden overflow-y-auto bg-secondary/20 px-8 py-24">
-                  {children}
-                </main>
-              </div>
-              <Toaster expand />
-              <RedirectToast />
-            </ReactQueryProvider>
-          </ThemeProvider>
-        </NuqsAdapter>
+      <body className={`${geist.variable} ${styles.body}`}>
+        <ThemeProvider>
+          <a href="#main-content" className={styles["skip-link"]}>
+            Skip to content
+          </a>
+          <Header />
+          <main id="main-content" tabIndex={-1} className={styles.main}>
+            {children}
+          </main>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,15 +1,13 @@
 import EmailPasswordReset from "@/emails/password/email-password-reset";
-import { resend } from "@/lib/resend";
+import { deliverEmail } from "@/lib/mail";
 
 export const sendEmailPasswordReset = async (
   username: string,
   email: string,
-  passwordResetLink: string,
-) => {
-  return await resend.emails.send({
-    from: process.env.EMAIL_FROM ?? "TicketBounty <onboarding@resend.dev>",
-    to: email,
-    subject: "Password Reset Request",
-    react: <EmailPasswordReset toName={username} url={passwordResetLink} />,
-  });
-};
+  url: string,
+) =>
+  deliverEmail(
+    email,
+    "Reset your Wishlist password",
+    <EmailPasswordReset toName={username} url={url} />,
+  );

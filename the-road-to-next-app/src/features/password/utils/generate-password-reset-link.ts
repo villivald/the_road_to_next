@@ -1,30 +1,27 @@
+import { lockUser } from "@/features/auth/service/security";
 import { prisma } from "@/lib/prisma";
 import { passwordResetPath } from "@/paths";
 import { generateRandomToken, hashToken } from "@/utils/crypto";
 import { getBaseUrl } from "@/utils/url";
 
-const PASSWORD_RESET_TOKEN_LIFETIME_MS = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
-
 export const generatePasswordResetLink = async (userId: string) => {
-  await prisma.passwordResetToken.deleteMany({
-    where: {
-      userId,
-    },
+  const token = generateRandomToken();
+
+  await prisma.$transaction(async (tx) => {
+    await lockUser(tx, userId);
+
+    await tx.passwordResetToken.upsert({
+      where: { userId },
+      create: {
+        userId,
+        tokenHash: hashToken(token),
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+      },
+      update: {
+        tokenHash: hashToken(token),
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+      },
+    });
   });
-
-  const tokenId = generateRandomToken();
-  const tokenHash = hashToken(tokenId);
-
-  await prisma.passwordResetToken.create({
-    data: {
-      tokenHash,
-      userId,
-      expiresAt: new Date(Date.now() + PASSWORD_RESET_TOKEN_LIFETIME_MS),
-    },
-  });
-
-  const pageUrl = getBaseUrl() + passwordResetPath;
-  const passwordResetLink = pageUrl + `${tokenId}`;
-
-  return passwordResetLink;
+  return `${getBaseUrl()}${passwordResetPath}${token}`;
 };

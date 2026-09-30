@@ -1,5 +1,4 @@
 name: wishlist-rebuild
-
 services:
   dev-db:
     image: postgres:17-alpine
@@ -7,31 +6,47 @@ services:
       POSTGRES_USER: wishlist
       POSTGRES_PASSWORD: wishlist-local
       POSTGRES_DB: wishlist_dev
-    ports:
-      - "127.0.0.1:55432:5432"
-    volumes:
-      - wishlist-dev-data:/var/lib/postgresql/data
+    ports: ["127.0.0.1:55432:5432"]
+    volumes: [wishlist-dev-data:/var/lib/postgresql/data]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U wishlist -d wishlist_dev"]
       interval: 2s
       timeout: 5s
       retries: 15
-
   test-db:
     image: postgres:17-alpine
     environment:
       POSTGRES_USER: wishlist_test
       POSTGRES_PASSWORD: wishlist-test-only
       POSTGRES_DB: wishlist_test
-    ports:
-      - "127.0.0.1:55433:5432"
-    tmpfs:
-      - /var/lib/postgresql/data
+    ports: ["127.0.0.1:55433:5432"]
+    tmpfs: [/var/lib/postgresql/data]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U wishlist_test -d wishlist_test"]
       interval: 2s
       timeout: 5s
       retries: 15
-
+  dev-mail:
+    image: axllent/mailpit:v1.31.3
+    ports: ["127.0.0.1:8025:8025"]
+    environment:
+      MP_MAX_MESSAGES: 100
+      MP_DISABLE_VERSION_CHECK: "true"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+  test-mail:
+    image: axllent/mailpit:v1.31.3
+    ports: ["127.0.0.1:8026:8025"]
+    environment:
+      MP_MAX_MESSAGES: 100
+      MP_DISABLE_VERSION_CHECK: "true"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
 volumes:
   wishlist-dev-data:

@@ -2,76 +2,26 @@
 
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { setCookieByKey } from "@/actions/cookies";
-import {
-  ActionState,
-  fromErrorToActionState,
-  toActionState,
-} from "@/components/form/utils/to-action-state";
-import { prisma } from "@/lib/prisma";
+import type { ActionState } from "@/components/form/utils/to-action-state";
+import { resetPassword } from "@/features/auth/service/accounts";
+import { authActionError } from "@/features/auth/service/action-error";
+import { limitAuthRequest } from "@/features/auth/service/request-limit";
+import { newPasswordSchema } from "@/features/auth/service/schemas";
+import { deleteSessionCookie } from "@/features/auth/utils/session-cookie";
 import { signInPath } from "@/paths";
-import { hashToken } from "@/utils/crypto";
-import { hashPassword } from "../utils/hash-and-verify";
 
-const passwordResetSchema = z
-  .object({
-    password: z.string().min(6).max(191),
-    confirmPassword: z.string().min(6).max(191),
-  })
-  .superRefine(({ password, confirmPassword }, ctx) => {
-    if (password !== confirmPassword) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Passwords do not match",
-        path: ["confirmPassword"],
-      });
-    }
-  });
-
-export const passwordReset = async (
-  _actionState: ActionState,
-  formData: FormData,
-) => {
-  const tokenId = formData.get("tokenId")?.toString() ?? "";
+export const passwordReset = async (_state: ActionState, data: FormData) => {
   try {
-    const { password } = passwordResetSchema.parse({
-      password: formData.get("password"),
-      confirmPassword: formData.get("confirmPassword"),
-    });
-
-    const tokenHash = hashToken(tokenId);
-
-    const passwordResetToken = await prisma.passwordResetToken.findUnique({
-      where: { tokenHash },
-    });
-
-    if (passwordResetToken) {
-      await prisma.passwordResetToken.delete({
-        where: { tokenHash },
-      });
-    }
-
-    if (
-      !passwordResetToken ||
-      Date.now() > passwordResetToken.expiresAt.getTime()
-    ) {
-      return toActionState("ERROR", "Token is invalid or expired", formData);
-    }
-
-    await prisma.session.deleteMany({
-      where: { userId: passwordResetToken.userId },
-    });
-
-    const passwordHash = await hashPassword(password);
-
-    await prisma.user.update({
-      where: { id: passwordResetToken.userId },
-      data: { passwordHash },
-    });
+    const token = z
+      .string()
+      .regex(/^[a-z2-7]{32}$/)
+      .parse(data.get("tokenId"));
+    await limitAuthRequest("reset", token, 5);
+    const input = newPasswordSchema.parse(Object.fromEntries(data));
+    await resetPassword(token, input.password);
+    await deleteSessionCookie();
   } catch (error) {
-    return fromErrorToActionState(error, formData);
+    return authActionError(error, data);
   }
-
-  await setCookieByKey("toast", "Successfully reset password");
-  return redirect(signInPath);
+  redirect(`${signInPath}?reset=success`);
 };

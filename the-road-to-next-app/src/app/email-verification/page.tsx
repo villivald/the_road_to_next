@@ -1,23 +1,23 @@
-import { CardCompact } from "@/components/card-compact";
-import EmailVerificationForm from "@/features/auth/components/email-verification-form";
-import EmailVerificationResendForm from "@/features/auth/components/email-verification-resend-form";
+import { redirect } from "next/navigation";
+import { AccountForm } from "@/components/account-form";
+import { AccountPanel } from "@/components/account-panel";
+import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
+import { listsPath } from "@/paths";
 
-const EmailVerificationPage = () => {
+export default async function EmailVerificationPage() {
+  const { user } = await getAuthOrRedirect({ checkEmailVerified: false });
+
+  if (user.emailVerified) {
+    redirect(listsPath);
+  }
+
   return (
-    <div className="flex flex-1 flex-col items-center justify-center">
-      <CardCompact
-        title="Verify Email"
-        description="Please verify your email address to continue"
-        className="w-full max-w-[420px] animate-fade-from-top"
-        content={
-          <div className="flex flex-col gap-y-2">
-            <EmailVerificationForm />
-            <EmailVerificationResendForm />
-          </div>
-        }
-      />
-    </div>
+    <AccountPanel
+      title="Verify your email"
+      description={`Check ${user.email} for a code. Codes expire after 30 minutes. If no email arrived, send a new code below.`}
+    >
+      <AccountForm mode="emailVerification" />
+      <AccountForm mode="emailVerificationResend" />
+    </AccountPanel>
   );
-};
-
-export default EmailVerificationPage;
+}

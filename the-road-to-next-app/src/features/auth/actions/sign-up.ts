@@ -1,94 +1,43 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { z } from "zod";
 import {
-  ActionState,
-  fromErrorToActionState,
+  type ActionState,
   toActionState,
 } from "@/components/form/utils/to-action-state";
-import { hashPassword } from "@/features/password/utils/hash-and-verify";
 import { Prisma } from "@/generated/prisma/client";
-import { inngest, signedUp } from "@/lib/inngest";
-import { createSession } from "@/lib/lucia";
-import { prisma } from "@/lib/prisma";
-import { ticketsPath } from "@/paths";
-import { generateRandomToken } from "@/utils/crypto";
+import { emailVerificationPath } from "@/paths";
+import { sendEmailVerification } from "../emails/send-email-verification";
+import { register } from "../service/accounts";
+import { authActionError } from "../service/action-error";
+import { limitAuthRequest } from "../service/request-limit";
+import { signUpSchema } from "../service/schemas";
+import { generateEmailVerificationCode } from "../utils/generate-email-verification-code";
 import { setSessionCookie } from "../utils/session-cookie";
 
-const signUpSchema = z
-  .object({
-    username: z
-      .string()
-      .min(1)
-      .max(191)
-      .refine(
-        (value) => !value.includes(" "),
-        "Username cannot contain spaces",
-      ),
-    email: z.string().min(1, { message: "Email is required" }).max(191).email(),
-    password: z.string().min(6).max(191),
-    confirmPassword: z.string().min(6).max(191),
-  })
-  .superRefine(({ password, confirmPassword }, ctx) => {
-    if (password !== confirmPassword) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Passwords do not match",
-        path: ["confirmPassword"],
-      });
-    }
-  });
-
-export const signUp = async (_actionState: ActionState, formData: FormData) => {
+export const signUp = async (_state: ActionState, data: FormData) => {
   try {
-    const { username, email, password } = signUpSchema.parse(
-      Object.fromEntries(formData),
-    );
+    const input = signUpSchema.parse(Object.fromEntries(data));
 
-    const passwordHash = await hashPassword(password);
+    await limitAuthRequest("sign-up", input.email, 5);
 
-    const user = await prisma.user.create({
-      data: {
-        username,
-        email,
-        passwordHash,
-      },
-    });
+    const result = await register(input);
 
-    const invitations = await prisma.invitation.findMany({
-      where: {
-        email,
-      },
-    });
-
-    await prisma.$transaction([
-      prisma.invitation.deleteMany({
-        where: {
-          email,
-        },
-      }),
-
-      prisma.membership.createMany({
-        data: invitations.map((invitation) => ({
-          organizationId: invitation.organizationId,
-          userId: user.id,
-          membershipRole: "MEMBER",
-          isActive: false,
-        })),
-      }),
-    ]);
-
-    await inngest.send(
-      signedUp.create({
-        userId: user.id,
-      }),
-    );
-
-    const sessionToken = generateRandomToken();
-    const session = await createSession(sessionToken, user.id);
-
-    await setSessionCookie(sessionToken, session.expiresAt);
+    await setSessionCookie(result.token, result.session.expiresAt);
+    try {
+      const code = await generateEmailVerificationCode(
+        result.user.id,
+        result.user.email,
+      );
+      await sendEmailVerification(
+        result.user.username,
+        result.user.email,
+        code,
+      );
+    } catch {
+      // Account and session remain usable; the verification page offers resend.
+      console.error("Initial verification email failed; resend is available");
+    }
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -96,13 +45,13 @@ export const signUp = async (_actionState: ActionState, formData: FormData) => {
     ) {
       return toActionState(
         "ERROR",
-        "Either the username or email is already taken",
-        formData,
+        "Unable to register with these details. Try signing in or recovering your password.",
+        data,
       );
     }
 
-    return fromErrorToActionState(error, formData);
+    return authActionError(error, data);
   }
 
-  redirect(ticketsPath);
+  redirect(emailVerificationPath);
 };

@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fileSchema } from "@/features/attachments/schema/files";
 import { fromCent, toCent } from "@/utils/currency";
 import { getBaseUrl } from "@/utils/url";
 
 const database = vi.hoisted(() => ({
   session: { findUnique: vi.fn(), deleteMany: vi.fn(), updateMany: vi.fn() },
 }));
+
 vi.mock("@/lib/prisma", () => ({ prisma: database }));
 import { validateSession } from "@/lib/lucia";
 
@@ -43,22 +43,6 @@ describe("session privacy and expiry", () => {
       user: null,
       session: null,
     });
-  });
-});
-
-describe("attachment validation", () => {
-  it("rejects forged form values", () => {
-    expect(fileSchema.safeParse(["not a file"]).success).toBe(false);
-  });
-  it("accepts supported files and ignores the browser's empty upload", () => {
-    const file = new File(["image"], "test.png", { type: "image/png" });
-    expect(fileSchema.parse([file, new File([], "")])).toEqual([file]);
-  });
-  it("rejects files exceeding the total request budget", () => {
-    const file = new File([new Uint8Array(3 * 1024 * 1024)], "large.png", {
-      type: "image/png",
-    });
-    expect(fileSchema.safeParse([file, file]).success).toBe(false);
   });
 });
 
