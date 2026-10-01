@@ -1,7 +1,8 @@
 import { imageSelection } from "@/features/media/types";
-import { Prisma } from "@/generated/prisma/client";
+import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { manageableLists, readableLists } from "./access";
+import { lockWishlist } from "./lock";
 import { publicationSchema, wishlistIdSchema, wishlistSchema } from "./schemas";
 
 export class WishlistError extends Error {}
@@ -109,20 +110,7 @@ export const lockManagedWishlist = async (
   id: string,
   userId: string,
 ) => {
-  wishlistIdSchema.parse(id);
-
-  const schema =
-    new URL(process.env.DATABASE_URL!).searchParams.get("schema") ?? "public";
-
-  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(schema)) {
-    throw new Error("Invalid database schema");
-  }
-
-  // List and wish lifecycle writes share this lock; reservation writes must too.
-  const table = Prisma.raw(`"${schema}"."Wishlist"`);
-  await tx.$queryRaw(
-    Prisma.sql`SELECT "id" FROM ${table} WHERE "id" = ${id} FOR UPDATE`,
-  );
+  await lockWishlist(tx, id);
 
   const list = await tx.wishlist.findFirst({
     where: { id, ...manageableLists(userId) },

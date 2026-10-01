@@ -1,0 +1,187 @@
+import { consumeRateLimit, lockUser } from "@/features/auth/service/security";
+import { imageSelection } from "@/features/media/types";
+import { readableLists } from "@/features/wishlist/service/access";
+import { lockManagedWishlist } from "@/features/wishlist/service/lists";
+import { lockWishlist } from "@/features/wishlist/service/lock";
+import { wishlistIdSchema } from "@/features/wishlist/service/schemas";
+import { Prisma } from "@/generated/prisma/client";
+import { prisma } from "@/lib/prisma";
+
+export class ReservationError extends Error {}
+
+const unavailable =
+  "This reservation is unavailable or you do not have permission to change it.";
+
+const verifyActor = async (tx: Prisma.TransactionClient, userId: string) => {
+  await lockUser(tx, userId);
+  const user = await tx.user.findFirst({
+    where: { id: userId, emailVerified: true },
+    select: { id: true },
+  });
+
+  if (!user) {
+    throw new ReservationError(
+      "Sign in with a verified account to manage reservations.",
+    );
+  }
+};
+
+const limitChanges = (userId: string) =>
+  consumeRateLimit("reservation-change", userId, 60, 10 * 60 * 1000);
+
+export const reserveWish = async (
+  userId: string,
+  listId: string,
+  wishId: string,
+) => {
+  wishlistIdSchema.parse(listId);
+  wishlistIdSchema.parse(wishId);
+  await limitChanges(userId);
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      await verifyActor(tx, userId);
+      await lockWishlist(tx, listId);
+
+      const wish = await tx.wish.findFirst({
+        where: {
+          id: wishId,
+          wishlistId: listId,
+          hidden: false,
+          fulfilledAt: null,
+          wishlist: {
+            ...readableLists(userId),
+            publication: "PUBLISHED",
+            reservationsEnabled: true,
+          },
+          reservations: { none: { endedAt: null } },
+        },
+        select: { id: true },
+      });
+
+      if (!wish) {
+        throw new ReservationError(
+          "This wish can no longer be reserved. It may be unavailable, already reserved, or have reservations disabled.",
+        );
+      }
+
+      await tx.reservation.create({
+        data: { userId, wishId: wish.id },
+        select: { id: true },
+      });
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      ["P2002", "P2003", "P2025", "P2034"].includes(error.code)
+    ) {
+      throw new ReservationError(
+        "This wish could not be reserved. Refresh the page and try again.",
+      );
+    }
+    throw error;
+  }
+};
+
+export const cancelReservation = async (
+  userId: string,
+  listId: string,
+  wishId: string,
+  reservationId: string,
+) => {
+  [listId, wishId, reservationId].forEach((id) => wishlistIdSchema.parse(id));
+  await limitChanges(userId);
+
+  await prisma.$transaction(async (tx) => {
+    await verifyActor(tx, userId);
+    await lockWishlist(tx, listId);
+    const reservation = await tx.reservation.findFirst({
+      where: {
+        id: reservationId,
+        userId,
+        wishId,
+        wish: { wishlistId: listId },
+      },
+      select: { id: true },
+    });
+
+    if (!reservation) {
+      throw new ReservationError(unavailable);
+    }
+
+    // Replaying an old cancellation never affects a later reservation.
+    await tx.reservation.updateMany({
+      where: { id: reservation.id, endedAt: null },
+      data: { endedAt: new Date() },
+    });
+  });
+};
+
+export const revokeReservation = async (
+  userId: string,
+  listId: string,
+  wishId: string,
+  reservationId: string,
+) => {
+  [listId, wishId, reservationId].forEach((id) => wishlistIdSchema.parse(id));
+  await limitChanges(userId);
+
+  await prisma.$transaction(async (tx) => {
+    await verifyActor(tx, userId);
+    await lockManagedWishlist(tx, listId, userId);
+    const result = await tx.reservation.updateMany({
+      where: {
+        id: reservationId,
+        wishId,
+        endedAt: null,
+        wish: { wishlistId: listId },
+      },
+      data: { endedAt: new Date() },
+    });
+
+    if (!result.count) {
+      throw new ReservationError(unavailable);
+    }
+  });
+};
+
+export const readMyReservations = async (userId: string, requestedPage = 1) => {
+  const page =
+    Number.isSafeInteger(requestedPage) && requestedPage > 0
+      ? Math.min(requestedPage, 10000)
+      : 1;
+  const results = await prisma.reservation.findMany({
+    where: {
+      userId,
+      user: { emailVerified: true },
+      endedAt: null,
+      wish: {
+        hidden: false,
+        fulfilledAt: null,
+        wishlist: { ...readableLists(userId), publication: "PUBLISHED" },
+      },
+    },
+    select: {
+      id: true,
+      wish: {
+        select: {
+          id: true,
+          title: true,
+          priceMinor: true,
+          currency: true,
+          image: imageSelection,
+          wishlist: { select: { id: true, title: true } },
+        },
+      },
+    },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    skip: (page - 1) * 20,
+    take: 21,
+  });
+
+  return {
+    reservations: results.slice(0, 20),
+    page,
+    hasNextPage: results.length > 20,
+  };
+};

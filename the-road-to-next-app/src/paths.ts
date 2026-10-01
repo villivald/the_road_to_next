@@ -2,6 +2,8 @@ export const homePath = "/";
 
 export const listsPath = "/lists";
 
+export const reservationsPath = "/reservations";
+
 export const newListPath = `${listsPath}/new`;
 
 export const listPath = (id: string) =>

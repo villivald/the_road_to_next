@@ -5,6 +5,7 @@ import { ActionForm } from "@/components/form/action-form";
 import styles from "@/components/shell.module.css";
 import { getAuth } from "@/features/auth/actions/get-auth";
 import { MediaImage } from "@/features/media/components/media-image";
+import { ReservationControls } from "@/features/reservation/components/reservation-controls";
 import { changeWishState } from "@/features/wish/actions/manage-wish";
 import { WishPriority } from "@/features/wish/components/wish-priority";
 import { readWish } from "@/features/wish/service/wishes";
@@ -84,6 +85,8 @@ export default async function WishPage({
           View product (opens in a new tab)
         </a>
       )}
+
+      <ReservationControls wish={wish} user={user} />
 
       {wish.canManage && (
         <section

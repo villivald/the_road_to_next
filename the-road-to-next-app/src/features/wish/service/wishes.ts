@@ -102,11 +102,17 @@ export const readWish = async (
     },
     select: {
       ...wishFields,
-      ...reservationStatus,
+      _count: {
+        select: {
+          reservations: { where: { userId: userId ?? "", endedAt: null } },
+        },
+      },
       wishlist: {
         select: {
           id: true,
           title: true,
+          publication: true,
+          reservationsEnabled: true,
           memberships: {
             where: {
               userId: userId ?? "",
@@ -118,7 +124,7 @@ export const readWish = async (
         },
       },
       reservations: {
-        where: { userId: userId ?? "", endedAt: null },
+        where: { endedAt: null },
         select: { id: true },
       },
     },
@@ -129,18 +135,29 @@ export const readWish = async (
   }
 
   const {
-    wishlist: { memberships, ...wishlist },
+    wishlist: { memberships, publication, reservationsEnabled, ...wishlist },
     reservations,
     _count,
     ...details
   } = wish;
 
+  const canManage = memberships.length > 0;
+  const isReservedByYou = _count.reservations > 0;
+
   return {
     ...details,
     wishlist,
-    canManage: memberships.length > 0,
-    isReserved: _count.reservations > 0,
-    isReservedByYou: reservations.length > 0,
+    canManage,
+    isReserved: reservations.length > 0,
+    isReservedByYou,
+    reservationId:
+      canManage || isReservedByYou ? (reservations[0]?.id ?? null) : null,
+    canReserve:
+      publication === "PUBLISHED" &&
+      reservationsEnabled &&
+      !details.hidden &&
+      !details.fulfilledAt &&
+      reservations.length === 0,
   };
 };
 

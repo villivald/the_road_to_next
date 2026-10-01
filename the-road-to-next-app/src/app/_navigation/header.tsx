@@ -7,6 +7,7 @@ import {
   accountProfilePath,
   emailVerificationPath,
   listsPath,
+  reservationsPath,
   signInPath,
   signUpPath,
 } from "@/paths";
@@ -28,7 +29,10 @@ export default async function Header() {
                 {user.emailVerified ? "My lists" : "Verify email"}
               </Link>
               {user.emailVerified && (
-                <Link href={accountProfilePath}>Account</Link>
+                <>
+                  <Link href={reservationsPath}>My reservations</Link>
+                  <Link href={accountProfilePath}>Account</Link>
+                </>
               )}
               <form action={signOut}>
                 <button type="submit" className={styles["text-button"]}>
