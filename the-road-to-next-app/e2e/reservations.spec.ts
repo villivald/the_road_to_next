@@ -209,6 +209,7 @@ test("disabling preserves reservations, fulfillment ends them, and reopening nev
     await owner
       .getByRole("button", { name: "Save changes", exact: true })
       .click();
+    await expect(owner).toHaveURL(`${listUrl}?saved=1`);
     await page.goto("/reservations");
     await page
       .getByRole("link", { name: "A beautiful notebook", exact: true })
@@ -226,6 +227,9 @@ test("disabling preserves reservations, fulfillment ends them, and reopening nev
       page.getByRole("heading", { name: "No active reservations" }),
     ).toBeVisible();
     await owner.getByRole("button", { name: "Reopen wish" }).click();
+    await expect(
+      owner.getByRole("button", { name: "Mark as fulfilled" }),
+    ).toBeVisible();
     await expect(
       owner.getByRole("button", { name: "Reserve wish", exact: true }),
     ).toHaveCount(0);

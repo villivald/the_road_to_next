@@ -2,11 +2,12 @@
 
 import { redirect } from "next/navigation";
 import type { ActionState } from "@/components/form/utils/to-action-state";
-import { emailVerificationPath, listsPath } from "@/paths";
+import { emailVerificationPath } from "@/paths";
 import { authenticate } from "../service/accounts";
 import { authActionError } from "../service/action-error";
 import { limitAuthRequest } from "../service/request-limit";
 import { signInSchema } from "../service/schemas";
+import { authReturnPath, safeReturnTo } from "../utils/return-to";
 import { setSessionCookie } from "../utils/session-cookie";
 
 export const signIn = async (_state: ActionState, data: FormData) => {
@@ -23,5 +24,9 @@ export const signIn = async (_state: ActionState, data: FormData) => {
   } catch (error) {
     return authActionError(error, data);
   }
-  redirect(verified ? listsPath : emailVerificationPath);
+  redirect(
+    verified
+      ? safeReturnTo(data.get("returnTo"))
+      : authReturnPath(emailVerificationPath, data.get("returnTo")),
+  );
 };

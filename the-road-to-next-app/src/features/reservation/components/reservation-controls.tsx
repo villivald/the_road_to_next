@@ -1,8 +1,14 @@
 import Link from "next/link";
 import { ActionForm } from "@/components/form/action-form";
 import styles from "@/components/shell.module.css";
+import { authReturnPath } from "@/features/auth/utils/return-to";
 import type { readWish } from "@/features/wish/service/wishes";
-import { emailVerificationPath, reservationsPath, signInPath } from "@/paths";
+import {
+  emailVerificationPath,
+  reservationsPath,
+  signInPath,
+  wishPath,
+} from "@/paths";
 import { cancel, reserve, revoke } from "../actions/manage-reservation";
 
 export function ReservationControls({
@@ -62,7 +68,12 @@ export function ReservationControls({
             </p>
           </ActionForm>
         ) : (
-          <Link href={user ? emailVerificationPath : signInPath}>
+          <Link
+            href={authReturnPath(
+              user ? emailVerificationPath : signInPath,
+              wishPath(listId, wish.id),
+            )}
+          >
             {user ? "Verify your email to reserve" : "Sign in to reserve"}
           </Link>
         )

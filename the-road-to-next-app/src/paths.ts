@@ -1,5 +1,7 @@
 export const homePath = "/";
 
+export const browsePath = "/browse";
+
 export const listsPath = "/lists";
 
 export const reservationsPath = "/reservations";

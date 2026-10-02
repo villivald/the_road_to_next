@@ -121,9 +121,11 @@ const labels: Record<Mode, string> = {
 export function AccountForm({
   mode,
   tokenId,
+  returnTo,
 }: {
   mode: Mode;
   tokenId?: string;
+  returnTo?: string;
 }) {
   const [state, action, pending] = useActionState(actions[mode], {
     ...EMPTY_ACTION_STATE,
@@ -139,6 +141,7 @@ export function AccountForm({
   );
   return (
     <form action={action} className={styles.form} aria-busy={pending}>
+      {returnTo && <input type="hidden" name="returnTo" value={returnTo} />}
       {tokenId && <input type="hidden" name="tokenId" value={tokenId} />}
       {(state.message || hasErrors) && (
         <div

@@ -10,7 +10,7 @@ import {
 } from "@/components/form/utils/to-action-state";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import { WishlistError } from "@/features/wishlist/service/lists";
-import { listPath, reservationsPath, wishPath } from "@/paths";
+import { browsePath, listPath, reservationsPath, wishPath } from "@/paths";
 import {
   createWish,
   deleteWish,
@@ -38,6 +38,7 @@ const actionError = (error: unknown, data?: FormData) => {
 };
 
 const refreshWish = (listId: string, wishId: string) => {
+  revalidatePath(browsePath);
   revalidatePath(reservationsPath);
   revalidatePath(listPath(listId));
   revalidatePath(wishPath(listId, wishId));
@@ -59,6 +60,7 @@ export const addWish = async (
     return actionError(error, data);
   }
 
+  revalidatePath(browsePath);
   revalidatePath(listPath(listId));
   redirect(`${wishPath(listId, id)}?created=1`);
 };

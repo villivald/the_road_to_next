@@ -5,6 +5,7 @@ import { getAuth } from "@/features/auth/actions/get-auth";
 import { signOut } from "@/features/auth/actions/sign-out";
 import {
   accountProfilePath,
+  browsePath,
   emailVerificationPath,
   listsPath,
   reservationsPath,
@@ -21,6 +22,7 @@ export default async function Header() {
           Wishlist
         </Link>
         <nav aria-label="Main navigation" className={styles.navigation}>
+          <Link href={browsePath}>Browse</Link>
           {user ? (
             <>
               <Link

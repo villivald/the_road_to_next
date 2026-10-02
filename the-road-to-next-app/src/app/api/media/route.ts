@@ -10,7 +10,7 @@ import {
 import { readImageBody } from "@/features/media/service/validation";
 import { MediaError } from "@/features/media/types";
 import { WishlistError } from "@/features/wishlist/service/lists";
-import { reservationsPath } from "@/paths";
+import { browsePath, reservationsPath } from "@/paths";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -48,6 +48,7 @@ const changeImage = async (request: Request) => {
     }
 
     revalidatePath("/lists", "layout");
+    revalidatePath(browsePath);
     revalidatePath(reservationsPath);
     revalidatePath("/account/profile");
     return reply(

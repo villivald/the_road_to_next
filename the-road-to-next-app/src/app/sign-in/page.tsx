@@ -1,14 +1,16 @@
 import Link from "next/link";
 import { AccountForm } from "@/components/account-form";
 import { AccountPanel } from "@/components/account-panel";
+import { authReturnPath, safeReturnTo } from "@/features/auth/utils/return-to";
 import { passwordForgotPath, signUpPath } from "@/paths";
 
 export default async function SignInPage({
   searchParams,
 }: {
-  searchParams: Promise<{ reset?: string }>;
+  searchParams: Promise<{ reset?: string; returnTo?: string }>;
 }) {
-  const { reset } = await searchParams;
+  const { reset, returnTo: requestedReturnTo } = await searchParams;
+  const returnTo = safeReturnTo(requestedReturnTo);
   return (
     <AccountPanel
       title="Welcome back"
@@ -19,12 +21,14 @@ export default async function SignInPage({
       }
       footer={
         <>
-          <Link href={signUpPath}>Create an account</Link>
+          <Link href={authReturnPath(signUpPath, returnTo)}>
+            Create an account
+          </Link>
           <Link href={passwordForgotPath}>Forgot password?</Link>
         </>
       }
     >
-      <AccountForm mode="signIn" />
+      <AccountForm mode="signIn" returnTo={returnTo} />
     </AccountPanel>
   );
 }

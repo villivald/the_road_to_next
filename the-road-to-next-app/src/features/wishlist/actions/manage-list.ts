@@ -9,7 +9,7 @@ import {
   toActionState,
 } from "@/components/form/utils/to-action-state";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
-import { listPath, listsPath, reservationsPath } from "@/paths";
+import { browsePath, listPath, listsPath, reservationsPath } from "@/paths";
 import {
   createWishlist,
   deleteWishlist,
@@ -33,6 +33,7 @@ const actionError = (error: unknown, data?: FormData) => {
 };
 
 const refreshList = (id: string) => {
+  revalidatePath(browsePath);
   revalidatePath(reservationsPath);
   revalidatePath(listsPath);
   revalidatePath(listPath(id));

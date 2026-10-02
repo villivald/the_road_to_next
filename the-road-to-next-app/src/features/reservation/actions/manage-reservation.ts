@@ -10,7 +10,7 @@ import {
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import { AuthError } from "@/features/auth/service/security";
 import { WishlistError } from "@/features/wishlist/service/lists";
-import { listPath, reservationsPath, wishPath } from "@/paths";
+import { browsePath, listPath, reservationsPath, wishPath } from "@/paths";
 import {
   cancelReservation,
   ReservationError,
@@ -31,6 +31,7 @@ const actionError = (error: unknown) => {
 };
 
 const refreshReservation = (listId: string, wishId: string) => {
+  revalidatePath(browsePath);
   revalidatePath(reservationsPath);
   revalidatePath(listPath(listId));
   revalidatePath(wishPath(listId, wishId));
@@ -42,7 +43,9 @@ export const reserve = async (
   _state: ActionState,
   _data: FormData,
 ) => {
-  const { user } = await getAuthOrRedirect();
+  const { user } = await getAuthOrRedirect({
+    returnTo: wishPath(listId, wishId),
+  });
 
   try {
     await reserveWish(user.id, listId, wishId);
@@ -64,7 +67,9 @@ export const cancel = async (
   _state: ActionState,
   _data: FormData,
 ) => {
-  const { user } = await getAuthOrRedirect();
+  const { user } = await getAuthOrRedirect({
+    returnTo: wishPath(listId, wishId),
+  });
 
   try {
     await cancelReservation(user.id, listId, wishId, reservationId);
@@ -83,7 +88,9 @@ export const revoke = async (
   _state: ActionState,
   _data: FormData,
 ) => {
-  const { user } = await getAuthOrRedirect();
+  const { user } = await getAuthOrRedirect({
+    returnTo: wishPath(listId, wishId),
+  });
 
   try {
     await revokeReservation(user.id, listId, wishId, reservationId);

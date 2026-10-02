@@ -3,21 +3,25 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import type { ActionState } from "@/components/form/utils/to-action-state";
-import { listsPath } from "@/paths";
 import { getAuthOrRedirect } from "../queries/get-auth-or-redirect";
 import { verifyEmail } from "../service/accounts";
 import { authActionError } from "../service/action-error";
 import { limitAuthRequest } from "../service/request-limit";
+import { safeReturnTo } from "../utils/return-to";
 import { setSessionCookie } from "../utils/session-cookie";
 
 export const emailVerification = async (
   _state: ActionState,
   data: FormData,
 ) => {
-  const { user } = await getAuthOrRedirect({ checkEmailVerified: false });
+  const returnTo = safeReturnTo(data.get("returnTo"));
+  const { user } = await getAuthOrRedirect({
+    checkEmailVerified: false,
+    returnTo,
+  });
 
   if (user.emailVerified) {
-    redirect(listsPath);
+    redirect(returnTo);
   }
   try {
     await limitAuthRequest("verification", user.id);
@@ -32,5 +36,5 @@ export const emailVerification = async (
   } catch (error) {
     return authActionError(error, data);
   }
-  redirect(listsPath);
+  redirect(returnTo);
 };

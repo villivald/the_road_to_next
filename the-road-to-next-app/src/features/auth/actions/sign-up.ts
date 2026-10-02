@@ -13,6 +13,7 @@ import { authActionError } from "../service/action-error";
 import { limitAuthRequest } from "../service/request-limit";
 import { signUpSchema } from "../service/schemas";
 import { generateEmailVerificationCode } from "../utils/generate-email-verification-code";
+import { authReturnPath } from "../utils/return-to";
 import { setSessionCookie } from "../utils/session-cookie";
 
 export const signUp = async (_state: ActionState, data: FormData) => {
@@ -53,5 +54,5 @@ export const signUp = async (_state: ActionState, data: FormData) => {
     return authActionError(error, data);
   }
 
-  redirect(emailVerificationPath);
+  redirect(authReturnPath(emailVerificationPath, data.get("returnTo")));
 };

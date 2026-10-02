@@ -8,7 +8,7 @@ import { MediaImage } from "@/features/media/components/media-image";
 import { WishCollection } from "@/features/wish/components/wish-collection";
 import { changePublication } from "@/features/wishlist/actions/manage-list";
 import { readWishlist } from "@/features/wishlist/service/lists";
-import { listPath, listsPath } from "@/paths";
+import { browsePath, listPath, listsPath } from "@/paths";
 
 export const metadata: Metadata = {
   title: "Wishlist",
@@ -43,7 +43,9 @@ export default async function ListPage({
 
   return (
     <section className={styles.page}>
-      {list.canManage && <Link href={listsPath}>Back to my lists</Link>}
+      <Link href={list.canManage ? listsPath : browsePath}>
+        {list.canManage ? "Back to my lists" : "Back to browse"}
+      </Link>
 
       {list.canManage && (created === "1" || saved === "1") && (
         <p role="status" className={styles.notice}>
