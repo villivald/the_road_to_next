@@ -1,14 +1,19 @@
 import Link from "next/link";
 import styles from "@/components/shell.module.css";
+import { ProfileForm } from "@/features/account/components/profile-form";
+import { readProfile } from "@/features/account/service/account";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import { ImageEditor } from "@/features/media/components/image-editor";
 import { readAvatar } from "@/features/media/service/media";
-import { accountPasswordPath } from "@/paths";
+import { accountDeletePath, accountPasswordPath } from "@/paths";
 
 export default async function AccountPage() {
   const { user } = await getAuthOrRedirect();
 
-  const image = await readAvatar(user.id);
+  const [image, profile] = await Promise.all([
+    readAvatar(user.id),
+    readProfile(user.id),
+  ]);
 
   return (
     <section className={styles["account-panel"]}>
@@ -27,12 +32,14 @@ export default async function AccountPage() {
           <dd>Verified</dd>
         </div>
       </dl>
+      <ProfileForm profile={profile} />
       <ImageEditor
         target={{ kind: "avatar" }}
         image={image}
         label="Your avatar"
       />
       <Link href={accountPasswordPath}>Change password</Link>
+      <Link href={accountDeletePath}>Delete account</Link>
     </section>
   );
 }

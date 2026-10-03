@@ -1,0 +1,3 @@
+ALTER TABLE "User"
+  ADD COLUMN "name" VARCHAR(80),
+  ADD COLUMN "description" VARCHAR(1000);

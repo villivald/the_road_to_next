@@ -8,6 +8,7 @@ import {
   toActionState,
 } from "@/components/form/utils/to-action-state";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
+import { limitSourceRequest } from "@/features/auth/service/request-limit";
 import { AuthError } from "@/features/auth/service/security";
 import { WishlistError } from "@/features/wishlist/service/lists";
 import { browsePath, listPath, reservationsPath, wishPath } from "@/paths";
@@ -48,6 +49,7 @@ export const reserve = async (
   });
 
   try {
+    await limitSourceRequest("reservation-change");
     await reserveWish(user.id, listId, wishId);
   } catch (error) {
     return actionError(error);
@@ -72,6 +74,7 @@ export const cancel = async (
   });
 
   try {
+    await limitSourceRequest("reservation-change");
     await cancelReservation(user.id, listId, wishId, reservationId);
   } catch (error) {
     return actionError(error);
@@ -93,6 +96,7 @@ export const revoke = async (
   });
 
   try {
+    await limitSourceRequest("reservation-change");
     await revokeReservation(user.id, listId, wishId, reservationId);
   } catch (error) {
     return actionError(error);

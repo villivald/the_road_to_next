@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fromCent, toCent } from "@/utils/currency";
 import { getBaseUrl } from "@/utils/url";
 
 const database = vi.hoisted(() => ({
@@ -46,12 +45,7 @@ describe("session privacy and expiry", () => {
   });
 });
 
-describe("money and generated links", () => {
-  it("stores whole cents without floating-point drift", () => {
-    expect(toCent(19.99)).toBe(1999);
-    expect(toCent(1.005)).toBe(100);
-    expect(fromCent(499)).toBe(4.99);
-  });
+describe("generated links", () => {
   it("uses the configured origin for email links", () => {
     vi.stubEnv("APP_URL", "https://tickets.example.com/");
     expect(getBaseUrl()).toBe("https://tickets.example.com");

@@ -25,6 +25,7 @@ export const consumeRateLimit = async (
 export const lockUser = async (
   tx: Prisma.TransactionClient,
   userId: string,
+  deleting = false,
 ) => {
   const schema =
     new URL(process.env.DATABASE_URL!).searchParams.get("schema") ?? "public";
@@ -32,7 +33,9 @@ export const lockUser = async (
     throw new Error("Invalid database schema");
   }
   const table = Prisma.raw(`"${schema}"."User"`);
+  // Ordinary account writes must permit foreign-key checks during ownership transfer.
+  const mode = Prisma.raw(deleting ? "FOR UPDATE" : "FOR NO KEY UPDATE");
   await tx.$queryRaw(
-    Prisma.sql`SELECT "id" FROM ${table} WHERE "id" = ${userId} FOR UPDATE`,
+    Prisma.sql`SELECT "id" FROM ${table} WHERE "id" = ${userId} ${mode}`,
   );
 };

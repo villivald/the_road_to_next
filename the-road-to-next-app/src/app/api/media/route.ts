@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { ZodError } from "zod";
 import { getAuth } from "@/features/auth/actions/get-auth";
+import { limitSourceRequest } from "@/features/auth/service/request-limit";
 import { AuthError, consumeRateLimit } from "@/features/auth/service/security";
 import {
   authorizeImageChange,
@@ -32,6 +33,7 @@ const changeImage = async (request: Request) => {
   }
 
   try {
+    await limitSourceRequest("image-request");
     await consumeRateLimit("image-request", user.id, 60, 60 * 60 * 1000);
     const query = Object.fromEntries(new URL(request.url).searchParams);
     const target = await authorizeImageChange(user.id, query);

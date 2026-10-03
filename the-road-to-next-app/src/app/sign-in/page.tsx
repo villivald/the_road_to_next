@@ -7,17 +7,23 @@ import { passwordForgotPath, signUpPath } from "@/paths";
 export default async function SignInPage({
   searchParams,
 }: {
-  searchParams: Promise<{ reset?: string; returnTo?: string }>;
+  searchParams: Promise<{
+    reset?: string;
+    deleted?: string;
+    returnTo?: string;
+  }>;
 }) {
-  const { reset, returnTo: requestedReturnTo } = await searchParams;
+  const { reset, deleted, returnTo: requestedReturnTo } = await searchParams;
   const returnTo = safeReturnTo(requestedReturnTo);
   return (
     <AccountPanel
       title="Welcome back"
       description={
-        reset === "success"
-          ? "Your password has been reset. Sign in with your new password."
-          : "Sign in to your Wishlist account."
+        deleted === "1"
+          ? "Your account has been deleted."
+          : reset === "success"
+            ? "Your password has been reset. Sign in with your new password."
+            : "Sign in to your Wishlist account."
       }
       footer={
         <>

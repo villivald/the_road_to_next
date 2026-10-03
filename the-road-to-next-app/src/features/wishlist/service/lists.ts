@@ -1,3 +1,4 @@
+import { lockUser } from "@/features/auth/service/security";
 import { imageSelection } from "@/features/media/types";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -80,6 +81,7 @@ export const createWishlist = async (userId: string, input: unknown) => {
   const data = wishlistSchema.parse(input);
 
   return prisma.$transaction(async (tx) => {
+    await lockUser(tx, userId);
     const user = await tx.user.findFirst({
       where: { id: userId, emailVerified: true },
       select: { id: true },
@@ -110,6 +112,7 @@ export const lockManagedWishlist = async (
   id: string,
   userId: string,
 ) => {
+  await lockUser(tx, userId);
   await lockWishlist(tx, id);
 
   const list = await tx.wishlist.findFirst({
