@@ -31,3 +31,5 @@ export const accountProfilePath = "/account/profile";
 export const accountPasswordPath = "/account/password";
 
 export const accountDeletePath = "/account/delete";
+
+export const accountPlanPath = "/account/plan";

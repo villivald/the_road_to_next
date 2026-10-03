@@ -5,7 +5,11 @@ import { readProfile } from "@/features/account/service/account";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import { ImageEditor } from "@/features/media/components/image-editor";
 import { readAvatar } from "@/features/media/service/media";
-import { accountDeletePath, accountPasswordPath } from "@/paths";
+import {
+  accountDeletePath,
+  accountPasswordPath,
+  accountPlanPath,
+} from "@/paths";
 
 export default async function AccountPage() {
   const { user } = await getAuthOrRedirect();
@@ -33,6 +37,7 @@ export default async function AccountPage() {
         </div>
       </dl>
       <ProfileForm profile={profile} />
+      <Link href={accountPlanPath}>Your plan and promo codes</Link>
       <ImageEditor
         target={{ kind: "avatar" }}
         image={image}

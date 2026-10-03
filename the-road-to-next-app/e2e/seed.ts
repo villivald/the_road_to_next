@@ -47,6 +47,9 @@ export const resetFixtures = async () => {
           OR: [{ id: { startsWith: "e2e-" } }, { email: newAccount.email }],
         },
       });
+      await tx.promoCode.deleteMany({
+        where: { label: { startsWith: "e2e-" } },
+      });
       await tx.authRateLimit.deleteMany();
       await tx.user.createMany({
         data: Object.entries(accounts).map(([role, account]) => ({

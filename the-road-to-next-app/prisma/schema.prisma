@@ -24,6 +24,8 @@ model User {
   authoredWishes          Wish[]                   @relation("WishAuthor")
   memberships             Membership[]
   reservations            Reservation[]
+  premiumGrants           PremiumGrant[]
+  promoRedemptions        PromoRedemption[]
 }
 
 model Session {
@@ -185,4 +187,44 @@ enum MediaState {
   PENDING
   READY
   DELETING
+}
+
+model PremiumGrant {
+  id                String           @id @default(cuid())
+  createdAt         DateTime         @default(now())
+  startsAt          DateTime
+  expiresAt         DateTime
+  revokedAt         DateTime?
+  userId            String
+  promoRedemptionId String?          @unique
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  promoRedemption   PromoRedemption? @relation(fields: [promoRedemptionId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt, expiresAt])
+}
+
+model PromoCode {
+  id              String            @id @default(cuid())
+  createdAt       DateTime          @default(now())
+  label           String            @db.VarChar(80)
+  codeHash        String            @unique @db.VarChar(64)
+  durationDays    Int
+  maxRedemptions  Int
+  redemptionCount Int               @default(0)
+  expiresAt       DateTime
+  revokedAt       DateTime?
+  redemptions     PromoRedemption[]
+}
+
+model PromoRedemption {
+  id          String        @id @default(cuid())
+  createdAt   DateTime      @default(now())
+  userId      String
+  promoCodeId String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  promoCode   PromoCode     @relation(fields: [promoCodeId], references: [id], onDelete: Restrict)
+  grant       PremiumGrant?
+
+  @@unique([promoCodeId, userId])
+  @@index([userId])
 }

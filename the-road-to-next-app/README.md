@@ -32,6 +32,18 @@ Inngest retries media cleanup every five minutes; run `npm run media:cleanup` to
 
 Stop the local services with `npm run db:rebuild:down`; development database data is retained.
 
+## Promo codes
+
+Redeem codes at **Account → Your plan and promo codes**. To issue a code using the configured database:
+
+```bash
+npm run promo -- create --label "Trial" --days 30 --uses 1 --valid-for-days 7
+npm run promo -- list
+npm run promo -- revoke --id PROMO_ID
+```
+
+Creation prints the code once; keep it private. Revocation stops new redemptions but preserves granted access. No payments are enabled.
+
 ## Test
 
 ```bash

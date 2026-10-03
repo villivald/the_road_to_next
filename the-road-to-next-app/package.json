@@ -25,7 +25,8 @@
     "test:e2e": "tsx scripts/e2e.ts",
     "db:rebuild:up": "docker compose -f compose.rebuild.yaml up -d --wait dev-db dev-mail",
     "db:rebuild:down": "docker compose -f compose.rebuild.yaml down",
-    "media:cleanup": "tsx scripts/cleanup-media.ts"
+    "media:cleanup": "tsx scripts/cleanup-media.ts",
+    "promo": "tsx scripts/promo.ts"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.2.1",

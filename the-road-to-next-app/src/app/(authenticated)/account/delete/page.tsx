@@ -14,7 +14,8 @@ export default async function DeleteAccountPage() {
       <h1>Delete your account</h1>
       <p>
         This permanently removes your profile, avatar, sign-in sessions, and
-        recovery codes. You cannot undo this.
+        recovery codes. Any remaining Premium access is lost, and redeemed promo
+        uses are not restored. You cannot undo this.
       </p>
       <dl className={styles.details}>
         <div>
