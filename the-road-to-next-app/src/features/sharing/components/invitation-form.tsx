@@ -1,0 +1,59 @@
+"use client";
+
+import { useActionState, useId } from "react";
+import { ActionFeedback } from "@/components/form/action-feedback";
+import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
+import styles from "@/components/shell.module.css";
+import { sendInvitation } from "../actions/manage-sharing";
+
+export function InvitationForm({ listId }: { listId: string }) {
+  const [state, action, pending] = useActionState(
+    sendInvitation.bind(null, listId),
+    { ...EMPTY_ACTION_STATE, timestamp: 0 },
+  );
+  const id = useId();
+  return (
+    <form action={action} className={styles.form} aria-busy={pending}>
+      <ActionFeedback state={state} />
+      <fieldset
+        key={state.timestamp}
+        disabled={pending}
+        className={styles["form-fields"]}
+      >
+        <legend className={styles["visually-hidden"]}>Invite someone</legend>
+        <div className={styles.field}>
+          <label htmlFor={`${id}-email`}>Invitation email</label>
+          <input
+            id={`${id}-email`}
+            name="email"
+            type="email"
+            autoComplete="off"
+            required
+            maxLength={254}
+            defaultValue={String(state.payload?.get("email") ?? "")}
+            aria-invalid={!!state.fieldErrors.email?.length}
+            aria-describedby={`${id}-email-help`}
+          />
+          <p id={`${id}-email-help`} className={styles.muted}>
+            {state.fieldErrors.email?.join(" ") ??
+              "Only an account with this verified email can join. Invitations expire after seven days."}
+          </p>
+        </div>
+        <div className={styles.field}>
+          <label htmlFor={`${id}-role`}>Invitation role</label>
+          <select
+            id={`${id}-role`}
+            name="role"
+            defaultValue={String(state.payload?.get("role") ?? "MEMBER")}
+          >
+            <option value="MEMBER">Member — view and reserve</option>
+            <option value="ADMIN">Admin — manage content and people</option>
+          </select>
+        </div>
+        <button className={styles.button} type="submit">
+          {pending ? "Inviting…" : "Send invitation"}
+        </button>
+      </fieldset>
+    </form>
+  );
+}

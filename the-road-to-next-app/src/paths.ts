@@ -3,6 +3,10 @@ export const homePath = "/";
 export const browsePath = "/browse";
 
 export const listsPath = "/lists";
+export const sharedListsPath = "/lists/shared";
+export const invitationPath = (id: string) =>
+  `/invitations/${encodeURIComponent(id)}`;
+export const sharingPath = (id: string) => `${listPath(id)}/sharing`;
 
 export const reservationsPath = "/reservations";
 

@@ -57,14 +57,14 @@ export default async function PlanPage() {
       <div className={styles.form}>
         <h2>About Premium</h2>
         <p>
-          Premium is for private lists and sharing controls. These features are
-          not available yet.
+          Premium enables private lists, invitations, and admin promotions for
+          lists you own. Invited people can join with a Free account.
         </p>
         <p>
           When Premium ends, existing lists, memberships, and eligible
           reservations stay intact. New private lists and sharing invitations
-          will require the list owner to have Premium. Removing access will
-          remain available.
+          require the list owner to have Premium. Removing access will remain
+          available.
         </p>
       </div>
     </section>

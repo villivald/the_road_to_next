@@ -1,5 +1,7 @@
 import { lockUser } from "@/features/auth/service/security";
 import { imageSelection } from "@/features/media/types";
+import { requirePremium } from "@/features/premium/service/entitlements";
+import { visibilitySchema } from "@/features/sharing/service/schemas";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { manageableLists, readableLists } from "./access";
@@ -79,6 +81,13 @@ export const readOwnedWishlists = async (userId: string, page = 1) => {
 
 export const createWishlist = async (userId: string, input: unknown) => {
   const data = wishlistSchema.parse(input);
+  const visibility = visibilitySchema
+    .default("PUBLIC")
+    .parse(
+      input && typeof input === "object" && "visibility" in input
+        ? input.visibility
+        : undefined,
+    );
 
   return prisma.$transaction(async (tx) => {
     await lockUser(tx, userId);
@@ -93,13 +102,15 @@ export const createWishlist = async (userId: string, input: unknown) => {
       );
     }
 
+    if (visibility === "PRIVATE") await requirePremium(user.id, tx);
+
     return tx.wishlist.create({
       data: {
         ...data,
         description: data.description || null,
         ownerId: user.id,
         publication: "DRAFT",
-        visibility: "PUBLIC",
+        visibility,
         memberships: { create: { userId: user.id, role: "ADMIN" } },
       },
       select: { id: true },

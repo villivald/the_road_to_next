@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import styles from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
+import { readPremiumAccess } from "@/features/premium/service/entitlements";
 import { ListForm } from "@/features/wishlist/components/list-form";
 
 export const metadata: Metadata = {
@@ -9,7 +10,8 @@ export const metadata: Metadata = {
 };
 
 export default async function NewListPage() {
-  await getAuthOrRedirect();
+  const { user } = await getAuthOrRedirect();
+  const access = await readPremiumAccess(user.id);
 
   return (
     <section className={styles.editor}>
@@ -18,7 +20,7 @@ export default async function NewListPage() {
         Start with a draft. Your list is only visible to its admins until you
         publish it.
       </p>
-      <ListForm />
+      <ListForm canCreatePrivate={access.plan === "PREMIUM"} />
     </section>
   );
 }

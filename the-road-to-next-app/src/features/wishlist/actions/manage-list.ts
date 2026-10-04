@@ -9,6 +9,7 @@ import {
   toActionState,
 } from "@/components/form/utils/to-action-state";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
+import { PremiumError } from "@/features/premium/service/entitlements";
 import { browsePath, listPath, listsPath, reservationsPath } from "@/paths";
 import {
   createWishlist,
@@ -25,7 +26,7 @@ const listInput = (data: FormData) => ({
 });
 
 const actionError = (error: unknown, data?: FormData) => {
-  if (error instanceof WishlistError) {
+  if (error instanceof WishlistError || error instanceof PremiumError) {
     return toActionState("ERROR", error.message, data);
   }
 
@@ -47,7 +48,10 @@ export const createList = async (_state: ActionState, data: FormData) => {
   let id: string;
 
   try {
-    ({ id } = await createWishlist(user.id, listInput(data)));
+    ({ id } = await createWishlist(user.id, {
+      ...listInput(data),
+      visibility: data.get("visibility") ?? "PUBLIC",
+    }));
   } catch (error) {
     return actionError(error, data);
   }

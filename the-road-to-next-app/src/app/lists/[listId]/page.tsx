@@ -8,7 +8,7 @@ import { MediaImage } from "@/features/media/components/media-image";
 import { WishCollection } from "@/features/wish/components/wish-collection";
 import { changePublication } from "@/features/wishlist/actions/manage-list";
 import { readWishlist } from "@/features/wishlist/service/lists";
-import { browsePath, listPath, listsPath } from "@/paths";
+import { browsePath, listPath, listsPath, sharingPath } from "@/paths";
 
 export const metadata: Metadata = {
   title: "Wishlist",
@@ -93,6 +93,7 @@ export default async function ListPage({
           aria-labelledby="list-settings-heading"
         >
           <h2 id="list-settings-heading">List settings</h2>
+          <Link href={sharingPath(list.id)}>Sharing and members</Link>
           <p className={styles.muted}>
             {published
               ? list.visibility === "PUBLIC"

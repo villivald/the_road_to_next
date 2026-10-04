@@ -6,6 +6,7 @@ export const deliverEmail = async (
   to: string,
   subject: string,
   react: ReactElement,
+  idempotencyKey?: string,
 ) => {
   const localInbox = process.env.MAILPIT_URL;
   if (localInbox) {
@@ -36,12 +37,15 @@ export const deliverEmail = async (
 
     return { error: null };
   }
-  const result = await resend.emails.send({
-    from: process.env.EMAIL_FROM ?? "Wishlist <onboarding@resend.dev>",
-    to,
-    subject,
-    react,
-  });
+  const result = await resend.emails.send(
+    {
+      from: process.env.EMAIL_FROM ?? "Wishlist <onboarding@resend.dev>",
+      to,
+      subject,
+      react,
+    },
+    idempotencyKey ? { idempotencyKey } : undefined,
+  );
   if (result.error) {
     throw new Error("Email delivery failed");
   }

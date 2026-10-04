@@ -8,6 +8,7 @@ export const safeReturnTo = (value: unknown) => {
   }
 
   return [browsePath, listsPath, reservationsPath].includes(value) ||
+    /^\/invitations\/[a-zA-Z0-9_-]{1,128}$/.test(value) ||
     /^\/lists\/[a-zA-Z0-9_-]{1,128}(?:\/wishes\/[a-zA-Z0-9_-]{1,128})?$/.test(
       value,
     )

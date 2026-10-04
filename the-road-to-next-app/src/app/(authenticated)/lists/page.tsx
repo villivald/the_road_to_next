@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import styles from "@/components/shell.module.css";
 import { getMyLists } from "@/features/wishlist/queries/get-my-lists";
-import { listPath, listsPath, newListPath } from "@/paths";
+import { listPath, listsPath, newListPath, sharedListsPath } from "@/paths";
 
 export const metadata: Metadata = {
   title: "My lists",
@@ -30,6 +30,8 @@ export default async function ListsPage({
           Create a list
         </Link>
       </div>
+
+      <Link href={sharedListsPath}>Lists with access to</Link>
 
       {params.deleted === "1" && (
         <p role="status" className={styles.notice}>

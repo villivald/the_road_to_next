@@ -55,7 +55,6 @@ describe("wishlist management and authorization", () => {
     data.set("title", "  Birthday ideas  ");
     data.set("description", "  A few things I love.  ");
     data.set("ownerId", "e2e-member");
-    data.set("visibility", "PRIVATE");
     data.set("publication", "PUBLISHED");
 
     await expect(createList(EMPTY_ACTION_STATE, data)).rejects.toThrow(
@@ -104,6 +103,20 @@ describe("wishlist management and authorization", () => {
     expect(await prisma.wishlist.count({ where: { title: input.title } })).toBe(
       0,
     );
+  });
+
+  it("rejects a Free account submitting private visibility through the action", async () => {
+    const data = new FormData();
+    data.set("title", "Private attempt");
+    data.set("description", "");
+    data.set("visibility", "PRIVATE");
+    expect(await createList(EMPTY_ACTION_STATE, data)).toMatchObject({
+      status: "ERROR",
+      message: "Active Premium access is required for this action.",
+    });
+    expect(
+      await prisma.wishlist.count({ where: { title: "Private attempt" } }),
+    ).toBe(0);
   });
 
   it("restricts drafts to admins and never returns private content or membership identities to outsiders", async () => {

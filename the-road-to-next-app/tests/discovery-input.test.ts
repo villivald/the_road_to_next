@@ -79,6 +79,7 @@ describe("authentication return paths", () => {
     "/lists",
     "/lists/abc_123",
     "/lists/abc/wishes/def-123",
+    "/invitations/abc_123",
   ])("accepts a known local viewing path: %s", (path) => {
     expect(safeReturnTo(path)).toBe(path);
   });
@@ -98,6 +99,9 @@ describe("authentication return paths", () => {
     "/lists/a?redirect=https://example.com",
     "/api/media",
     `/lists/${"a".repeat(129)}`,
+    "/invitations/%2f%2fevil",
+    "/invitations/a?next=https://evil.test",
+    "/invitations/a/accept",
   ])("rejects an unsafe or unknown destination: %s", (path) => {
     expect(safeReturnTo(path)).toBe("/lists");
   });

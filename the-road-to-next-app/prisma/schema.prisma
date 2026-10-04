@@ -26,6 +26,7 @@ model User {
   reservations            Reservation[]
   premiumGrants           PremiumGrant[]
   promoRedemptions        PromoRedemption[]
+  sentInvitations         Invitation[]
 }
 
 model Session {
@@ -80,6 +81,7 @@ model Wishlist {
   memberships         Membership[]
   wishes              Wish[]
   image               Media?
+  invitations         Invitation[]
 
   @@index([ownerId, archivedAt, createdAt])
   @@index([visibility, publication, archivedAt, createdAt])
@@ -96,6 +98,32 @@ model Membership {
 
   @@unique([wishlistId, userId])
   @@index([userId, joinedAt])
+}
+
+// The ID locates an invitation; only its verified intended email can accept it.
+model Invitation {
+  id               String         @id @default(cuid())
+  createdAt        DateTime       @default(now())
+  expiresAt        DateTime
+  email            String         @db.VarChar(254)
+  role             MembershipRole
+  acceptedAt       DateTime?
+  revokedAt        DateTime?
+  wishlistId       String
+  inviterId        String
+  wishlist         Wishlist       @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  inviter          User           @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+  sentAt           DateTime?
+  firstAttemptAt   DateTime?
+  nextAttemptAt    DateTime       @default(now())
+  deliveryAttempts Int            @default(0)
+  deliveryFailedAt DateTime?
+  claimId          String?
+
+  @@index([wishlistId, createdAt])
+  @@index([inviterId])
+  @@index([email])
+  @@index([sentAt, nextAttemptAt])
 }
 
 model Wish {

@@ -21,7 +21,7 @@ const currentAccount = async (
       emailVerified: true,
       sessions: { some: { id: sessionId, expiresAt: { gt: new Date() } } },
     },
-    select: { id: true, passwordHash: true },
+    select: { id: true, email: true, passwordHash: true },
   });
 
   if (!user) {
@@ -195,6 +195,7 @@ export const deleteAccount = async (
       });
       // Cascades revoke all sessions/tokens/memberships/reservations, while wishes
       // retain their content with a null author. Archiving ends all other reservations.
+      await tx.invitation.deleteMany({ where: { email: current.email } });
       await tx.user.delete({ where: { id: userId } });
     },
     { timeout: 15_000 },

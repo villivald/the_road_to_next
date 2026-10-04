@@ -26,7 +26,8 @@
     "db:rebuild:up": "docker compose -f compose.rebuild.yaml up -d --wait dev-db dev-mail",
     "db:rebuild:down": "docker compose -f compose.rebuild.yaml down",
     "media:cleanup": "tsx scripts/cleanup-media.ts",
-    "promo": "tsx scripts/promo.ts"
+    "promo": "tsx scripts/promo.ts",
+    "invitations:deliver": "tsx scripts/deliver-invitations.ts"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.2.1",

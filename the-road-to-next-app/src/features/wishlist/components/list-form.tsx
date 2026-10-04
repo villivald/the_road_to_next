@@ -15,7 +15,13 @@ type ListValues = {
   reservationsEnabled: boolean;
 };
 
-export function ListForm({ list }: { list?: ListValues }) {
+export function ListForm({
+  list,
+  canCreatePrivate = false,
+}: {
+  list?: ListValues;
+  canCreatePrivate?: boolean;
+}) {
   const [state, action, pending] = useActionState(
     list ? updateList.bind(null, list.id) : createList,
     { ...EMPTY_ACTION_STATE, timestamp: 0 },
@@ -106,6 +112,31 @@ export function ListForm({ list }: { list?: ListValues }) {
             reservations.
           </p>
         </div>
+
+        {!list && (
+          <div className={styles.field}>
+            <label htmlFor={`${prefix}-visibility`}>
+              Visibility when published
+            </label>
+            <select
+              id={`${prefix}-visibility`}
+              name="visibility"
+              defaultValue={String(
+                state.payload?.get("visibility") ?? "PUBLIC",
+              )}
+              aria-describedby={`${prefix}-visibility-help`}
+            >
+              <option value="PUBLIC">Public</option>
+              <option value="PRIVATE" disabled={!canCreatePrivate}>
+                Private{!canCreatePrivate ? " (requires Premium)" : ""}
+              </option>
+            </select>
+            <p id={`${prefix}-visibility-help`} className={styles.muted}>
+              Public lists can be browsed by anyone after publishing. Private
+              lists are for invited people. Drafts are always admin-only.
+            </p>
+          </div>
+        )}
 
         <div className={styles.actions}>
           <button type="submit" className={styles.button}>
