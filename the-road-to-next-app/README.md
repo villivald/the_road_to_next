@@ -32,6 +32,8 @@ Inngest retries media cleanup every five minutes; run `npm run media:cleanup` to
 
 Invite people from a list’s **Sharing and members** page; local invitations arrive in Mailpit. Failed sends retry through Inngest every five minutes, or run `npm run invitations:deliver` for one batch. Joined lists appear under **My lists → Lists with access to**.
 
+For read-only access without an account, open **Sharing and members → Manage read-only guest links**. The list owner needs Premium to create links; publish the list, copy the new link, and share it privately. Links expire and can be revoked there.
+
 Stop the local services with `npm run db:rebuild:down`; development database data is retained.
 
 ## Promo codes

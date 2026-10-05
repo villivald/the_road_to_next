@@ -14,7 +14,12 @@ import {
 import { InvitationForm } from "@/features/sharing/components/invitation-form";
 import sharingStyles from "@/features/sharing/components/sharing.module.css";
 import { readSharing } from "@/features/sharing/service/queries";
-import { accountPlanPath, listPath, sharingPath } from "@/paths";
+import {
+  accountPlanPath,
+  guestLinksPath,
+  listPath,
+  sharingPath,
+} from "@/paths";
 
 export const metadata: Metadata = {
   title: "List sharing",
@@ -51,6 +56,7 @@ export default async function SharingPage({
     <section className={styles.editor}>
       <Link href={listPath(listId)}>Back to list</Link>
       <h1>Sharing and members</h1>
+      <Link href={guestLinksPath(listId)}>Manage read-only guest links</Link>
       {query.changed === "removed" && (
         <p role="status" className={styles.notice}>
           Member removed. Independent public access remains available.

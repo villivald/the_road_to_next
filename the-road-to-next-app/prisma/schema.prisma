@@ -82,6 +82,7 @@ model Wishlist {
   wishes              Wish[]
   image               Media?
   invitations         Invitation[]
+  guestLinks          GuestLink[]
 
   @@index([ownerId, archivedAt, createdAt])
   @@index([visibility, publication, archivedAt, createdAt])
@@ -98,6 +99,19 @@ model Membership {
 
   @@unique([wishlistId, userId])
   @@index([userId, joinedAt])
+}
+
+model GuestLink {
+  id         String    @id @default(cuid())
+  createdAt  DateTime  @default(now())
+  label      String    @db.VarChar(80)
+  tokenHash  String    @unique @db.VarChar(64)
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  wishlistId String
+  wishlist   Wishlist  @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+
+  @@index([wishlistId, createdAt])
 }
 
 // The ID locates an invitation; only its verified intended email can accept it.

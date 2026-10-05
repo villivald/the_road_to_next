@@ -57,8 +57,9 @@ export default async function PlanPage() {
       <div className={styles.form}>
         <h2>About Premium</h2>
         <p>
-          Premium enables private lists, invitations, and admin promotions for
-          lists you own. Invited people can join with a Free account.
+          Premium enables private lists, invitations, guest links, and admin
+          promotions for lists you own. Invited people can join with a Free
+          account.
         </p>
         <p>
           When Premium ends, existing lists, memberships, and eligible

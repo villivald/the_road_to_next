@@ -7,6 +7,11 @@ export const sharedListsPath = "/lists/shared";
 export const invitationPath = (id: string) =>
   `/invitations/${encodeURIComponent(id)}`;
 export const sharingPath = (id: string) => `${listPath(id)}/sharing`;
+export const guestLinksPath = (id: string) => `${listPath(id)}/guest-links`;
+export const guestListPath = (id: string) =>
+  `/guest/lists/${encodeURIComponent(id)}`;
+export const guestWishPath = (listId: string, wishId: string) =>
+  `${guestListPath(listId)}/wishes/${encodeURIComponent(wishId)}`;
 
 export const reservationsPath = "/reservations";
 

@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import Link from "next/link";
 import styles from "@/components/shell.module.css";
 import ThemeSwitcher from "@/components/theme/theme-switcher";
@@ -14,6 +15,23 @@ import {
 } from "@/paths";
 
 export default async function Header() {
+  if ((await headers()).get("x-wishlist-view") === "guest") {
+    return (
+      <header className={styles.header}>
+        <div className={styles["header-inner"]}>
+          <span className={styles.brand}>Wishlist · Guest view</span>
+          <nav aria-label="Guest navigation" className={styles.navigation}>
+            <form action="/" method="get">
+              <button type="submit" className={styles["text-button"]}>
+                Open Wishlist
+              </button>
+            </form>
+            <ThemeSwitcher />
+          </nav>
+        </div>
+      </header>
+    );
+  }
   const { user } = await getAuth();
   return (
     <header className={styles.header}>
