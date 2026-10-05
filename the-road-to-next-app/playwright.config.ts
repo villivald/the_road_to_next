@@ -4,6 +4,7 @@ import {
   testEnvironment,
   testOrigin,
 } from "./e2e/environment";
+import { paddleEnvironment } from "./e2e/paddle-fixture";
 
 assertTestDatabase(process.env);
 
@@ -32,9 +33,9 @@ export default defineConfig({
   ],
   webServer: {
     command:
-      "npm run build && npm run start -- --hostname 127.0.0.1 --port 3017",
+      "npm run build && node --import tsx --import ./e2e/paddle-preload.ts node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3017",
     url: `${testOrigin}/sign-in`,
-    env: testEnvironment,
+    env: { ...testEnvironment, ...paddleEnvironment },
     reuseExistingServer: false,
     timeout: 120_000,
     gracefulShutdown: { signal: "SIGTERM", timeout: 5_000 },

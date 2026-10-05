@@ -46,7 +46,11 @@ npm run promo -- list
 npm run promo -- revoke --id PROMO_ID
 ```
 
-Creation prints the code once; keep it private. Revocation stops new redemptions but preserves granted access. No payments are enabled.
+Creation prints the code once; keep it private. Revocation stops new redemptions but preserves granted access.
+
+## Subscription testing
+
+Local development needs no Paddle setup; promo codes remain available. Hosted sandbox testing follows deployment. After configuration, use **Account → Your plan and promo codes**. Inngest handles billing reconciliation and cancellation retries; `npm run billing:sync` runs one due batch, and `npm run billing:sync -- --status` shows pending issues for the configured database. Real payments are disabled.
 
 ## Test
 

@@ -42,6 +42,10 @@ export const resetFixtures = async () => {
           ],
         },
       });
+      await tx.billingAccount.deleteMany({
+        where: { OR: [{ userId: { startsWith: "e2e-" } }, { userId: null }] },
+      });
+      await tx.billingEvent.deleteMany();
       await tx.user.deleteMany({
         where: {
           OR: [{ id: { startsWith: "e2e-" } }, { email: newAccount.email }],

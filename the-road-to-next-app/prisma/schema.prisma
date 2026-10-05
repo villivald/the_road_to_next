@@ -27,6 +27,7 @@ model User {
   premiumGrants           PremiumGrant[]
   promoRedemptions        PromoRedemption[]
   sentInvitations         Invitation[]
+  billingAccount          BillingAccount?
 }
 
 model Session {
@@ -239,6 +240,8 @@ model PremiumGrant {
   revokedAt         DateTime?
   userId            String
   promoRedemptionId String?          @unique
+  billingPaymentId  String?          @unique
+  billingPayment    BillingPayment?  @relation(fields: [billingPaymentId], references: [id], onDelete: Cascade)
   user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   promoRedemption   PromoRedemption? @relation(fields: [promoRedemptionId], references: [id], onDelete: Cascade)
 
@@ -269,4 +272,77 @@ model PromoRedemption {
 
   @@unique([promoCodeId, userId])
   @@index([userId])
+}
+
+// Retained without profile data after deletion so late payments can be canceled.
+model BillingAccount {
+  customerId    String?               @unique
+  id            String                @id @default(cuid())
+  createdAt     DateTime              @default(now())
+  userId        String?               @unique
+  user          User?                 @relation(fields: [userId], references: [id], onDelete: SetNull)
+  deletedAt     DateTime?
+  nextSyncAt    DateTime              @default(now())
+  claimId       String?
+  leaseUntil    DateTime?
+  revision      Int                   @default(0)
+  attempts      Int                   @default(0)
+  lastSyncedAt  DateTime?
+  checkouts     BillingCheckout[]
+  subscriptions BillingSubscription[]
+
+  @@index([nextSyncAt])
+}
+
+model BillingCheckout {
+  id              String         @id @default(cuid())
+  createdAt       DateTime       @default(now())
+  accountId       String
+  account         BillingAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  interval        String         @db.VarChar(10)
+  priceId         String
+  transactionId   String?        @unique
+  dispatchedAt    DateTime?
+  closedAt        DateTime?
+  cancelRequested Boolean        @default(false)
+
+  @@index([accountId, closedAt])
+}
+
+model BillingSubscription {
+  id           String           @id
+  accountId    String
+  account      BillingAccount   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  customerId   String
+  status       String
+  interval     String
+  nextBilledAt DateTime?
+  cancelAt     DateTime?
+  updatedAt    DateTime
+  payments     BillingPayment[]
+
+  @@index([accountId])
+}
+
+model BillingPayment {
+  id             String              @id
+  subscriptionId String
+  subscription   BillingSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  startsAt       DateTime
+  expiresAt      DateTime
+  refunded       Boolean             @default(false)
+  grant          PremiumGrant?
+}
+
+// Only event/resource identifiers are retained; payloads may contain customer PII.
+model BillingEvent {
+  id            String    @id
+  createdAt     DateTime  @default(now())
+  type          String
+  resourceId    String
+  nextAttemptAt DateTime  @default(now())
+  attempts      Int       @default(0)
+  processedAt   DateTime?
+
+  @@index([processedAt, nextAttemptAt])
 }

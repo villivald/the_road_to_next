@@ -4,6 +4,12 @@ export const testDatabaseUrl =
 export const testOrigin = "http://127.0.0.1:3017";
 
 export const testEnvironment = {
+  PADDLE_ENVIRONMENT: "sandbox",
+  PADDLE_API_KEY: "",
+  PADDLE_CLIENT_TOKEN: "",
+  PADDLE_WEBHOOK_SECRET: "",
+  PADDLE_MONTHLY_PRICE_ID: "",
+  PADDLE_ANNUAL_PRICE_ID: "",
   MEDIA_STORAGE: "local",
   MEDIA_LOCAL_NAMESPACE: "test",
   DATABASE_URL: testDatabaseUrl,

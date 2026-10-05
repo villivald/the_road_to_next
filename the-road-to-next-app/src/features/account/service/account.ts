@@ -3,6 +3,8 @@ import {
   consumeRateLimit,
   lockUser,
 } from "@/features/auth/service/security";
+import { detachBilling } from "@/features/billing/service/accounts";
+import { syncBillingAccount } from "@/features/billing/service/sync";
 import { verifyPasswordHash } from "@/features/password/utils/hash-and-verify";
 import { lockWishlist } from "@/features/wishlist/service/lock";
 import type { Prisma } from "@/generated/prisma/client";
@@ -84,12 +86,25 @@ const deletionImpact = async (tx: Prisma.TransactionClient, userId: string) => {
     orderBy: { id: "asc" },
   });
 
+  const billing = await tx.billingAccount.findUnique({
+    where: { userId },
+    select: {
+      subscriptions: {
+        where: { status: { not: "canceled" } },
+        select: { id: true },
+      },
+      checkouts: { where: { closedAt: null }, select: { id: true } },
+    },
+  });
+
   return {
+    subscriptionCount: billing?.subscriptions.length ?? 0,
+    checkoutCount: billing?.checkouts.length ?? 0,
     outcomes,
     reservationCount: reservations.length,
     membershipCount: memberships.length,
     impactToken: hashToken(
-      JSON.stringify({ userId, outcomes, reservations, memberships }),
+      JSON.stringify({ userId, outcomes, reservations, memberships, billing }),
     ),
   };
 };
@@ -101,6 +116,8 @@ export const readDeletionImpact = async (userId: string) => {
 
   return {
     impactToken: impact.impactToken,
+    subscriptionCount: impact.subscriptionCount,
+    checkoutCount: impact.checkoutCount,
     reservationCount: impact.reservationCount,
     membershipCount: impact.membershipCount,
     transferCount: impact.outcomes.filter((list) => list.successor).length,
@@ -127,7 +144,7 @@ export const deleteAccount = async (
     throw new AuthError("Incorrect current password");
   }
 
-  await prisma.$transaction(
+  const billingId = await prisma.$transaction(
     async (tx) => {
       // Deletions can transfer to each other. Serialize this rare operation before
       // taking user/list locks; other account and content operations remain concurrent.
@@ -196,8 +213,16 @@ export const deleteAccount = async (
       // Cascades revoke all sessions/tokens/memberships/reservations, while wishes
       // retain their content with a null author. Archiving ends all other reservations.
       await tx.invitation.deleteMany({ where: { email: current.email } });
+      const billing = await tx.billingAccount.findUnique({
+        where: { userId },
+        select: { id: true },
+      });
+      await detachBilling(tx, userId);
       await tx.user.delete({ where: { id: userId } });
+      return billing?.id;
     },
     { timeout: 15_000 },
   );
+  // The durable cancellation request survives account deletion and provider outages.
+  if (billingId) await syncBillingAccount(billingId).catch(() => false);
 };

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import styles from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
+import { BillingPanel } from "@/features/billing/components/billing-panel";
 import { PlanRefresh } from "@/features/premium/components/plan-refresh";
 import { PromoForm } from "@/features/premium/components/promo-form";
 import { readPremiumAccess } from "@/features/premium/service/entitlements";
@@ -47,11 +48,12 @@ export default async function PlanPage() {
           </p>
         )}
         <p className={styles.muted}>
-          Promo access ends automatically. There are no charges or automatic
-          renewals.
+          Promo access ends automatically without charges. Subscription renewals
+          are managed separately below.
         </p>
       </div>
       <PlanRefresh changesAt={changesAt?.toISOString() ?? null} />
+      <BillingPanel userId={user.id} />
       <h2>Have a promo code?</h2>
       <PromoForm />
       <div className={styles.form}>
