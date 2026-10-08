@@ -1,3 +1,5 @@
+import { CatalogSkeleton } from "@/components/loading/loading-preview";
+
 export default function LoadingBrowse() {
-  return <p role="status">Loading public wishlists…</p>;
+  return <CatalogSkeleton />;
 }

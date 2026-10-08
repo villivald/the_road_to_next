@@ -1,0 +1,114 @@
+.content {
+  display: grid;
+  min-width: 0;
+  gap: 1.75rem;
+}
+
+.block {
+  width: 100%;
+  border-radius: 0.5rem;
+  background: var(--muted);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+.heading {
+  width: min(75%, 28rem);
+  height: 4rem;
+}
+
+.title {
+  width: 75%;
+  height: 1.75rem;
+}
+
+.line {
+  width: 65%;
+  height: 1.4rem;
+}
+
+.label {
+  width: 40%;
+  height: 1.25rem;
+}
+
+.input,
+.button,
+.back-link {
+  height: 48px;
+}
+
+.button {
+  width: 8rem;
+}
+
+.back-link {
+  width: 12rem;
+}
+
+.back-label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.tabs {
+  width: min(100%, 20rem);
+  height: 56px;
+}
+
+.textarea,
+.toolbar {
+  height: 7rem;
+}
+
+.account-details {
+  height: 11rem;
+}
+
+.avatar-editor {
+  display: grid;
+  gap: 1rem;
+  padding-block: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.media {
+  aspect-ratio: 4 / 3;
+}
+
+.detail-media {
+  max-width: 40rem;
+  aspect-ratio: 4 / 3;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 1rem;
+}
+
+.block.skeleton-text {
+  width: auto;
+  color: transparent;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .block {
+    animation: none;
+  }
+}

@@ -13,7 +13,7 @@ export default async function SignUpPage({
   return (
     <AccountPanel
       title="Create your account"
-      description="Start with your name, email, and a secure password."
+      description="Choose a username and enter your email and a secure password."
       footer={
         <Link href={authReturnPath(signInPath, returnTo)}>
           Already have an account? Sign in

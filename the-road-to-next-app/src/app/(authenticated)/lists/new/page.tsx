@@ -17,8 +17,7 @@ export default async function NewListPage() {
     <section className={styles.editor}>
       <h1>Create a list</h1>
       <p className={styles.muted}>
-        Start with a draft. Your list is only visible to its admins until you
-        publish it.
+        Give your list a name, then choose how you’d like to share it.
       </p>
       <ListForm canCreatePrivate={access.plan === "PREMIUM"} />
     </section>

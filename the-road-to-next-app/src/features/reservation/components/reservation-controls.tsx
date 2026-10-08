@@ -1,3 +1,4 @@
+import { Gift } from "lucide-react";
 import Link from "next/link";
 import { ActionForm } from "@/components/form/action-form";
 import styles from "@/components/shell.module.css";
@@ -25,7 +26,9 @@ export function ReservationControls({
       className={styles["list-settings"]}
       aria-labelledby="reservation-heading"
     >
-      <h2 id="reservation-heading">Reservation</h2>
+      <h2 id="reservation-heading" className={styles["icon-label"]}>
+        <Gift size={22} aria-hidden="true" /> Reservation
+      </h2>
       {wish.isReservedByYou && wish.reservationId ? (
         <>
           <p role="status">You reserved this wish. Your identity is private.</p>
@@ -50,8 +53,8 @@ export function ReservationControls({
           destructive
         >
           <p className={styles.muted}>
-            Revoking makes this wish available again when it is visible and
-            published.
+            Revoking lets others view this wish again when the wish and its list
+            are visible. They can reserve it if reservations are enabled.
           </p>
         </ActionForm>
       ) : wish.canReserve ? (
@@ -63,8 +66,9 @@ export function ReservationControls({
             pendingLabel="Reserving…"
           >
             <p className={styles.muted}>
-              Let others know this gift is taken. Only you and the list admins
-              can view it while reserved; your identity stays private.
+              Reserve this wish to avoid duplicate gifts. While reserved, it is
+              hidden from everyone except you and the list admins. Your identity
+              stays private. Reserving does not buy the item.
             </p>
           </ActionForm>
         ) : (

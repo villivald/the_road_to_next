@@ -75,7 +75,7 @@ const fields: Record<Mode, Field[]> = {
       autoComplete: "username",
       minLength: 2,
       maxLength: 40,
-      hint: "Letters, numbers, underscores, and hyphens.",
+      hint: "Use 2–40 letters, numbers, underscores, or hyphens.",
     },
     email,
     password,

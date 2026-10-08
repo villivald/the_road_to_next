@@ -1,6 +1,9 @@
+import { Sparkles } from "lucide-react";
 import Link from "next/link";
+import { CardActions } from "@/components/cards/card-actions";
+import { CardMedia } from "@/components/cards/card-media";
+import { WishStatus } from "@/components/cards/wish-status";
 import styles from "@/components/shell.module.css";
-import { MediaImage } from "@/features/media/components/media-image";
 import { listPath, newWishPath, wishPath } from "@/paths";
 import { readListWishes } from "../service/wishes";
 import { formatWishPrice } from "../utils/money";
@@ -71,28 +74,33 @@ export async function WishCollection({
         <ul className={styles["list-grid"]}>
           {wishes.map((wish) => (
             <li key={wish.id} className={styles["list-card"]}>
-              <MediaImage image={wish.image} compact />
+              <CardMedia image={wish.image} />
               <h3 className={styles["wish-title"]}>
                 <Link href={wishPath(listId, wish.id)}>{wish.title}</Link>
               </h3>
-              <p>{formatWishPrice(wish.priceMinor, wish.currency)}</p>
+              <p className={styles.price}>
+                {formatWishPrice(wish.priceMinor, wish.currency)}
+              </p>
               <WishPriority priority={wish.priority} />
               {canManage && (
-                <p className={styles.muted}>
-                  {wish.fulfilledAt
-                    ? "Fulfilled"
-                    : wish.hidden
-                      ? "Hidden"
-                      : "Visible"}
-                  {wish.fulfilledAt && wish.hidden ? " · Hidden" : ""}
-                  {wish.isReserved ? " · Reserved" : ""}
-                </p>
+                <WishStatus
+                  hidden={wish.hidden}
+                  fulfilled={!!wish.fulfilledAt}
+                  reserved={wish.isReserved}
+                  showVisible
+                />
               )}
+              <CardActions
+                path={wishPath(listId, wish.id)}
+                title={wish.title}
+                canManage={canManage}
+              />
             </li>
           ))}
         </ul>
       ) : (
         <div className={styles["empty-state"]}>
+          <Sparkles aria-hidden="true" />
           <h3>
             {page > 1
               ? "No more wishes"

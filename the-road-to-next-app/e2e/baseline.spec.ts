@@ -106,7 +106,7 @@ test("register, verify from captured email, reach empty lists, and sign out", as
   await page.getByLabel("Verification code", { exact: true }).fill("AAAAAAAA");
   await page.getByRole("button", { name: "Verify email", exact: true }).click();
   await expect(page.getByRole("main").getByRole("alert")).toContainText(
-    "Invalid or expired code",
+    "This code is invalid or expired. Request a new code and try again.",
   );
   await page.getByLabel("Verification code", { exact: true }).fill(code!);
   await page.getByRole("button", { name: "Verify email", exact: true }).click();
@@ -213,7 +213,7 @@ test("recovery uses captured email, revokes old sessions, and rejects token reus
       .fill("Another-password!");
     await recovery.getByRole("button", { name: "Reset password" }).click();
     await expect(recovery.getByRole("main").getByRole("alert")).toContainText(
-      "Token is invalid or expired",
+      "This reset link is invalid or expired. Request a new link.",
     );
   } finally {
     await recovery.close();

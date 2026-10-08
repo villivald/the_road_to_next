@@ -14,12 +14,16 @@ export function ActionForm({
   pendingLabel,
   children,
   destructive = false,
+  secondary = false,
+  icon,
 }: {
   action: (state: ActionState, data: FormData) => Promise<ActionState>;
   label: string;
   pendingLabel: string;
   children: ReactNode;
   destructive?: boolean;
+  secondary?: boolean;
+  icon?: ReactNode;
 }) {
   const [state, submit, pending] = useActionState(action, {
     ...EMPTY_ACTION_STATE,
@@ -35,8 +39,15 @@ export function ActionForm({
         {children}
         <button
           type="submit"
-          className={destructive ? styles["danger-button"] : styles.button}
+          className={
+            destructive
+              ? styles["danger-button"]
+              : secondary
+                ? styles["secondary-button"]
+                : styles.button
+          }
         >
+          {icon}
           {pending ? pendingLabel : label}
         </button>
       </fieldset>

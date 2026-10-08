@@ -1,9 +1,5 @@
-import styles from "@/components/shell.module.css";
+import { DetailSkeleton } from "@/components/loading/loading-preview";
 
 export default function Loading() {
-  return (
-    <p role="status" className={styles.notice}>
-      Loading wishlist…
-    </p>
-  );
+  return <DetailSkeleton />;
 }

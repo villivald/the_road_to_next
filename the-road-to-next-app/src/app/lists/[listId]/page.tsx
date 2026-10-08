@@ -1,14 +1,16 @@
+import { Pencil } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ActionForm } from "@/components/form/action-form";
+import { CopyLink } from "@/components/cards/copy-link";
+import { ListStatus } from "@/components/cards/list-status";
 import styles from "@/components/shell.module.css";
 import { getAuth } from "@/features/auth/actions/get-auth";
 import { MediaImage } from "@/features/media/components/media-image";
 import { WishCollection } from "@/features/wish/components/wish-collection";
-import { changePublication } from "@/features/wishlist/actions/manage-list";
+import { ListSettings } from "@/features/wishlist/components/list-settings";
 import { readWishlist } from "@/features/wishlist/service/lists";
-import { browsePath, listPath, listsPath, sharingPath } from "@/paths";
+import { browsePath, listPath, listsPath } from "@/paths";
 
 export const metadata: Metadata = {
   title: "Wishlist",
@@ -49,30 +51,37 @@ export default async function ListPage({
 
       {list.canManage && (created === "1" || saved === "1") && (
         <p role="status" className={styles.notice}>
-          {created === "1" ? "List created as a draft." : "Changes saved."}
+          {created === "1"
+            ? "List created. It’s hidden from viewers until you show it."
+            : "Changes saved."}
         </p>
       )}
 
       <div className={styles["page-heading"]}>
         <div>
-          <p className={styles.muted}>
-            {published ? "Published" : "Draft"} ·{" "}
-            {list.visibility === "PUBLIC" ? "Public" : "Private"}
-          </p>
+          <ListStatus
+            publication={list.publication}
+            visibility={list.visibility}
+          />
           <h1>{list.title}</h1>
         </div>
-        {list.canManage && (
-          <Link className={styles.button} href={`${listPath(list.id)}/edit`}>
-            Edit list
-          </Link>
-        )}
+        <div className={styles.actions}>
+          {published && list.visibility === "PUBLIC" && (
+            <CopyLink path={listPath(list.id)} title={list.title} />
+          )}
+          {list.canManage && (
+            <Link className={styles.button} href={`${listPath(list.id)}/edit`}>
+              <Pencil size={18} aria-hidden="true" /> Edit list
+            </Link>
+          )}
+        </div>
       </div>
 
       <MediaImage image={list.image} />
 
-      <p className={styles.description}>
-        {list.description || "No description yet."}
-      </p>
+      {list.description && (
+        <p className={styles.description}>{list.description}</p>
+      )}
 
       {list.canManage && wishDeleted === "1" && (
         <p role="status" className={styles.notice}>
@@ -87,46 +96,7 @@ export default async function ListPage({
         searchParams={query}
       />
 
-      {list.canManage && (
-        <section
-          className={styles["list-settings"]}
-          aria-labelledby="list-settings-heading"
-        >
-          <h2 id="list-settings-heading">List settings</h2>
-          <Link href={sharingPath(list.id)}>Sharing and members</Link>
-          <p className={styles.muted}>
-            {published
-              ? list.visibility === "PUBLIC"
-                ? "Anyone with the link can view this list."
-                : "Only people with access can view this list."
-              : "Only this list’s admins can see this draft."}
-          </p>
-          <p>
-            Reservations: {list.reservationsEnabled ? "enabled" : "disabled"}
-            {!published && list.reservationsEnabled ? " when published" : ""}.
-          </p>
-
-          <ActionForm
-            action={changePublication.bind(null, list.id)}
-            label={published ? "Move to drafts" : "Publish list"}
-            pendingLabel="Updating…"
-          >
-            <input
-              type="hidden"
-              name="publication"
-              value={published ? "DRAFT" : "PUBLISHED"}
-            />
-            {published && (
-              <p className={styles.muted}>
-                Moving to drafts removes viewer access and ends active
-                reservations.
-              </p>
-            )}
-          </ActionForm>
-
-          <Link href={`${listPath(list.id)}/delete`}>Delete list</Link>
-        </section>
-      )}
+      {list.canManage && <ListSettings list={list} />}
     </section>
   );
 }

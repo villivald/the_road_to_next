@@ -26,7 +26,7 @@ export const billingConfig = () => {
     month === year
   ) {
     throw new BillingError(
-      "Subscriptions are not configured yet. Promo codes still work.",
+      "Subscriptions are not available yet. You can still use a promo code.",
     );
   }
 

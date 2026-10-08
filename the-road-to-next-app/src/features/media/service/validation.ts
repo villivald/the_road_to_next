@@ -17,7 +17,7 @@ export const imageDescriptionSchema = z.string().trim().min(1).max(300);
 
 export const prepareImage = async (input: Buffer, avatar: boolean) => {
   if (!input.length || input.length > MAX_IMAGE_BYTES) {
-    throw new MediaError("Choose an image smaller than 3 MB.");
+    throw new MediaError("Choose an image up to 3 MB.");
   }
 
   try {
@@ -77,7 +77,7 @@ export const readImageBody = async (request: Request) => {
 
       if (bytes > MAX_IMAGE_BYTES) {
         await reader.cancel();
-        throw new MediaError("Choose an image smaller than 3 MB.");
+        throw new MediaError("Choose an image up to 3 MB.");
       }
 
       chunks.push(value);

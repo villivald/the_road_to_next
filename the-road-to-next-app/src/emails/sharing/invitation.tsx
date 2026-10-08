@@ -8,9 +8,9 @@ export default function InvitationEmail({ url }: { url: string }) {
         <Container>
           <Text>You have been invited to a list on Wishlist.</Text>
           <Text>
-            Sign in or register using this email address, verify it, then review
-            the invitation. It expires after seven days. Joining requires your
-            confirmation.
+            Sign in or create an account with this email address and verify it.
+            Then review the invitation and choose whether to join. The
+            invitation expires after seven days.
           </Text>
           <Link href={url}>Review invitation</Link>
           <Text>

@@ -78,7 +78,9 @@ export const verifyEmail = async (
       },
     });
     if (consumed.count !== 1) {
-      throw new AuthError("Invalid or expired code");
+      throw new AuthError(
+        "This code is invalid or expired. Request a new code and try again.",
+      );
     }
 
     await tx.user.update({
@@ -99,7 +101,9 @@ export const resetPassword = async (rawToken: string, password: string) => {
     where: { tokenHash },
   });
   if (!token || token.expiresAt.getTime() <= Date.now()) {
-    throw new AuthError("Token is invalid or expired");
+    throw new AuthError(
+      "This reset link is invalid or expired. Request a new link.",
+    );
   }
 
   const passwordHash = await hashPassword(password);
@@ -111,7 +115,9 @@ export const resetPassword = async (rawToken: string, password: string) => {
       where: { tokenHash, expiresAt: { gt: new Date() } },
     });
     if (consumed.count !== 1) {
-      throw new AuthError("Token is invalid or expired");
+      throw new AuthError(
+        "This reset link is invalid or expired. Request a new link.",
+      );
     }
 
     await tx.user.update({

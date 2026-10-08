@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { consumeRateLimit, lockUser } from "@/features/auth/service/security";
+import { publicOwners } from "@/features/discovery/service/access";
 import { readableWishes } from "@/features/wish/service/access";
 import { readableLists } from "@/features/wishlist/service/access";
 import { lockManagedWishlist } from "@/features/wishlist/service/lists";
@@ -57,7 +58,7 @@ export const authorizeImageChange = async (userId: string, input: unknown) => {
   return target;
 };
 
-export const replaceImage = async (
+export const stageImage = async (
   userId: string,
   input: unknown,
   altInput: unknown,
@@ -83,39 +84,59 @@ export const replaceImage = async (
   });
 
   await mediaStorage.put(pending.provider, pending.pathname, data);
+  return pending.id;
+};
 
-  return prisma.$transaction(async (tx) => {
-    // Recheck after storage I/O: membership or the target may have changed.
-    await lockTarget(tx, target, userId);
-    const fields = targetFields(target, userId);
+export const attachStagedImage = async (
+  tx: Prisma.TransactionClient,
+  userId: string,
+  target: MediaTarget,
+  imageId: string,
+) => {
+  // Recheck after storage I/O: membership or the target may have changed.
+  await lockTarget(tx, target, userId);
+  const fields = targetFields(target, userId);
 
-    await tx.media.updateMany({
-      where: fields,
-      data: {
-        userId: null,
-        wishlistId: null,
-        wishId: null,
-        cleanupAfter: new Date(),
-      },
-    });
-    const attached = await tx.media.updateMany({
-      where: {
-        id: pending.id,
-        state: "PENDING",
-        cleanupAfter: { gt: new Date() },
-      },
-      data: { ...fields, state: "READY" },
-    });
-
-    if (attached.count !== 1) {
-      throw new MediaError("The upload expired. Please try again.");
-    }
-
-    return tx.media.findUniqueOrThrow({
-      where: { id: pending.id },
-      ...imageSelection,
-    });
+  await tx.media.updateMany({
+    where: fields,
+    data: {
+      userId: null,
+      wishlistId: null,
+      wishId: null,
+      cleanupAfter: new Date(),
+    },
   });
+  const attached = await tx.media.updateMany({
+    where: {
+      id: imageId,
+      state: "PENDING",
+      cleanupAfter: { gt: new Date() },
+    },
+    data: { ...fields, state: "READY" },
+  });
+
+  if (attached.count !== 1) {
+    throw new MediaError("The upload expired. Please try again.");
+  }
+
+  return tx.media.findUniqueOrThrow({
+    where: { id: imageId },
+    ...imageSelection,
+  });
+};
+
+export const replaceImage = async (
+  userId: string,
+  input: unknown,
+  altInput: unknown,
+  bytes: Buffer,
+) => {
+  const target = mediaTargetSchema.parse(input);
+  const imageId = await stageImage(userId, target, altInput, bytes);
+
+  return prisma.$transaction((tx) =>
+    attachStagedImage(tx, userId, target, imageId),
+  );
 };
 
 export const removeImage = async (userId: string, input: unknown) => {
@@ -141,6 +162,7 @@ export const readableImage = (id: string, userId: string | null) =>
       id,
       state: "READY",
       OR: [
+        { user: publicOwners },
         { wishlist: readableLists(userId) },
         { wish: readableWishes(userId, true) },
         ...(userId ? [{ userId, user: { emailVerified: true } }] : []),

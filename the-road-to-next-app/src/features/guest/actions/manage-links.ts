@@ -30,7 +30,8 @@ export const createLink = async (
   try {
     await limitSourceRequest("guest-link-create");
     z.literal("yes", {
-      error: "Confirm that anyone with this link may view the published list.",
+      error:
+        "Confirm that anyone with this link may view the list when it is visible.",
     }).parse(data.get("confirm"));
     const { token } = await createGuestLink(user.id, session.id, listId, {
       label: data.get("label"),

@@ -58,7 +58,7 @@ const refresh = async (page: import("@playwright/test").Page) => {
   await page
     .getByRole("button", { name: "Refresh billing", exact: true })
     .click();
-  await expect(page.getByRole("status")).toContainText("Billing refreshed");
+  await expect(page.getByRole("status")).toContainText("Billing updated");
 };
 
 test("checkout is server-bound, returns never grant access, confirmation and cancellation appear after refresh", async ({

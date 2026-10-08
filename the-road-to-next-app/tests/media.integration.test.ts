@@ -86,6 +86,111 @@ afterAll(async () => {
 });
 
 describe("private media", () => {
+  it("creates a wish and its image together with title fallback and normal access rules", async () => {
+    const wish = await createWish(
+      "e2e-owner",
+      listId,
+      { title: "A blue camera", hidden: true },
+      { bytes, alt: "" },
+    );
+    const image = await prisma.media.findUniqueOrThrow({
+      where: { wishId: wish.id },
+    });
+    expect(image).toMatchObject({
+      state: "READY",
+      alt: "A blue camera",
+      userId: null,
+      wishlistId: null,
+    });
+    expect(await readableImage(image.id, "e2e-owner")).not.toBeNull();
+    expect(await readableImage(image.id, "e2e-member")).toBeNull();
+    await setWishlistPublication("e2e-owner", listId, "PUBLISHED");
+    expect(await readableImage(image.id, null)).toBeNull();
+    await transitionWish("e2e-owner", listId, wish.id, "unhide");
+    expect(await readableImage(image.id, null)).not.toBeNull();
+  });
+
+  it("rejects invalid images and unauthorized creation without creating a wish", async () => {
+    const count = await prisma.wish.count({ where: { wishlistId: listId } });
+    const write = vi.spyOn(mediaStorage, "put");
+    await expect(
+      createWish(
+        "e2e-member",
+        listId,
+        { title: "Denied" },
+        { bytes, alt: "Camera" },
+      ),
+    ).rejects.toThrow();
+    await expect(
+      createWish(
+        "e2e-owner",
+        listId,
+        { title: "Invalid image" },
+        { bytes: Buffer.from("invalid"), alt: "Camera" },
+      ),
+    ).rejects.toThrow("valid, still JPEG");
+    await expect(
+      createWish("e2e-owner", listId, { title: " " }, { bytes, alt: "Camera" }),
+    ).rejects.toThrow();
+    expect(write).not.toHaveBeenCalled();
+    expect(await prisma.wish.count({ where: { wishlistId: listId } })).toBe(
+      count,
+    );
+  });
+
+  it("leaves cleanup work but no partial wish when creation storage fails", async () => {
+    vi.spyOn(mediaStorage, "put").mockRejectedValueOnce(
+      new Error("Storage offline"),
+    );
+    await expect(
+      createWish(
+        "e2e-owner",
+        listId,
+        { title: "Failed creation" },
+        { bytes, alt: "Camera" },
+      ),
+    ).rejects.toThrow("Storage offline");
+    expect(
+      await prisma.wish.count({ where: { title: "Failed creation" } }),
+    ).toBe(0);
+    const pending = await prisma.media.findFirstOrThrow({
+      where: { state: "PENDING" },
+    });
+    expect(pending.wishId).toBeNull();
+    expect(await readableImage(pending.id, "e2e-owner")).toBeNull();
+    await prisma.media.update({
+      where: { id: pending.id },
+      data: { cleanupAfter: expired },
+    });
+    expect((await cleanupMedia()).deleted).toBe(1);
+  });
+
+  it("rechecks creation permission after uploading and rolls back the wish when access changes", async () => {
+    const write = mediaStorage.put.bind(mediaStorage);
+    vi.spyOn(mediaStorage, "put").mockImplementationOnce(async (...args) => {
+      await write(...args);
+      await prisma.user.update({
+        where: { id: "e2e-owner" },
+        data: { emailVerified: false },
+      });
+    });
+    await expect(
+      createWish(
+        "e2e-owner",
+        listId,
+        { title: "Lost creation access" },
+        { bytes, alt: "Camera" },
+      ),
+    ).rejects.toThrow();
+    expect(
+      await prisma.wish.count({ where: { title: "Lost creation access" } }),
+    ).toBe(0);
+    const pending = await prisma.media.findFirstOrThrow({
+      where: { state: "PENDING" },
+    });
+    expect(await readableImage(pending.id, "e2e-owner")).toBeNull();
+  });
+
   it("rechecks draft, public, private, revoked membership and archived access even on conditional requests", async () => {
     const image = await replaceImage(
       "e2e-owner",

@@ -95,8 +95,8 @@ export const changePublication = async (
   return toActionState(
     "SUCCESS",
     data.get("publication") === "PUBLISHED"
-      ? "List published."
-      : "List moved to drafts. Active reservations have ended.",
+      ? "List is now visible."
+      : "List hidden from viewers. Active reservations have ended.",
   );
 };
 

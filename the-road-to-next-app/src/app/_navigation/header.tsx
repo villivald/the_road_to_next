@@ -1,9 +1,11 @@
+import { Compass, Gift, Heart, List, UserRound } from "lucide-react";
 import { headers } from "next/headers";
 import Link from "next/link";
 import styles from "@/components/shell.module.css";
 import ThemeSwitcher from "@/components/theme/theme-switcher";
 import { getAuth } from "@/features/auth/actions/get-auth";
 import { signOut } from "@/features/auth/actions/sign-out";
+import { getHomePath } from "@/features/auth/utils/home-path";
 import {
   accountProfilePath,
   browsePath,
@@ -13,6 +15,7 @@ import {
   signInPath,
   signUpPath,
 } from "@/paths";
+import { NavLink } from "./nav-link";
 
 export default async function Header() {
   if ((await headers()).get("x-wishlist-view") === "guest") {
@@ -33,41 +36,60 @@ export default async function Header() {
     );
   }
   const { user } = await getAuth();
+
   return (
     <header className={styles.header}>
       <div className={styles["header-inner"]}>
-        <Link href="/" className={styles.brand}>
+        <Link href={getHomePath(user)} className={styles.brand}>
+          <Heart size={23} aria-hidden="true" />
           Wishlist
         </Link>
-        <nav aria-label="Main navigation" className={styles.navigation}>
-          <Link href={browsePath}>Browse</Link>
+        <nav
+          aria-label="Main navigation"
+          className={`${styles.navigation} ${user?.emailVerified ? styles["member-navigation"] : ""}`}
+        >
+          <NavLink href={browsePath}>
+            <Compass size={18} aria-hidden="true" />
+            Browse
+          </NavLink>
           {user ? (
             <>
-              <Link
+              <NavLink
                 href={user.emailVerified ? listsPath : emailVerificationPath}
               >
+                <List size={18} aria-hidden="true" />
                 {user.emailVerified ? "My lists" : "Verify email"}
-              </Link>
+              </NavLink>
               {user.emailVerified && (
                 <>
-                  <Link href={reservationsPath}>My reservations</Link>
-                  <Link href={accountProfilePath}>Account</Link>
+                  <NavLink href={reservationsPath}>
+                    <Gift size={18} aria-hidden="true" />
+                    My reservations
+                  </NavLink>
+                  <NavLink href={accountProfilePath} match="/account">
+                    <UserRound size={18} aria-hidden="true" />
+                    Account
+                  </NavLink>
                 </>
               )}
-              <form action={signOut}>
-                <button type="submit" className={styles["text-button"]}>
-                  Sign out
-                </button>
-              </form>
             </>
           ) : (
             <>
-              <Link href={signInPath}>Sign in</Link>
-              <Link href={signUpPath}>Create account</Link>
+              <NavLink href={signInPath}>Sign in</NavLink>
+              <NavLink href={signUpPath}>Create account</NavLink>
             </>
           )}
-          <ThemeSwitcher />
         </nav>
+        <div className={styles["header-tools"]}>
+          {user && (
+            <form action={signOut}>
+              <button type="submit" className={styles["text-button"]}>
+                Sign out
+              </button>
+            </form>
+          )}
+          <ThemeSwitcher />
+        </div>
       </div>
     </header>
   );

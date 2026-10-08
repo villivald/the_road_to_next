@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CardMedia } from "@/components/cards/card-media";
+import { WishStatus } from "@/components/cards/wish-status";
 import { ActionForm } from "@/components/form/action-form";
 import styles from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
-import { MediaImage } from "@/features/media/components/media-image";
 import { cancel } from "@/features/reservation/actions/manage-reservation";
+import {
+  EmptyReservations,
+  ReservationHelp,
+  ReservationsFrame,
+} from "@/features/reservation/components/reservations-frame";
 import { readMyReservations } from "@/features/reservation/service/reservations";
 import { formatWishPrice } from "@/features/wish/utils/money";
 import { listPath, reservationsPath, wishPath } from "@/paths";
@@ -27,13 +33,7 @@ export default async function ReservationsPage({
   );
 
   return (
-    <section className={styles.page}>
-      <div>
-        <h1>My reservations</h1>
-        <p className={styles.muted}>
-          Gifts you plan to get. Your identity is private.
-        </p>
-      </div>
+    <ReservationsFrame>
       {query.canceled === "1" && (
         <p role="status" className={styles.notice}>
           Reservation canceled.
@@ -43,7 +43,7 @@ export default async function ReservationsPage({
         <ul className={styles["list-grid"]}>
           {reservations.map(({ id, wish }) => (
             <li key={id} className={styles["list-card"]}>
-              <MediaImage image={wish.image} compact />
+              <CardMedia image={wish.image} />
               <h2>
                 <Link href={wishPath(wish.wishlist.id, wish.id)}>
                   {wish.title}
@@ -55,7 +55,10 @@ export default async function ReservationsPage({
                   {wish.wishlist.title}
                 </Link>
               </p>
-              <p>{formatWishPrice(wish.priceMinor, wish.currency)}</p>
+              <p className={styles.price}>
+                {formatWishPrice(wish.priceMinor, wish.currency)}
+              </p>
+              <WishStatus reserved reservedByYou />
               <ActionForm
                 action={cancel.bind(null, wish.wishlist.id, wish.id, id)}
                 label="Cancel reservation"
@@ -69,21 +72,9 @@ export default async function ReservationsPage({
           ))}
         </ul>
       ) : (
-        <div className={styles["empty-state"]}>
-          <h2>
-            {page === 1 ? "No active reservations" : "No more reservations"}
-          </h2>
-          <p className={styles.muted}>
-            {page === 1
-              ? "Open a shared wishlist and reserve a wish to find it here."
-              : "Return to an earlier page."}
-          </p>
-        </div>
+        <EmptyReservations page={page} />
       )}
-      <p className={styles.muted}>
-        A reservation ends when a wish is hidden, fulfilled, or deleted, or when
-        you lose access to its list.
-      </p>
+      <ReservationHelp />
       {(page > 1 || hasNextPage) && (
         <nav className={styles.actions} aria-label="Reservation pages">
           {page > 1 && (
@@ -97,6 +88,6 @@ export default async function ReservationsPage({
           )}
         </nav>
       )}
-    </section>
+    </ReservationsFrame>
   );
 }

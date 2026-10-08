@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ActionForm } from "@/components/form/action-form";
+import { LocalTime } from "@/components/local-time";
 import styles from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import { joinList } from "@/features/sharing/actions/manage-sharing";
@@ -32,18 +33,12 @@ export default async function InvitationPage({
             You have been invited as{" "}
             {invitation.role === "ADMIN"
               ? "an admin who can manage content and people"
-              : "a member who can view published content and reserve available wishes"}
-            . List content becomes available after you join.
+              : "a member who can view and reserve available wishes"}
+            . Hidden lists are visible only to admins. Reservations must be
+            enabled by the list admins.
           </p>
           <p>
-            Expires{" "}
-            <time dateTime={invitation.expiresAt.toISOString()}>
-              {invitation.expiresAt.toLocaleString("en-GB", {
-                timeZone: "UTC",
-              })}{" "}
-              UTC
-            </time>
-            .
+            Expires <LocalTime value={invitation.expiresAt.toISOString()} />.
           </p>
           {invitation.canAccept ? (
             <ActionForm
@@ -70,7 +65,7 @@ export default async function InvitationPage({
           the list admin for a new invitation.
         </p>
       )}
-      <Link href={sharedListsPath}>Lists with access to</Link>
+      <Link href={sharedListsPath}>Lists shared with you</Link>
     </section>
   );
 }

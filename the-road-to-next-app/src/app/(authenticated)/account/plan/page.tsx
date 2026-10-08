@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LocalTime } from "@/components/local-time";
 import styles from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import { BillingPanel } from "@/features/billing/components/billing-panel";
@@ -8,13 +9,6 @@ import { readPremiumAccess } from "@/features/premium/service/entitlements";
 import { accountProfilePath } from "@/paths";
 
 export const dynamic = "force-dynamic";
-
-const formatDate = (date: Date) =>
-  new Intl.DateTimeFormat("en-GB", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "UTC",
-  }).format(date);
 
 export default async function PlanPage() {
   const { user } = await getAuthOrRedirect();
@@ -29,11 +23,7 @@ export default async function PlanPage() {
         <h2>{access.plan === "PREMIUM" ? "Premium" : "Free"}</h2>
         {access.expiresAt ? (
           <p>
-            Premium until{" "}
-            <time dateTime={access.expiresAt.toISOString()}>
-              {formatDate(access.expiresAt)} UTC
-            </time>
-            .
+            Premium until <LocalTime value={access.expiresAt.toISOString()} />.
           </p>
         ) : (
           <p>Public lists, wishes, and reservations are available on Free.</p>
@@ -41,10 +31,7 @@ export default async function PlanPage() {
         {access.nextStartsAt && (
           <p>
             Your next Premium period starts{" "}
-            <time dateTime={access.nextStartsAt.toISOString()}>
-              {formatDate(access.nextStartsAt)} UTC
-            </time>
-            .
+            <LocalTime value={access.nextStartsAt.toISOString()} />.
           </p>
         )}
         <p className={styles.muted}>
@@ -59,15 +46,16 @@ export default async function PlanPage() {
       <div className={styles.form}>
         <h2>About Premium</h2>
         <p>
-          Premium enables private lists, invitations, guest links, and admin
-          promotions for lists you own. Invited people can join with a Free
-          account.
+          Premium lets you limit who can view your lists, send invitations,
+          create guest links, and make members admins on lists you own. Invited
+          people can join with a Free account.
         </p>
         <p>
           When Premium ends, existing lists, memberships, and eligible
-          reservations stay intact. New private lists and sharing invitations
-          require the list owner to have Premium. Removing access will remain
-          available.
+          reservations stay intact. Creating or switching to private lists,
+          inviting people, accepting invitations, creating guest links, and
+          making members admins require the owner to have Premium. You can still
+          remove access.
         </p>
       </div>
     </section>

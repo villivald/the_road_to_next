@@ -171,7 +171,9 @@ describe("account security with PostgreSQL", () => {
     );
     await expect(
       verifyEmail(account.user.id, account.user.email, code),
-    ).rejects.toThrow("Invalid or expired");
+    ).rejects.toThrow(
+      "This code is invalid or expired. Request a new code and try again.",
+    );
   });
   it("expires codes without verifying accounts", async () => {
     const account = await register(newAccount);
@@ -185,7 +187,9 @@ describe("account security with PostgreSQL", () => {
     });
     await expect(
       verifyEmail(account.user.id, account.user.email, code),
-    ).rejects.toThrow("Invalid or expired");
+    ).rejects.toThrow(
+      "This code is invalid or expired. Request a new code and try again.",
+    );
     expect(
       (await prisma.user.findUniqueOrThrow({ where: { id: account.user.id } }))
         .emailVerified,
@@ -208,7 +212,9 @@ describe("account security with PostgreSQL", () => {
     expect((await validateSession(login.token)).user).toBeNull();
     await expect(
       resetPassword(token, "Changed-password-three!"),
-    ).rejects.toThrow("Token is invalid or expired");
+    ).rejects.toThrow(
+      "This reset link is invalid or expired. Request a new link.",
+    );
   });
   it("rejects expired reset tokens without changing passwords or sessions", async () => {
     const login = await authenticate(
@@ -223,7 +229,7 @@ describe("account security with PostgreSQL", () => {
       data: { expiresAt: new Date(0) },
     });
     await expect(resetPassword(token, "Changed-password-one!")).rejects.toThrow(
-      "Token is invalid or expired",
+      "This reset link is invalid or expired. Request a new link.",
     );
     expect((await validateSession(login.token)).user?.id).toBe(login.user.id);
     const user = await prisma.user.findUniqueOrThrow({

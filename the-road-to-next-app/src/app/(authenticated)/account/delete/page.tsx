@@ -18,11 +18,11 @@ export default async function DeleteAccountPage() {
         uses are not restored. You cannot undo this.
       </p>
       <p>
-        Any subscription is canceled immediately, with retries if Paddle is
-        unavailable. A payment already in progress may still complete and need a
-        refund through Paddle. Deletion does not automatically refund previous
-        payments. Payment records retained by Paddle follow its legal retention
-        requirements.
+        Deleting your account requests immediate subscription cancellation. If
+        Paddle is unavailable, cancellation is retried. A payment already in
+        progress may still complete; contact Paddle to request a refund.
+        Deleting your account does not refund previous payments. Paddle retains
+        payment records as required by law.
       </p>
       <dl className={styles.details}>
         <div>

@@ -1,20 +1,36 @@
 "use client";
 
-import { useActionState, useId, useState } from "react";
+import { Copy, Link2 } from "lucide-react";
+import { useActionState, useEffect, useId, useRef, useState } from "react";
 import { ActionFeedback } from "@/components/form/action-feedback";
 import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
 import styles from "@/components/shell.module.css";
+import sharingStyles from "@/features/sharing/components/sharing.module.css";
 import { createLink } from "../actions/manage-links";
 
 function CopyLink({ url }: { url: string }) {
   const [message, setMessage] = useState("");
   const id = useId();
+  const input = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    input.current?.focus();
+  }, []);
+
   return (
-    <div className={styles.form}>
+    <section
+      className={sharingStyles.generated}
+      aria-labelledby={`${id}-heading`}
+    >
+      <h3 id={`${id}-heading`}>Ready to share</h3>
+      <p className={styles.muted}>
+        Copy this link before leaving the page. You cannot retrieve it later.
+      </p>
       <div className={styles.field}>
         <label htmlFor={id}>New guest link</label>
         <input
           id={id}
+          ref={input}
           readOnly
           value={url}
           onFocus={(event) => event.currentTarget.select()}
@@ -23,7 +39,7 @@ function CopyLink({ url }: { url: string }) {
       </div>
       <button
         type="button"
-        className={styles["secondary-button"]}
+        className={styles.button}
         onClick={async () => {
           try {
             await navigator.clipboard.writeText(url);
@@ -33,10 +49,11 @@ function CopyLink({ url }: { url: string }) {
           }
         }}
       >
+        <Copy size={18} aria-hidden="true" />
         Copy guest link
       </button>
       {message && <p role="status">{message}</p>}
-    </div>
+    </section>
   );
 }
 
@@ -47,18 +64,17 @@ export function GuestLinkForm({ listId }: { listId: string }) {
   );
   const id = useId();
   const url = (state.data as { url?: string } | undefined)?.url;
-  return (
-    <div className={styles.form}>
-      <form action={action} aria-busy={pending} className={styles.form}>
-        <ActionFeedback state={state} />
-        <fieldset
-          key={state.timestamp}
-          disabled={pending}
-          className={styles["form-fields"]}
-        >
-          <legend className={styles["visually-hidden"]}>
-            Create a guest link
-          </legend>
+  const form = (
+    <form action={action} aria-busy={pending} className={styles.form}>
+      <fieldset
+        key={state.timestamp}
+        disabled={pending}
+        className={styles["form-fields"]}
+      >
+        <legend className={styles["visually-hidden"]}>
+          Create a guest link
+        </legend>
+        <div className={styles["form-row"]}>
           <div className={styles.field}>
             <label htmlFor={`${id}-label`}>Link label</label>
             <input
@@ -87,17 +103,34 @@ export function GuestLinkForm({ listId }: { listId: string }) {
               <option value="30">30 days</option>
             </select>
           </div>
-          <label className={styles["checkbox-label"]}>
-            <input type="checkbox" name="confirm" value="yes" required />
-            Anyone with this link can view the published list and its available
-            wishes until it expires or is revoked.
-          </label>
-          <button type="submit" className={styles.button}>
-            {pending ? "Creating…" : "Create guest link"}
-          </button>
-        </fieldset>
-      </form>
-      {url && !pending && <CopyLink key={url} url={url} />}
+        </div>
+        <label className={styles["checkbox-label"]}>
+          <input type="checkbox" name="confirm" value="yes" required />
+          Anyone with this link can view available wishes while the list is
+          visible, until the link expires or is disabled.
+        </label>
+        <button type="submit" className={styles.button}>
+          <Link2 size={18} aria-hidden="true" />
+          {pending ? "Creating…" : "Create guest link"}
+        </button>
+      </fieldset>
+    </form>
+  );
+
+  return (
+    <div className={styles.form}>
+      <ActionFeedback state={state} />
+      {url ? (
+        <>
+          <CopyLink key={url} url={url} />
+          <details className={styles.disclosure}>
+            <summary>Create another link</summary>
+            {form}
+          </details>
+        </>
+      ) : (
+        form
+      )}
     </div>
   );
 }

@@ -1,9 +1,5 @@
-import styles from "@/components/shell.module.css";
+import { EditorSkeleton } from "@/components/loading/loading-preview";
 
 export default function Loading() {
-  return (
-    <p role="status" className={styles.notice}>
-      Loading wish…
-    </p>
-  );
+  return <EditorSkeleton />;
 }

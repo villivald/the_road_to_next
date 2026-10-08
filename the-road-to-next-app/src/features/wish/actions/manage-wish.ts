@@ -9,6 +9,7 @@ import {
   toActionState,
 } from "@/components/form/utils/to-action-state";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
+import { MAX_IMAGE_BYTES, MediaError } from "@/features/media/types";
 import { WishlistError } from "@/features/wishlist/service/lists";
 import { browsePath, listPath, reservationsPath, wishPath } from "@/paths";
 import {
@@ -30,7 +31,11 @@ const wishInput = (data: FormData) => ({
 });
 
 const actionError = (error: unknown, data?: FormData) => {
-  if (error instanceof WishError || error instanceof WishlistError) {
+  if (
+    error instanceof WishError ||
+    error instanceof WishlistError ||
+    error instanceof MediaError
+  ) {
     return toActionState("ERROR", error.message, data);
   }
 
@@ -53,11 +58,29 @@ export const addWish = async (
 ) => {
   const { user } = await getAuthOrRedirect();
   let id: string;
+  const payload = new FormData();
+  for (const [name, value] of data) {
+    if (typeof value === "string") payload.append(name, value);
+  }
 
   try {
-    ({ id } = await createWish(user.id, listId, wishInput(data)));
+    const file = data.get("image");
+    if (file instanceof File && file.size > MAX_IMAGE_BYTES) {
+      throw new MediaError("Choose an image up to 3 MB.");
+    }
+    ({ id } = await createWish(
+      user.id,
+      listId,
+      wishInput(data),
+      file instanceof File && file.size
+        ? {
+            bytes: Buffer.from(await file.arrayBuffer()),
+            alt: String(data.get("imageAlt") ?? ""),
+          }
+        : undefined,
+    ));
   } catch (error) {
-    return actionError(error, data);
+    return actionError(error, payload);
   }
 
   revalidatePath(browsePath);

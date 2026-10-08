@@ -34,6 +34,7 @@ export default async function EditWishPage({
       <ImageEditor
         target={{ kind: "wish", listId, wishId }}
         image={wish.image}
+        fallbackAlt={wish.title}
       />
     </section>
   );

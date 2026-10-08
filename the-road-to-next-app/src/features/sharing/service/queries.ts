@@ -18,6 +18,7 @@ export const readSharing = async (
       title: true,
       ownerId: true,
       visibility: true,
+      publication: true,
       memberships: {
         orderBy: [{ joinedAt: "asc" }, { id: "asc" }],
         skip: (membersPage - 1) * 20,

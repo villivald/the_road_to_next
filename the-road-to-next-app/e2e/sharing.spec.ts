@@ -60,9 +60,25 @@ const memberCard = (page: Page, username: string) =>
     }),
   });
 const confirmAction = async (scope: Locator, button: string) => {
-  const form = scope.locator("form").filter({
-    has: scope.page().getByRole("button", { name: button, exact: true }),
+  const actionName = scope.page().getByRole("button", {
+    name: button,
+    exact: true,
+    includeHidden: true,
   });
+  const action = scope.getByRole("button", {
+    name: button,
+    exact: true,
+    includeHidden: true,
+  });
+  while (!(await action.isVisible())) {
+    await scope
+      .locator("details:not([open])")
+      .filter({ has: actionName })
+      .first()
+      .locator(":scope > summary")
+      .click();
+  }
+  const form = scope.locator("form").filter({ has: actionName });
   await form.getByRole("checkbox").check();
   await form.getByRole("button", { name: button, exact: true }).click();
 };
@@ -112,13 +128,22 @@ test("private creation, email invitation, member access, reservation and removal
   await signIn(page);
   await page.getByRole("link", { name: "Create a list", exact: true }).click();
   await page.getByLabel("Title", { exact: true }).fill("New private draft");
-  await page.getByLabel("Visibility when published").selectOption("PRIVATE");
+  await page
+    .getByRole("radio", { name: "People with access", exact: true })
+    .check();
+  await page.getByLabel("Title", { exact: true }).fill("   ");
+  await page.getByRole("button", { name: "Create list", exact: true }).click();
+  await expect(page.getByText("Enter a title", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("radio", { name: "People with access", exact: true }),
+  ).toBeChecked();
+  await page.getByLabel("Title", { exact: true }).fill("New private draft");
   await page.getByRole("button", { name: "Create list", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "New private draft", exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByText("Draft · Private", { exact: true }),
+    page.getByText("Hidden · Admins only", { exact: true }),
   ).toBeVisible();
   const invitation = await invite(page);
   const other = await browser.newPage({ baseURL: testOrigin });
@@ -229,10 +254,10 @@ test("wrong accounts cannot inspect invitations; revocation invalidates an open 
     ).toHaveCount(0);
     await page.goto(sharingUrl);
     await page
-      .getByRole("button", { name: "Revoke invitation", exact: true })
+      .getByRole("button", { name: "Cancel invitation", exact: true })
       .click();
     await expect(
-      page.getByText("No pending invitations on this page."),
+      page.getByText("No pending invitations. Send one above to get started."),
     ).toBeVisible();
     await other.getByRole("checkbox", { name: /I want to join/ }).check();
     await other.getByRole("button", { name: "Join list", exact: true }).click();
@@ -384,14 +409,72 @@ test("sharing and visibility controls support keyboard use at 320px in dark mode
     fullPage: true,
     scale: "css",
   });
-  await confirmAction(page.getByRole("main"), "Make public");
+  await confirmAction(page.getByRole("main"), "Allow anyone");
   await expect(
-    page.getByRole("button", { name: "Make private", exact: true }),
+    page.getByRole("button", { name: "Limit access", exact: true }),
   ).toBeVisible();
   expect(await (await request.get(listUrl)).text()).toContain(title);
-  await confirmAction(page.getByRole("main"), "Make private");
+  await confirmAction(page.getByRole("main"), "Limit access");
   await expect(
-    page.getByRole("button", { name: "Make public", exact: true }),
+    page.getByRole("button", { name: "Allow anyone", exact: true }),
   ).toBeVisible();
   expect(await (await request.get(listUrl)).text()).not.toContain(title);
+});
+
+test("sharing separates account and guest access and keeps member controls collapsed", async ({
+  page,
+}, info) => {
+  const prisma = testPrisma();
+  try {
+    await prisma.membership.create({
+      data: {
+        wishlistId: "e2e-collaboration",
+        userId: "e2e-member",
+        role: "ADMIN",
+      },
+    });
+  } finally {
+    await prisma.$disconnect();
+  }
+  await signIn(page);
+  await page.goto(sharingUrl);
+  await expect(
+    page.getByText("Visible · People with access", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Manage guest links", exact: true }),
+  ).toBeVisible();
+  const card = memberCard(page, "e2e-member");
+  await expect(
+    card.getByRole("button", { name: "Remove member", includeHidden: true }),
+  ).toBeHidden();
+  await page.screenshot({
+    path: info.outputPath("sharing-overview.png"),
+    fullPage: true,
+  });
+  await card.locator("summary").filter({ hasText: "Manage access" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(
+    card.getByRole("button", { name: "Remove member" }),
+  ).toBeVisible();
+  await expect(
+    card.getByRole("button", {
+      name: "Transfer ownership",
+      includeHidden: true,
+    }),
+  ).toBeHidden();
+  await card
+    .locator("summary")
+    .filter({ hasText: "Transfer ownership" })
+    .focus();
+  await page.keyboard.press("Enter");
+  await expect(
+    card.getByRole("button", { name: "Transfer ownership" }),
+  ).toBeVisible();
+  await page
+    .getByRole("link", { name: "Manage guest links", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Guest links", exact: true }),
+  ).toBeVisible();
 });

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ActionForm } from "@/components/form/action-form";
+import { LocalTime } from "@/components/local-time";
 import styles from "@/components/shell.module.css";
 import { prisma } from "@/lib/prisma";
 import {
@@ -37,7 +38,7 @@ export async function BillingPanel({ userId }: { userId: string }) {
       <h2>Subscription</h2>
       {!billingEnabled() ? (
         <p>
-          Subscriptions are not configured yet. You can still use a promo code.
+          Subscriptions are not available yet. You can still use a promo code.
         </p>
       ) : (
         <>
@@ -45,10 +46,10 @@ export async function BillingPanel({ userId }: { userId: string }) {
             Sandbox billing · Test payments only. No real money is charged.
           </p>
           <p>
-            Subscriptions renew automatically. Cancel in Paddle to stop renewal
-            at the end of the paid period. Failed renewals do not add unpaid
-            access. Promo access remains independent and does not delay
-            subscription charges.
+            Subscriptions renew automatically. Use Manage subscription to cancel
+            renewal; paid access lasts until the end of your paid period. A
+            failed renewal does not extend access. Promo codes do not change
+            payment dates.
           </p>
           {account?.subscriptions.map((subscription) => (
             <div className={styles["list-card"]} key={subscription.id}>
@@ -56,22 +57,21 @@ export async function BillingPanel({ userId }: { userId: string }) {
                 {subscription.interval === "year" ? "Annual" : "Monthly"}{" "}
                 subscription
               </h3>
-              <p>Status: {subscription.status.replaceAll("_", " ")}</p>
+              <p>
+                Status:{" "}
+                {subscription.status === "past_due"
+                  ? "Payment overdue"
+                  : subscription.status.replaceAll("_", " ")}
+              </p>
               {subscription.cancelAt ? (
                 <p>
                   Cancellation scheduled for{" "}
-                  {subscription.cancelAt.toLocaleDateString("en-GB", {
-                    timeZone: "UTC",
-                  })}
-                  .
+                  <LocalTime value={subscription.cancelAt.toISOString()} />.
                 </p>
               ) : subscription.nextBilledAt ? (
                 <p>
                   Next payment:{" "}
-                  {subscription.nextBilledAt.toLocaleDateString("en-GB", {
-                    timeZone: "UTC",
-                  })}
-                  .
+                  <LocalTime value={subscription.nextBilledAt.toISOString()} />.
                 </p>
               ) : null}
               <ActionForm
@@ -110,9 +110,10 @@ export async function BillingPanel({ userId }: { userId: string }) {
               )}
               {!pending.transactionId && (
                 <p>
-                  We are checking whether Paddle created your checkout. If this
-                  persists, contact the app administrator; another payment will
-                  not be started automatically.
+                  Your checkout is still being confirmed. Select Refresh billing
+                  shortly. If it stays unfinished,{" "}
+                  <Link href="/about">contact support</Link>. We will not start
+                  another payment automatically.
                 </p>
               )}
             </div>
@@ -158,13 +159,16 @@ export async function BillingPanel({ userId }: { userId: string }) {
           >
             {null}
           </ActionForm>
-          <p className={styles.muted}>
-            To switch plans, cancel renewal and subscribe to the other plan
-            after your paid period ends. Refund requests go through Paddle. A
-            full approved refund removes the affected paid access; partial
-            refunds preserve it. Refunding does not automatically cancel
-            renewal.
-          </p>
+          <details className={styles.disclosure}>
+            <summary>Switching plans and refunds</summary>
+            <p className={styles.muted}>
+              To switch plans, cancel renewal and subscribe to the other plan
+              after your paid period ends. Refund requests go through Paddle. A
+              full approved refund removes the affected paid access; partial
+              refunds preserve it. Refunding does not automatically cancel
+              renewal.
+            </p>
+          </details>
         </>
       )}
     </div>

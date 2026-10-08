@@ -18,10 +18,8 @@ const createPublishedList = async (page: Page) => {
   await expect(
     page.getByRole("heading", { name: "Birthday list", exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Publish list", exact: true }).click();
-  await expect(
-    page.getByRole("button", { name: "Move to drafts" }),
-  ).toBeVisible();
+  await page.getByRole("button", { name: "Show list", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Hide list" })).toBeVisible();
 
   return new URL(page.url()).pathname;
 };

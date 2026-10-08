@@ -2,6 +2,7 @@ import { lockUser } from "@/features/auth/service/security";
 import { imageSelection } from "@/features/media/types";
 import { requirePremium } from "@/features/premium/service/entitlements";
 import { visibilitySchema } from "@/features/sharing/service/schemas";
+import { wishPreviewSelection } from "@/features/wish/service/preview";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { manageableLists, readableLists } from "./access";
@@ -66,14 +67,17 @@ export const readOwnedWishlists = async (userId: string, page = 1) => {
     Number.isSafeInteger(page) && page > 0 ? Math.min(page, 10000) : 1;
   const results = await prisma.wishlist.findMany({
     where: { ownerId: userId, ...manageableLists(userId) },
-    select: listFields,
+    select: { ...listFields, wishes: wishPreviewSelection },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     skip: (currentPage - 1) * pageSize,
     take: pageSize + 1,
   });
 
   return {
-    lists: results.slice(0, pageSize),
+    lists: results.slice(0, pageSize).map(({ wishes, ...list }) => ({
+      ...list,
+      previewImages: wishes.flatMap(({ image }) => (image ? [image] : [])),
+    })),
     hasNextPage: results.length > pageSize,
     page: currentPage,
   };

@@ -75,7 +75,7 @@ export const refreshBilling = async (_state: ActionState, _data: FormData) => {
     revalidatePath("/account/plan");
     return toActionState(
       "SUCCESS",
-      "Billing refreshed. Only confirmed payments grant Premium.",
+      "Billing updated. Premium is added once payment is confirmed.",
     );
   } catch (error) {
     return authActionError(error);

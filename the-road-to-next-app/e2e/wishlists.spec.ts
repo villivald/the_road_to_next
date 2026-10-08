@@ -32,6 +32,12 @@ test("create, validate, edit, publish, unpublish, and confirm deletion", async (
   await signIn(page);
   await page.getByRole("link", { name: "Create a list", exact: true }).click();
   await page.getByLabel("Title", { exact: true }).fill("   ");
+  await expect(
+    page.getByRole("radio", { name: "Anyone", exact: true }),
+  ).toBeChecked();
+  await expect(
+    page.getByRole("radio", { name: "People with access", exact: true }),
+  ).toBeDisabled();
   await page
     .getByLabel("Description (optional)")
     .fill("Ideas for a quiet weekend.\nBooks and a little time outdoors.");
@@ -48,7 +54,7 @@ test("create, validate, edit, publish, unpublish, and confirm deletion", async (
   await page.getByLabel("Title", { exact: true }).fill("Weekend wishes");
   await page.getByRole("button", { name: "Create list", exact: true }).click();
   await expect(page.getByRole("status")).toContainText(
-    "List created as a draft",
+    "List created. It’s hidden from viewers",
   );
   const listUrl = new URL(page.url()).pathname;
 
@@ -65,11 +71,9 @@ test("create, validate, edit, publish, unpublish, and confirm deletion", async (
   await expect(page.getByRole("status")).toContainText("Changes saved");
 
   await page.goto(listUrl);
-  await page.getByRole("button", { name: "Publish list", exact: true }).click();
-  await expect(page.getByRole("status")).toContainText("List published");
-  await expect(
-    page.getByRole("button", { name: "Move to drafts" }),
-  ).toBeVisible();
+  await page.getByRole("button", { name: "Show list", exact: true }).click();
+  await expect(page.getByRole("status")).toContainText("List is now visible");
+  await expect(page.getByRole("button", { name: "Hide list" })).toBeVisible();
 
   const visitor = await browser.newPage({ baseURL: testOrigin });
 
@@ -88,9 +92,9 @@ test("create, validate, edit, publish, unpublish, and confirm deletion", async (
       animations: "disabled",
       scale: "css",
     });
-    await page.getByRole("button", { name: "Move to drafts" }).click();
+    await page.getByRole("button", { name: "Hide list" }).click();
     await expect(page.getByRole("status")).toContainText(
-      "List moved to drafts",
+      "List hidden from viewers",
     );
     await visitor.reload();
     await expect(
@@ -163,12 +167,8 @@ test("draft/private content stays out of direct responses and another account ca
       other.getByRole("button", { name: "Delete permanently" }),
     ).toHaveCount(0);
 
-    await page
-      .getByRole("button", { name: "Publish list", exact: true })
-      .click();
-    await expect(
-      page.getByRole("button", { name: "Move to drafts" }),
-    ).toBeVisible();
+    await page.getByRole("button", { name: "Show list", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Hide list" })).toBeVisible();
     await other.goto(listUrl);
     await expect(
       other.getByRole("heading", {

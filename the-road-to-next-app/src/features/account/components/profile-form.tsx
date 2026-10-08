@@ -1,5 +1,6 @@
 "use client";
 
+import { Eye, LockKeyhole } from "lucide-react";
 import { useActionState } from "react";
 import { ActionFeedback } from "@/components/form/action-feedback";
 import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
@@ -19,6 +20,22 @@ export function ProfileForm({
   return (
     <form action={action} className={styles.form} aria-busy={pending}>
       <ActionFeedback state={state} />
+      <div className={styles["profile-guidance"]}>
+        <div>
+          <Eye size={20} aria-hidden="true" />
+          <p>
+            <strong>Your public profile</strong>
+            <span>
+              Your name, avatar, and About you appear in People when you have a
+              list visible to anyone.
+            </span>
+          </p>
+        </div>
+        <div className={styles.muted}>
+          <LockKeyhole size={20} aria-hidden="true" />
+          <p>Your email stays private.</p>
+        </div>
+      </div>
       <fieldset className={styles["form-fields"]} disabled={pending}>
         <legend className={styles["visually-hidden"]}>Profile details</legend>
         <div className={styles.field}>
@@ -34,9 +51,14 @@ export function ProfileForm({
             )}
             aria-invalid={!!state.fieldErrors.name?.length}
             aria-describedby={
-              state.fieldErrors.name?.length ? "profile-name-error" : undefined
+              state.fieldErrors.name?.length
+                ? "profile-name-help profile-name-error"
+                : "profile-name-help"
             }
           />
+          <p id="profile-name-help" className={styles["field-help"]}>
+            Optional · Leave blank to show your username. Up to 80 characters.
+          </p>
           {state.fieldErrors.name && (
             <p id="profile-name-error" className={styles["error-text"]}>
               {state.fieldErrors.name.join(" ")}
@@ -57,20 +79,20 @@ export function ProfileForm({
             aria-invalid={!!state.fieldErrors.description?.length}
             aria-describedby={
               state.fieldErrors.description?.length
-                ? "profile-description-error"
-                : undefined
+                ? "profile-description-help profile-description-error"
+                : "profile-description-help"
             }
           />
+          <p id="profile-description-help" className={styles["field-help"]}>
+            Optional · Up to 1,000 characters. Longer bios have a Read more
+            button in People.
+          </p>
           {state.fieldErrors.description && (
             <p id="profile-description-error" className={styles["error-text"]}>
               {state.fieldErrors.description.join(" ")}
             </p>
           )}
         </div>
-        <p className={styles.muted}>
-          These optional profile details and your avatar are currently visible
-          only to you.
-        </p>
         <button type="submit" className={styles.button}>
           {pending ? "Saving…" : "Save profile"}
         </button>

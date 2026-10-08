@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { randomBytes } from "node:crypto";
 import sharp from "sharp";
 import { accounts, resetFixtures, testPrisma } from "./seed";
 
@@ -64,6 +65,177 @@ test.beforeEach(async () => {
   }
 });
 
+test("wish creation previews an image, keeps it after validation and saves it with the wish", async ({
+  page,
+  request,
+}, info) => {
+  await signIn(page);
+  await page.goto(`${listUrl}/wishes/new`);
+  const buffer = await sharp(randomBytes(900 * 600 * 3), {
+    raw: { width: 900, height: 600, channels: 3 },
+  })
+    .png()
+    .toBuffer();
+  expect(buffer.length).toBeGreaterThan(1024 * 1024);
+  await expect(
+    page.getByLabel("Image (optional)", { exact: true }),
+  ).toBeEnabled();
+  await page.getByLabel("Image (optional)", { exact: true }).setInputFiles({
+    name: "camera.png",
+    mimeType: "image/png",
+    buffer,
+  });
+  await page
+    .getByLabel("Image description (optional)", { exact: true })
+    .fill("A blue camera for trips");
+  await expect(
+    page.getByRole("img", { name: "A blue camera for trips" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Remove selected image" }).click();
+  await expect(
+    page.getByRole("img", { name: "A blue camera for trips" }),
+  ).not.toBeVisible();
+  await page
+    .getByLabel("Image (optional)", { exact: true })
+    .setInputFiles({ name: "camera.png", mimeType: "image/png", buffer });
+  await page
+    .getByLabel("Image description (optional)", { exact: true })
+    .fill("A blue camera for trips");
+  await page.getByLabel("Title", { exact: true }).fill("   ");
+  await page
+    .getByLabel("Description (optional)", { exact: true })
+    .fill("For our next adventure.");
+  await page.getByRole("button", { name: "Add wish", exact: true }).click();
+  await expect(page.getByText("Enter a title", { exact: true })).toBeVisible();
+  await expect(
+    page.getByLabel("Image (optional)", { exact: true }),
+  ).toHaveValue(/camera\.png$/);
+  await expect(
+    page.getByLabel("Description (optional)", { exact: true }),
+  ).toHaveValue("For our next adventure.");
+  await expect(
+    page.getByLabel("Image description (optional)", { exact: true }),
+  ).toHaveValue("A blue camera for trips");
+  await expect(
+    page.getByRole("img", { name: "A blue camera for trips" }),
+  ).toBeVisible();
+  if (info.project.name === "mobile-chromium") {
+    await page.setViewportSize({ width: 320, height: 740 });
+    await page.emulateMedia({ colorScheme: "dark" });
+  }
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: info.outputPath("wish-image-creation.png"),
+    fullPage: true,
+  });
+  await page.getByLabel("Title", { exact: true }).fill("A travel camera");
+  await page.getByRole("button", { name: "Add wish", exact: true }).click();
+  await expect(page).toHaveURL(/\/wishes\/[^/]+\?created=1$/);
+  const image = page.getByRole("img", { name: "A blue camera for trips" });
+  await expect(image).toBeVisible();
+  await expect(image).toHaveJSProperty("naturalWidth", 900);
+  expect((await request.get((await image.getAttribute("src"))!)).status()).toBe(
+    200,
+  );
+  const prisma = testPrisma();
+  try {
+    expect(
+      await prisma.wish.count({
+        where: { wishlistId: "e2e-media-list", title: "A travel camera" },
+      }),
+    ).toBe(1);
+  } finally {
+    await prisma.$disconnect();
+  }
+});
+
+test("invalid creation images do not create wishes, and image description can fall back to the title", async ({
+  page,
+}) => {
+  await signIn(page);
+  await page.goto(`${listUrl}/wishes/new`);
+  await page.getByLabel("Title", { exact: true }).fill("A new camera");
+  await expect(
+    page.getByLabel("Image (optional)", { exact: true }),
+  ).toBeEnabled();
+  await page.getByLabel("Image (optional)", { exact: true }).setInputFiles({
+    name: "fake.png",
+    mimeType: "image/png",
+    buffer: Buffer.from("not an image"),
+  });
+  await page.getByRole("button", { name: "Add wish", exact: true }).click();
+  await expect(page.getByRole("main").getByRole("alert")).toContainText(
+    "valid, still JPEG",
+  );
+  await expect(page.getByRole("main").getByRole("alert")).toBeFocused();
+  await expect(page.getByLabel("Title", { exact: true })).toHaveValue(
+    "A new camera",
+  );
+  const prisma = testPrisma();
+  try {
+    expect(
+      await prisma.wish.count({
+        where: { wishlistId: "e2e-media-list", title: "A new camera" },
+      }),
+    ).toBe(0);
+  } finally {
+    await prisma.$disconnect();
+  }
+  await page.getByLabel("Image (optional)", { exact: true }).setInputFiles({
+    name: "large.png",
+    mimeType: "image/png",
+    buffer: Buffer.alloc(3 * 1024 * 1024 + 1),
+  });
+  await expect(
+    page.getByText("Choose an image up to 3 MB.", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Remove selected image" }).click();
+  const buffer = await sharp({
+    create: { width: 80, height: 40, channels: 3, background: "blue" },
+  })
+    .png()
+    .toBuffer();
+  await page
+    .getByLabel("Image (optional)", { exact: true })
+    .setInputFiles({ name: "camera.png", mimeType: "image/png", buffer });
+  await page.getByRole("button", { name: "Add wish", exact: true }).click();
+  await expect(page).toHaveURL(/\/wishes\/[^/]+\?created=1$/);
+  await expect(
+    page.getByRole("img", { name: "A new camera", exact: true }),
+  ).toBeVisible();
+});
+
+test("wish image editing uses the wish title when its image description is blank", async ({
+  page,
+}) => {
+  await signIn(page);
+  await page.goto(`${wishUrl}/edit`);
+  const description = page.getByLabel("Image description", { exact: true });
+  await expect(description).not.toHaveAttribute("required");
+  const buffer = await sharp({
+    create: { width: 80, height: 40, channels: 3, background: "blue" },
+  })
+    .png()
+    .toBuffer();
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "camera.png",
+    mimeType: "image/png",
+    buffer,
+  });
+  await description.fill("   ");
+  await page.getByRole("button", { name: "Upload image", exact: true }).click();
+  await expect(page.getByRole("main").getByRole("status")).toHaveText(
+    "Image saved.",
+  );
+  await expect(
+    page.getByRole("img", { name: "A camera", exact: true }),
+  ).toBeVisible();
+});
+
 test("list image upload, replacement, removal and revocation work through the UI", async ({
   page,
   request,
@@ -96,11 +268,9 @@ test("list image upload, replacement, removal and revocation work through the UI
   await expect(
     page.getByRole("img", { name: "A second blue landscape" }),
   ).toHaveJSProperty("naturalWidth", 900);
-  await page
-    .getByRole("button", { name: "Move to drafts", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Hide list", exact: true }).click();
   await expect(
-    page.getByRole("button", { name: "Publish list", exact: true }),
+    page.getByRole("button", { name: "Show list", exact: true }),
   ).toBeVisible();
   const revoked = await request.get(second, {
     headers: { "If-None-Match": '"old"' },
@@ -168,7 +338,7 @@ test("wish images reject malformed files, survive errors and follow hidden acces
   ).toBeVisible();
 });
 
-test("avatar uploads are resized, private and removable", async ({
+test("avatars are public only for public list owners, resized and removable", async ({
   page,
   request,
 }) => {
@@ -189,6 +359,16 @@ test("avatar uploads are resized, private and removable", async ({
   const avatar = page.getByRole("img", { name: "My portrait" });
   await expect(avatar).toHaveJSProperty("naturalWidth", 512);
   const src = (await avatar.getAttribute("src"))!;
+  expect((await request.get(src)).status()).toBe(200);
+  const prisma = testPrisma();
+  try {
+    await prisma.wishlist.update({
+      where: { id: "e2e-media-list" },
+      data: { publication: "DRAFT" },
+    });
+  } finally {
+    await prisma.$disconnect();
+  }
   expect((await request.get(src)).status()).toBe(404);
   await page.getByRole("button", { name: "Remove image", exact: true }).click();
   await expect(

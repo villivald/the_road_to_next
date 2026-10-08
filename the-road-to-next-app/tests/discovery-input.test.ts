@@ -6,6 +6,47 @@ import {
 } from "@/features/discovery/service/query";
 
 describe("discovery query bounds", () => {
+  it("keeps owner filtering across lists and wishes and clears content filters for people", () => {
+    const filters = parseDiscoveryQuery({
+      owner: "e2e-owner",
+      view: "wishes",
+      sort: "price-high",
+      currency: "EUR",
+      reservable: "on",
+    });
+    expect(
+      new URL(discoveryUrl(filters, 2), "http://localhost").searchParams.get(
+        "owner",
+      ),
+    ).toBe("e2e-owner");
+    expect(
+      new URL(
+        discoveryUrl(filters, 1, "lists"),
+        "http://localhost",
+      ).searchParams.get("owner"),
+    ).toBe("e2e-owner");
+    const people = new URL(
+      discoveryUrl(filters, 1, "users"),
+      "http://localhost",
+    );
+    for (const key of ["owner", "currency", "reservable", "sort"])
+      expect(people.searchParams.has(key)).toBe(false);
+    expect(
+      parseDiscoveryQuery({
+        view: "users",
+        sort: "price-high",
+        currency: "EUR",
+        owner: "e2e-owner",
+        reservable: "on",
+      }),
+    ).toMatchObject({
+      view: "users",
+      sort: "newest",
+      owner: "",
+      reservable: false,
+      error: "",
+    });
+  });
   it("normalizes unknown options and bounds search and pagination", () => {
     expect(
       parseDiscoveryQuery({ view: "admin", sort: "sql", page: "-1" }),

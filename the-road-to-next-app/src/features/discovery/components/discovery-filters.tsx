@@ -6,17 +6,23 @@ import type { DiscoveryFilters as Filters } from "../service/query";
 
 export function DiscoveryFilters({ filters }: { filters: Filters }) {
   const wishes = filters.view === "wishes";
+  const users = filters.view === "users";
 
   return (
     <form
       action={browsePath}
-      className={styles.form}
+      className={styles["filter-panel"]}
       aria-label="Browse filters"
     >
       <input type="hidden" name="view" value={filters.view} />
+      {filters.owner && (
+        <input type="hidden" name="owner" value={filters.owner} />
+      )}
       <div className={styles["form-row"]}>
         <div className={styles.field}>
-          <label htmlFor="browse-search">Search {filters.view}</label>
+          <label htmlFor="browse-search">
+            Search {users ? "people" : filters.view}
+          </label>
           <input
             id="browse-search"
             type="search"
@@ -29,7 +35,7 @@ export function DiscoveryFilters({ filters }: { filters: Filters }) {
           <label htmlFor="browse-sort">Sort by</label>
           <select id="browse-sort" name="sort" defaultValue={filters.sort}>
             <option value="newest">Newest first</option>
-            <option value="title">Title A–Z</option>
+            <option value="title">{users ? "Name A–Z" : "Title A–Z"}</option>
             {wishes && (
               <>
                 <option value="priority">Highest priority</option>
@@ -41,7 +47,19 @@ export function DiscoveryFilters({ filters }: { filters: Filters }) {
         </div>
       </div>
       {wishes && (
-        <>
+        <details
+          className={styles.disclosure}
+          open={
+            !!(
+              filters.currency ||
+              filters.min ||
+              filters.max ||
+              filters.priority ||
+              filters.sort.startsWith("price")
+            )
+          }
+        >
+          <summary>Price and priority filters</summary>
           <div className={styles["form-row"]}>
             <div className={styles.field}>
               <label htmlFor="browse-currency">Currency</label>
@@ -101,16 +119,24 @@ export function DiscoveryFilters({ filters }: { filters: Filters }) {
             Choose a currency to filter or sort by price. Only wishes priced in
             that currency are included.
           </p>
-        </>
+        </details>
       )}
-      <label className={styles["checkbox-label"]}>
-        <input
-          type="checkbox"
-          name="reservable"
-          defaultChecked={filters.reservable}
-        />
-        Reservations enabled
-      </label>
+      {!users && (
+        <label className={styles["checkbox-label"]}>
+          <input
+            type="checkbox"
+            name="reservable"
+            defaultChecked={filters.reservable}
+          />
+          Reservations enabled
+        </label>
+      )}
+      {users && (
+        <p className={styles.muted}>
+          Find people by display name or username. Only people with a list
+          visible to anyone appear here.
+        </p>
+      )}
       <div className={styles.actions}>
         <button type="submit" className={styles.button}>
           Search

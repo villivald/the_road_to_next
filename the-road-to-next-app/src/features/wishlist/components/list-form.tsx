@@ -7,6 +7,7 @@ import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
 import styles from "@/components/shell.module.css";
 import { listPath, listsPath } from "@/paths";
 import { createList, updateList } from "../actions/manage-list";
+import formStyles from "./list-form.module.css";
 
 type ListValues = {
   id: string;
@@ -108,34 +109,62 @@ export function ListForm({
             Allow reservations
           </label>
           <p id={`${prefix}-reservations-help`} className={styles.muted}>
-            Applies when the list is published. Turning this off keeps existing
+            Applies once the list is visible. Turning this off keeps existing
             reservations.
           </p>
         </div>
 
         {!list && (
-          <div className={styles.field}>
-            <label htmlFor={`${prefix}-visibility`}>
-              Visibility when published
+          <fieldset
+            className={formStyles.audience}
+            aria-describedby={`${prefix}-visibility-help`}
+          >
+            <legend>Who can view it when you show the list?</legend>
+            <label className={formStyles.choice}>
+              <input
+                type="radio"
+                name="visibility"
+                value="PUBLIC"
+                defaultChecked={
+                  (state.payload?.get("visibility") ?? "PUBLIC") === "PUBLIC"
+                }
+                aria-labelledby={`${prefix}-public-label`}
+                aria-describedby={`${prefix}-public-help`}
+              />
+              <span>
+                <strong id={`${prefix}-public-label`}>Anyone</strong>
+                <span id={`${prefix}-public-help`}>
+                  Appears in Browse. Anyone can view it without an account.
+                </span>
+              </span>
             </label>
-            <select
-              id={`${prefix}-visibility`}
-              name="visibility"
-              defaultValue={String(
-                state.payload?.get("visibility") ?? "PUBLIC",
-              )}
-              aria-describedby={`${prefix}-visibility-help`}
-            >
-              <option value="PUBLIC">Public</option>
-              <option value="PRIVATE" disabled={!canCreatePrivate}>
-                Private{!canCreatePrivate ? " (requires Premium)" : ""}
-              </option>
-            </select>
+            <label className={formStyles.choice}>
+              <input
+                type="radio"
+                name="visibility"
+                value="PRIVATE"
+                disabled={!canCreatePrivate}
+                defaultChecked={state.payload?.get("visibility") === "PRIVATE"}
+                aria-labelledby={`${prefix}-private-label`}
+                aria-describedby={`${prefix}-private-help`}
+              />
+              <span>
+                <strong id={`${prefix}-private-label`}>
+                  People with access
+                </strong>
+                <span id={`${prefix}-private-help`}>
+                  Stays out of Browse. Invited members and anyone with a guest
+                  link can view it.
+                  {!canCreatePrivate && " Requires Premium."}
+                </span>
+              </span>
+            </label>
             <p id={`${prefix}-visibility-help`} className={styles.muted}>
-              Public lists can be browsed by anyone after publishing. Private
-              lists are for invited people. Drafts are always admin-only.
+              Your list starts hidden. Only admins can view it until you choose
+              Show list. You can change its audience later in Sharing and
+              members.
             </p>
-          </div>
+          </fieldset>
         )}
 
         <div className={styles.actions}>

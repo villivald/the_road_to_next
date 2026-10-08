@@ -1,6 +1,8 @@
+import { Check, Eye, EyeOff, RotateCcw, Trash2 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { WishStatus } from "@/components/cards/wish-status";
 import { ActionForm } from "@/components/form/action-form";
 import styles from "@/components/shell.module.css";
 import { getAuth } from "@/features/auth/actions/get-auth";
@@ -49,7 +51,9 @@ export default async function WishPage({
       <div className={styles["page-heading"]}>
         <div>
           <h1>{wish.title}</h1>
-          <p>{formatWishPrice(wish.priceMinor, wish.currency)}</p>
+          <p className={styles.price}>
+            {formatWishPrice(wish.priceMinor, wish.currency)}
+          </p>
           <WishPriority priority={wish.priority} />
         </div>
         {wish.canManage && (
@@ -63,22 +67,19 @@ export default async function WishPage({
       </div>
 
       {(wish.hidden || wish.fulfilledAt || wish.isReserved) && (
-        <div className={styles.actions}>
-          {wish.hidden && <p className={styles.notice}>Hidden</p>}
-          {wish.fulfilledAt && <p className={styles.notice}>Fulfilled</p>}
-          {wish.isReserved && (
-            <p className={styles.notice}>
-              {wish.isReservedByYou ? "Reserved by you" : "Reserved"}
-            </p>
-          )}
-        </div>
+        <WishStatus
+          hidden={wish.hidden}
+          fulfilled={!!wish.fulfilledAt}
+          reserved={wish.isReserved}
+          reservedByYou={wish.isReservedByYou}
+        />
       )}
 
       <MediaImage image={wish.image} />
 
-      <p className={styles.description}>
-        {wish.description || "No description added."}
-      </p>
+      {wish.description && (
+        <p className={styles.description}>{wish.description}</p>
+      )}
 
       {wish.externalUrl && (
         <a href={wish.externalUrl} target="_blank" rel="noopener noreferrer">
@@ -104,6 +105,13 @@ export default async function WishPage({
               action={changeWishState.bind(null, listId, wishId)}
               label={wish.hidden ? "Show wish" : "Hide wish"}
               pendingLabel="Updating…"
+              icon={
+                wish.hidden ? (
+                  <Eye size={18} aria-hidden="true" />
+                ) : (
+                  <EyeOff size={18} aria-hidden="true" />
+                )
+              }
             >
               <input
                 type="hidden"
@@ -115,6 +123,13 @@ export default async function WishPage({
               action={changeWishState.bind(null, listId, wishId)}
               label={wish.fulfilledAt ? "Reopen wish" : "Mark as fulfilled"}
               pendingLabel="Updating…"
+              icon={
+                wish.fulfilledAt ? (
+                  <RotateCcw size={18} aria-hidden="true" />
+                ) : (
+                  <Check size={18} aria-hidden="true" />
+                )
+              }
             >
               <input
                 type="hidden"
@@ -124,7 +139,12 @@ export default async function WishPage({
             </ActionForm>
           </div>
 
-          <Link href={`${wishPath(listId, wishId)}/delete`}>Delete wish</Link>
+          <Link
+            className={styles["icon-label"]}
+            href={`${wishPath(listId, wishId)}/delete`}
+          >
+            <Trash2 size={18} aria-hidden="true" /> Delete wish
+          </Link>
         </section>
       )}
     </section>

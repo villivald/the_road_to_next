@@ -6,3 +6,4 @@ next-env.d.ts
 coverage
 playwright-report
 test-results
+public/illustrations/openmoji/*.svg

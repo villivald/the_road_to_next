@@ -1,5 +1,6 @@
 "use client";
 
+import { Mail } from "lucide-react";
 import { useActionState, useId } from "react";
 import { ActionFeedback } from "@/components/form/action-feedback";
 import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
@@ -36,7 +37,7 @@ export function InvitationForm({ listId }: { listId: string }) {
           />
           <p id={`${id}-email-help`} className={styles.muted}>
             {state.fieldErrors.email?.join(" ") ??
-              "Only an account with this verified email can join. Invitations expire after seven days."}
+              "They will need to verify this email before joining."}
           </p>
         </div>
         <div className={styles.field}>
@@ -47,10 +48,11 @@ export function InvitationForm({ listId }: { listId: string }) {
             defaultValue={String(state.payload?.get("role") ?? "MEMBER")}
           >
             <option value="MEMBER">Member — view and reserve</option>
-            <option value="ADMIN">Admin — manage content and people</option>
+            <option value="ADMIN">Admin — edit and manage sharing</option>
           </select>
         </div>
         <button className={styles.button} type="submit">
+          <Mail size={18} aria-hidden="true" />
           {pending ? "Inviting…" : "Send invitation"}
         </button>
       </fieldset>

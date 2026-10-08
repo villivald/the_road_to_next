@@ -1,7 +1,12 @@
+import { List } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CardActions } from "@/components/cards/card-actions";
+import { ListPreview } from "@/components/cards/card-media";
+import { ListStatus } from "@/components/cards/list-status";
 import styles from "@/components/shell.module.css";
 import { getMyLists } from "@/features/wishlist/queries/get-my-lists";
+import { sharingPath } from "@/paths";
 import { listPath, listsPath, newListPath, sharedListsPath } from "@/paths";
 
 export const metadata: Metadata = {
@@ -31,7 +36,7 @@ export default async function ListsPage({
         </Link>
       </div>
 
-      <Link href={sharedListsPath}>Lists with access to</Link>
+      <Link href={sharedListsPath}>Lists shared with you</Link>
 
       {params.deleted === "1" && (
         <p role="status" className={styles.notice}>
@@ -43,18 +48,30 @@ export default async function ListsPage({
         <ul className={styles["list-grid"]}>
           {lists.map((list) => (
             <li key={list.id} className={styles["list-card"]}>
+              <ListPreview image={list.image} images={list.previewImages} />
               <h2>
                 <Link href={listPath(list.id)}>{list.title}</Link>
               </h2>
-              <p className={styles.muted}>
-                {list.publication === "DRAFT" ? "Draft" : "Published"} ·{" "}
-                {list.visibility === "PRIVATE" ? "Private" : "Public"}
-              </p>
+              <ListStatus
+                publication={list.publication}
+                visibility={list.visibility}
+              />
+              <CardActions
+                path={listPath(list.id)}
+                title={list.title}
+                canManage
+                sharingPath={sharingPath(list.id)}
+                canCopy={
+                  list.publication === "PUBLISHED" &&
+                  list.visibility === "PUBLIC"
+                }
+              />
             </li>
           ))}
         </ul>
       ) : (
         <div className={styles["empty-state"]}>
+          <List aria-hidden="true" />
           <h2>{page === 1 ? "No lists yet" : "No more lists"}</h2>
           <p className={styles.muted}>
             {page === 1

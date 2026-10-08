@@ -14,7 +14,12 @@ const sortOptions = [
 ] as const;
 
 export const parseDiscoveryQuery = (query: DiscoveryQuery) => {
-  const view = first(query.view) === "wishes" ? "wishes" : "lists";
+  const requestedView = first(query.view);
+  const view =
+    requestedView === "wishes" || requestedView === "users"
+      ? requestedView
+      : "lists";
+  const owner = view !== "users" ? first(query.owner).trim().slice(0, 40) : "";
   const rawSearch = first(query.q).trim();
   const q = rawSearch.slice(0, 120);
   const requestedPage = Number(first(query.page) || 1);
@@ -29,7 +34,7 @@ export const parseDiscoveryQuery = (query: DiscoveryQuery) => {
   const requestedSort =
     sortOptions.find((value) => value === first(query.sort)) ?? "newest";
   const sort =
-    view === "lists" && requestedSort !== "title" ? "newest" : requestedSort;
+    view !== "wishes" && requestedSort !== "title" ? "newest" : requestedSort;
   const priority =
     view === "wishes" && /^[1-5]$/.test(first(query.priority))
       ? first(query.priority)
@@ -58,6 +63,7 @@ export const parseDiscoveryQuery = (query: DiscoveryQuery) => {
   return {
     view,
     q,
+    owner,
     page,
     currency,
     sort,
@@ -66,7 +72,7 @@ export const parseDiscoveryQuery = (query: DiscoveryQuery) => {
     max,
     minPrice,
     maxPrice,
-    reservable: first(query.reservable) === "on",
+    reservable: view !== "users" && first(query.reservable) === "on",
     error,
   };
 };
@@ -82,7 +88,10 @@ export const discoveryUrl = (
   if (filters.q) {
     query.set("q", filters.q);
   }
-  if (filters.reservable) {
+  if (filters.owner && view !== "users") {
+    query.set("owner", filters.owner);
+  }
+  if (filters.reservable && view !== "users") {
     query.set("reservable", "on");
   }
   if (view === filters.view) {

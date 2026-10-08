@@ -5,7 +5,6 @@ import {
   Head,
   Html,
   Section,
-  Tailwind,
   Text,
 } from "react-email";
 
@@ -18,26 +17,40 @@ const EmailPasswordReset = ({ toName, url }: EmailPasswordResetProps) => {
   return (
     <Html>
       <Head />
-      <Tailwind>
-        <Body className="m-8 text-center font-sans">
-          <Container>
-            <Section>
-              <Text>
-                Hi {toName}, you have requested a password reset for your
-                account. Please click the button below to reset your password:
-              </Text>
-            </Section>
-            <Section>
-              <Button
-                className="m-2 rounded bg-black p-2 text-white"
-                href={url}
-              >
-                Reset Password
-              </Button>
-            </Section>
-          </Container>
-        </Body>
-      </Tailwind>
+      <Body
+        style={{
+          margin: "32px",
+          textAlign: "center",
+          fontFamily: "Arial, sans-serif",
+        }}
+      >
+        <Container>
+          <Section>
+            <Text>
+              Hi {toName}, use the link below to reset your Wishlist password.
+            </Text>
+          </Section>
+          <Section>
+            <Button
+              style={{
+                margin: "8px",
+                borderRadius: "8px",
+                backgroundColor: "#ffd803",
+                padding: "12px 20px",
+                color: "#272343",
+              }}
+              href={url}
+            >
+              Reset password
+            </Button>
+            <Text>This link expires in 30 minutes and can be used once.</Text>
+            <Text>
+              If you did not request this, ignore this email. Your password will
+              stay the same.
+            </Text>
+          </Section>
+        </Container>
+      </Body>
     </Html>
   );
 };

@@ -1,10 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { type ReactNode, useActionState, useId } from "react";
+import { type ReactNode, useActionState, useId, useState } from "react";
 import { ActionFeedback } from "@/components/form/action-feedback";
 import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
 import styles from "@/components/shell.module.css";
+import {
+  ImagePicker,
+  type SelectedImage,
+} from "@/features/media/components/image-picker";
 import { listPath, wishPath } from "@/paths";
 import { addWish, editWish } from "../actions/manage-wish";
 import { currencies, priceInputValue, type WishCurrency } from "../utils/money";
@@ -54,6 +58,7 @@ export function WishForm({
   listId: string;
   wish?: WishValues;
 }) {
+  const [image, setImage] = useState<SelectedImage | null>(null);
   const [state, action, pending] = useActionState(
     wish ? editWish.bind(null, listId, wish.id) : addWish.bind(null, listId),
     { ...EMPTY_ACTION_STATE, timestamp: 0 },
@@ -184,16 +189,25 @@ export function WishForm({
             active reservation.
           </p>
         </div>
-
-        <div className={styles.actions}>
-          <button type="submit" className={styles.button}>
-            {pending ? "Saving…" : wish ? "Save changes" : "Add wish"}
-          </button>
-          <Link href={wish ? wishPath(listId, wish.id) : listPath(listId)}>
-            Cancel
-          </Link>
-        </div>
       </fieldset>
+      {!wish && (
+        <fieldset disabled={pending} className={styles["form-fields"]}>
+          <legend className={styles["visually-hidden"]}>Wish image</legend>
+          <ImagePicker
+            value={image}
+            onChange={setImage}
+            resetKey={state.timestamp}
+          />
+        </fieldset>
+      )}
+      <div className={styles.actions}>
+        <button type="submit" disabled={pending} className={styles.button}>
+          {pending ? "Saving…" : wish ? "Save changes" : "Add wish"}
+        </button>
+        <Link href={wish ? wishPath(listId, wish.id) : listPath(listId)}>
+          Cancel
+        </Link>
+      </div>
     </form>
   );
 }

@@ -35,9 +35,9 @@ export default async function GuestWishPage({
       <p>{formatWishPrice(wish.priceMinor, wish.currency)}</p>
       <WishPriority priority={wish.priority} />
       <MediaImage image={wish.image} guestListId={listId} />
-      <p className={styles.description}>
-        {wish.description || "No description added."}
-      </p>
+      {wish.description && (
+        <p className={styles.description}>{wish.description}</p>
+      )}
       {wish.externalUrl && (
         <a
           href={wish.externalUrl}

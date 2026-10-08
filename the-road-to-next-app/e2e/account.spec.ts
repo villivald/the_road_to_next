@@ -56,7 +56,7 @@ const seedList = async (successor = false) => {
 
 test.beforeEach(resetFixtures);
 
-test("profile details validate, preserve invalid input, save, clear, and remain private", async ({
+test("profile details validate, preserve invalid input, save, clear, and stay undiscoverable without a public list", async ({
   page,
   request,
 }, info) => {
@@ -86,7 +86,7 @@ test("profile details validate, preserve invalid input, save, clear, and remain 
   await expect(page.getByLabel("About you")).toHaveValue(
     /Private profile marker/,
   );
-  expect(await (await request.get("/browse")).text()).not.toContain(
+  expect(await (await request.get("/browse?view=users")).text()).not.toContain(
     "Private profile marker",
   );
   await page.screenshot({
@@ -151,12 +151,8 @@ test("register, publish, reserve, cancel, fulfill and delete without a successor
       }),
     ).toBeVisible();
     listId = new URL(page.url()).pathname.split("/").at(-1);
-    await page
-      .getByRole("button", { name: "Publish list", exact: true })
-      .click();
-    await expect(
-      page.getByRole("button", { name: "Move to drafts" }),
-    ).toBeVisible();
+    await page.getByRole("button", { name: "Show list", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Hide list" })).toBeVisible();
     await page.getByRole("link", { name: "Add a wish", exact: true }).click();
     await page.getByLabel("Title", { exact: true }).fill("A free account wish");
     await page.getByRole("button", { name: "Add wish", exact: true }).click();

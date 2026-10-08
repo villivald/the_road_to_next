@@ -34,7 +34,7 @@ export default async function EditListPage({
       </p>
       <ListForm list={list} />
       <Link href={sharingPath(listId)}>
-        Change visibility and manage members
+        Change who can see it and manage members
       </Link>
       <ImageEditor target={{ kind: "list", listId }} image={list.image} />
     </section>

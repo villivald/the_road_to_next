@@ -26,7 +26,10 @@ export default async function CheckoutPage({
     return (
       <section className={styles.editor}>
         <h1>Checkout unavailable</h1>
-        <p>Paddle is unavailable. Try again shortly.</p>
+        <p>
+          Checkout could not be loaded. Return to your plan and try again
+          shortly.
+        </p>
         <Link href="/account/plan">Back to your plan</Link>
       </section>
     );

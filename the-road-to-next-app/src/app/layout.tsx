@@ -1,11 +1,18 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import localFont from "next/font/local";
+import Footer from "@/app/_navigation/footer";
 import Header from "@/app/_navigation/header";
 import styles from "@/components/shell.module.css";
 import ThemeProvider from "@/components/theme/theme-provider";
 
-const geist = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
+const manrope = localFont({
+  src: "../assets/fonts/Manrope-Variable.ttf",
+  variable: "--font-manrope",
+  weight: "200 800",
+  style: "normal",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: { default: "Wishlist", template: "%s · Wishlist" },
@@ -20,7 +27,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geist.variable} ${styles.body}`}>
+      <body className={`${manrope.variable} ${styles.body}`}>
         <ThemeProvider>
           <a href="#main-content" className={styles["skip-link"]}>
             Skip to content
@@ -29,6 +36,7 @@ export default function RootLayout({
           <main id="main-content" tabIndex={-1} className={styles.main}>
             {children}
           </main>
+          <Footer />
         </ThemeProvider>
       </body>
     </html>

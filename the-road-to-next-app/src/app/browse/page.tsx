@@ -1,9 +1,13 @@
+import { Search } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import styles from "@/components/shell.module.css";
+import { getAuth } from "@/features/auth/actions/get-auth";
 import { DiscoveryFilters } from "@/features/discovery/components/discovery-filters";
+import { DiscoveryResults } from "@/features/discovery/components/discovery-results";
 import {
   discoverLists,
+  discoverUsers,
   discoverWishes,
 } from "@/features/discovery/service/discovery";
 import {
@@ -11,10 +15,6 @@ import {
   discoveryUrl,
   parseDiscoveryQuery,
 } from "@/features/discovery/service/query";
-import { MediaImage } from "@/features/media/components/media-image";
-import { WishPriority } from "@/features/wish/components/wish-priority";
-import { formatWishPrice } from "@/features/wish/utils/money";
-import { listPath, wishPath } from "@/paths";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -28,23 +28,33 @@ export default async function BrowsePage({
   searchParams: Promise<DiscoveryQuery>;
 }) {
   const query = await searchParams;
+  const { user } = await getAuth();
+  const view = parseDiscoveryQuery(query).view;
   const result =
-    parseDiscoveryQuery(query).view === "wishes"
-      ? await discoverWishes(query)
-      : await discoverLists(query);
+    view === "users"
+      ? await discoverUsers(query, user?.id)
+      : view === "wishes"
+        ? await discoverWishes(query, user?.id)
+        : await discoverLists(query, user?.id);
   const { filters, hasNextPage } = result;
   const empty =
-    "lists" in result ? !result.lists.length : !result.wishes.length;
+    "lists" in result
+      ? !result.lists.length
+      : "wishes" in result
+        ? !result.wishes.length
+        : !result.users.length;
 
   return (
     <section className={styles.page}>
-      <div>
-        <h1>Browse wishlists</h1>
-        <p className={styles.muted}>
-          Explore public lists and available wishes.
-        </p>
+      <div className={styles["page-heading"]}>
+        <div>
+          <h1>Browse wishlists</h1>
+          <p className={styles.muted}>
+            Explore public lists, available wishes, and the people behind them.
+          </p>
+        </div>
       </div>
-      <nav aria-label="Browse content" className={styles.actions}>
+      <nav aria-label="Browse content" className={styles.tabs}>
         <Link
           href={discoveryUrl(filters, 1, "lists")}
           aria-current={filters.view === "lists" ? "page" : undefined}
@@ -57,7 +67,19 @@ export default async function BrowsePage({
         >
           Wishes
         </Link>
+        <Link
+          href={discoveryUrl(filters, 1, "users")}
+          aria-current={filters.view === "users" ? "page" : undefined}
+        >
+          People
+        </Link>
       </nav>
+      {filters.owner && (
+        <p className={styles.notice}>
+          Public lists and wishes by @{filters.owner}.{" "}
+          <Link href="/browse?view=users">Find another person</Link>
+        </p>
+      )}
       <DiscoveryFilters key={JSON.stringify(filters)} filters={filters} />
       {filters.error ? (
         <p role="alert" className={styles.error}>
@@ -65,63 +87,16 @@ export default async function BrowsePage({
         </p>
       ) : empty ? (
         <div className={styles["empty-state"]}>
+          <Search aria-hidden="true" />
           <h2>{filters.page > 1 ? "No more results" : "No results found"}</h2>
           <p className={styles.muted}>
-            Try different filters or check back for new public {filters.view}.
+            {filters.view === "users"
+              ? "Try another name or username. Only people with a list visible to anyone appear here."
+              : `Try different filters or check back for new public ${filters.view}.`}
           </p>
         </div>
       ) : (
-        <ul
-          className={styles["list-grid"]}
-          aria-label={`Public ${filters.view}`}
-        >
-          {"lists" in result
-            ? result.lists.map((list) => (
-                <li className={styles["list-card"]} key={list.id}>
-                  <MediaImage image={list.image} compact />
-                  <h2>
-                    <Link href={listPath(list.id)}>{list.title}</Link>
-                  </h2>
-                  {list.description && (
-                    <p className={styles.description}>
-                      {list.description.slice(0, 180)}
-                      {list.description.length > 180 ? "…" : ""}
-                    </p>
-                  )}
-                  <p className={styles.muted}>
-                    {list.availableWishCount} available{" "}
-                    {list.availableWishCount === 1 ? "wish" : "wishes"}
-                  </p>
-                  {list.reservationsEnabled && (
-                    <p className={styles.muted}>Reservations enabled</p>
-                  )}
-                </li>
-              ))
-            : result.wishes.map((wish) => (
-                <li className={styles["list-card"]} key={wish.id}>
-                  <MediaImage image={wish.image} compact />
-                  <h2>
-                    <Link href={wishPath(wish.wishlist.id, wish.id)}>
-                      {wish.title}
-                    </Link>
-                  </h2>
-                  <p>
-                    In{" "}
-                    <Link href={listPath(wish.wishlist.id)}>
-                      {wish.wishlist.title}
-                    </Link>
-                  </p>
-                  <p>{formatWishPrice(wish.priceMinor, wish.currency)}</p>
-                  <WishPriority priority={wish.priority} />
-                  {wish.description && (
-                    <p className={styles.description}>
-                      {wish.description.slice(0, 180)}
-                      {wish.description.length > 180 ? "…" : ""}
-                    </p>
-                  )}
-                </li>
-              ))}
-        </ul>
+        <DiscoveryResults result={result} />
       )}
       {!filters.error && (filters.page > 1 || hasNextPage) && (
         <nav className={styles.actions} aria-label="Browse pages">

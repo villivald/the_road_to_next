@@ -8,7 +8,7 @@ import { readSharedLists } from "@/features/sharing/service/queries";
 import { listPath, listsPath, sharedListsPath, sharingPath } from "@/paths";
 
 export const metadata: Metadata = {
-  title: "Lists with access to",
+  title: "Lists shared with you",
   robots: { index: false, follow: false },
 };
 
@@ -30,14 +30,20 @@ export default async function SharedListsPage({
   );
   return (
     <section className={styles.page}>
-      <Link href={listsPath}>My own lists</Link>
-      <h1>Lists with access to</h1>
+      <Link href={listsPath}>Back to my lists</Link>
+      <div className={styles["page-heading"]}>
+        <div>
+          <h1>Lists shared with you</h1>
+          <p className={styles.muted}>
+            Lists owned by other people that you have joined.
+          </p>
+        </div>
+      </div>
       {query.roleChanged === "1" && (
         <p role="status" className={styles.notice}>
           You are now a member. Admin controls are no longer available.
         </p>
       )}
-      <p>Lists owned by other people that you have joined.</p>
       {query.joined === "1" && (
         <p role="status" className={styles.notice}>
           Invitation accepted. You have joined the list.
@@ -56,12 +62,12 @@ export default async function SharedListsPage({
                 {list.title ? (
                   <Link href={listPath(list.listId)}>{list.title}</Link>
                 ) : (
-                  "Unpublished list"
+                  "Hidden list"
                 )}
               </h2>
               <p>
                 {list.role === "ADMIN" ? "Admin" : "Member"}
-                {!list.title ? " · Available when published" : ""}
+                {!list.title ? " · Available when the admins show it" : ""}
               </p>
               {list.role === "ADMIN" && (
                 <Link href={sharingPath(list.listId)}>Sharing and members</Link>

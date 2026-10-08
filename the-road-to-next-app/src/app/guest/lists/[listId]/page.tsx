@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import { CardMedia } from "@/components/cards/card-media";
 import styles from "@/components/shell.module.css";
 import { GUEST_COOKIE } from "@/features/guest/http";
 import {
@@ -42,15 +43,15 @@ export default async function GuestListPage({
       </p>
       <h1>{list.title}</h1>
       <MediaImage image={list.image} guestListId={listId} />
-      <p className={styles.description}>
-        {list.description || "No description yet."}
-      </p>
+      {list.description && (
+        <p className={styles.description}>{list.description}</p>
+      )}
       <h2>Available wishes</h2>
       {wishes.length ? (
         <ul className={styles["list-grid"]}>
           {wishes.map((wish) => (
             <li key={wish.id} className={styles["list-card"]}>
-              <MediaImage image={wish.image} guestListId={listId} compact />
+              <CardMedia image={wish.image} guestListId={listId} />
               <h3>
                 <a href={guestWishPath(listId, wish.id)}>{wish.title}</a>
               </h3>

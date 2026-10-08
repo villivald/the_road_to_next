@@ -33,6 +33,9 @@ const createLink = async (page: Page, label = "Family guests") => {
     .getByLabel("New guest link", { exact: true })
     .inputValue();
   expect(url).toMatch(/\/guest#[a-z2-7]{32}$/);
+  await expect(
+    page.getByLabel("New guest link", { exact: true }),
+  ).toBeFocused();
   return url;
 };
 
@@ -137,9 +140,7 @@ test("create once, open anonymously, protect secrets, show only available conten
     40,
   );
   await page.goto(`${listUrl}/sharing`);
-  await page
-    .getByRole("link", { name: "Manage read-only guest links" })
-    .click();
+  await page.getByRole("link", { name: "Manage guest links" }).click();
   await expect(
     page.getByRole("heading", { name: "Guest links", exact: true }),
   ).toBeVisible();
@@ -322,9 +323,9 @@ test("revocation invalidates an already-open guest view and its image, including
       .getByRole("img", { name: "Guest wish image" })
       .getAttribute("src"))!;
     await page
-      .getByRole("button", { name: "Revoke guest link", exact: true })
+      .getByRole("button", { name: "Disable link", exact: true })
       .click();
-    await expect(page.getByRole("status")).toContainText("Guest link revoked");
+    await expect(page.getByRole("status")).toContainText("Guest link disabled");
     await expect(
       page.getByLabel("New guest link", { exact: true }),
     ).toHaveCount(0);
@@ -369,6 +370,10 @@ test("Premium expiry keeps old links working but blocks new ones and still permi
     await prisma.premiumGrant.updateMany({
       data: { expiresAt: new Date(Date.now() - 1) },
     });
+    await page
+      .locator("summary")
+      .filter({ hasText: "Create another link" })
+      .click();
     await page.getByLabel("Link label").fill("Stale attempt");
     await page.getByRole("checkbox", { name: /Anyone with this link/ }).check();
     await page
@@ -383,9 +388,9 @@ test("Premium expiry keeps old links working but blocks new ones and still permi
       page.getByRole("button", { name: "Create guest link", exact: true }),
     ).toHaveCount(0);
     await page
-      .getByRole("button", { name: "Revoke guest link", exact: true })
+      .getByRole("button", { name: "Disable link", exact: true })
       .click();
-    await expect(page.getByRole("status")).toContainText("Guest link revoked");
+    await expect(page.getByRole("status")).toContainText("Guest link disabled");
     await expect(
       page.getByLabel("New guest link", { exact: true }),
     ).toHaveCount(0);

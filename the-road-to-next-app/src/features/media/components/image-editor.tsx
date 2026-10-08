@@ -15,10 +15,12 @@ export function ImageEditor({
   target,
   image,
   label = "Image",
+  fallbackAlt,
 }: {
   target: MediaTarget;
   image: ImageDetails | null;
   label?: string;
+  fallbackAlt?: string;
 }) {
   const router = useRouter();
   const id = useId();
@@ -50,7 +52,7 @@ export function ImageEditor({
     ) {
       setFeedback({
         error: true,
-        message: "Choose an image smaller than 3 MB.",
+        message: "Choose an image up to 3 MB.",
       });
       return;
     }
@@ -66,7 +68,7 @@ export function ImageEditor({
         method: remove ? "DELETE" : "POST",
         headers: {
           "X-Image-Description": encodeURIComponent(
-            String(values.get("alt") ?? ""),
+            String(values.get("alt") ?? "").trim() || fallbackAlt || "",
           ),
         },
         body: remove ? undefined : (file as File),
@@ -127,13 +129,14 @@ export function ImageEditor({
               key={image?.id ?? "empty"}
               id={`${id}-alt`}
               name="alt"
-              required
+              required={!fallbackAlt}
               maxLength={300}
               defaultValue={image?.alt ?? ""}
               aria-describedby={`${id}-description-help`}
             />
             <p className={shell.muted} id={`${id}-description-help`}>
               Briefly describe the image for people using screen readers.
+              {fallbackAlt && " Optional: if blank, your wish title is used."}
             </p>
           </div>
           <div className={shell.actions}>

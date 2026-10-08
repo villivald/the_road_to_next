@@ -1,0 +1,251 @@
+.media,
+.stack {
+  aspect-ratio: 4 / 3;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: var(--illustration);
+}
+
+.media > img {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+}
+
+.placeholder {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.75rem;
+  height: 100%;
+  padding: 1rem;
+  color: var(--foreground);
+  background:
+    radial-gradient(circle at 15% 20%, var(--accent) 0 16%, transparent 16.5%),
+    radial-gradient(circle at 88% 90%, var(--accent) 0 24%, transparent 24.5%);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.placeholder > svg {
+  width: 52px;
+  height: 52px;
+  stroke-width: 1.25;
+}
+
+.stack {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: var(--accent);
+}
+
+.stack-image {
+  width: 62%;
+  flex-shrink: 0;
+  border: 5px solid var(--surface);
+  border-radius: 0.65rem;
+  overflow: hidden;
+  transform: rotate(-8deg);
+}
+
+.stack-image + .stack-image {
+  margin-inline-start: -40%;
+  transform: rotate(6deg) translateY(0.5rem);
+}
+
+.stack-image:nth-child(3) {
+  transform: rotate(14deg) translateY(1rem);
+}
+
+.stack-image img {
+  aspect-ratio: 1;
+  border-radius: 0;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+.avatar img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+}
+
+.avatar > svg {
+  width: 36px;
+  height: 36px;
+}
+
+.user-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.user-card > a {
+  margin-top: auto;
+}
+
+.browse-card {
+  position: relative;
+}
+
+.edge-badge {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: 0.75rem;
+  inset-inline-end: 0.75rem;
+}
+
+.bio {
+  color: var(--muted-foreground);
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.bio-toggle {
+  display: block;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--link);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  font-size: 0.85rem;
+}
+
+.states {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.55rem;
+  border-radius: 0.5rem;
+  color: var(--muted-foreground);
+  background: var(--muted);
+  font-size: 0.8rem;
+}
+
+.state svg {
+  flex-shrink: 0;
+}
+
+.reserved {
+  color: var(--foreground);
+  background: var(--accent);
+}
+
+.wish-summary {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.wish-list {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--muted-foreground);
+  font-size: 0.85rem;
+}
+
+.wish-list svg {
+  flex-shrink: 0;
+}
+
+.wish-facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem 0.75rem;
+}
+
+.ownership {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: fit-content;
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.5rem;
+  background: var(--highlight);
+  color: var(--highlight-foreground);
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.icon-action,
+.open-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  background: var(--surface);
+  color: var(--link);
+  text-decoration: none;
+}
+
+.icon-action:hover,
+.open-action:hover {
+  background: var(--accent);
+  border-color: var(--input);
+}
+
+.copy-control {
+  position: relative;
+}
+
+.copy-status:not(:empty) {
+  position: absolute;
+  z-index: 2;
+  inset-inline-end: 0;
+  bottom: calc(100% + 0.5rem);
+  padding: 0.6rem;
+  width: max-content;
+  max-width: 12rem;
+  background: var(--foreground);
+  color: var(--background);
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+}

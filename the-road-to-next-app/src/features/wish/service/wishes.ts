@@ -1,3 +1,4 @@
+import { attachStagedImage, stageImage } from "@/features/media/service/media";
 import { imageSelection } from "@/features/media/types";
 import { manageableLists } from "@/features/wishlist/service/access";
 import { lockManagedWishlist } from "@/features/wishlist/service/lists";
@@ -165,16 +166,34 @@ export const createWish = async (
   userId: string,
   listId: string,
   input: unknown,
+  image?: { bytes: Buffer; alt: string },
 ) => {
   const data = wishSchema.parse(input);
+  const imageId = image
+    ? await stageImage(
+        userId,
+        { kind: "list", listId },
+        image.alt.trim() || data.title,
+        image.bytes,
+      )
+    : null;
 
   return prisma.$transaction(async (tx) => {
     await lockManagedWishlist(tx, listId, userId);
 
-    return tx.wish.create({
+    const wish = await tx.wish.create({
       data: { ...data, wishlistId: listId, authorId: userId },
       select: { id: true },
     });
+    if (imageId) {
+      await attachStagedImage(
+        tx,
+        userId,
+        { kind: "wish", listId, wishId: wish.id },
+        imageId,
+      );
+    }
+    return wish;
   });
 };
 

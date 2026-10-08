@@ -1,3 +1,220 @@
-.members {
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 960px;
+  margin-inline: auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.header {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.header > a,
+.back-preview {
+  justify-self: start;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+  min-width: 0;
+  padding: clamp(1rem, 3vw, 1.75rem);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+}
+
+.panel h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+}
+
+.panel svg {
+  flex-shrink: 0;
+}
+
+.heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem;
+}
+
+.heading p,
+.row p {
+  font-size: 0.9rem;
+}
+
+.methods {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
+  gap: 1.5rem;
+}
+
+.guest-method {
+  background: var(--muted);
+}
+
+.guest-method > a {
+  justify-self: start;
+}
+
+.access {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.access-summary {
+  display: grid;
+  gap: 0.6rem;
+  flex: 1 1 20rem;
+  min-width: 0;
+}
+
+.hint {
+  display: flex;
+  gap: 0.5rem;
+  align-items: start;
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+}
+
+.hint svg {
+  margin-top: 0.2rem;
+}
+
+.resources {
+  display: grid;
+  list-style: none;
+  padding: 0;
+  min-width: 0;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-width: 0;
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.row:first-child {
+  padding-top: 0;
+}
+
+.row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1 1 15rem;
+}
+
+.identity > div {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.identity h3 {
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.avatar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.row-note {
+  color: var(--muted-foreground);
+}
+
+.management {
+  min-width: 0;
+  flex: 0 1 auto;
+}
+
+.management[open] {
+  flex-basis: 100%;
+}
+
+.management summary,
+.transfer summary {
+  min-height: 44px;
+  padding-block: 0.6rem;
+  font-weight: 650;
+  color: var(--link);
+}
+
+.controls {
+  display: grid;
+  gap: 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--muted);
+}
+
+.controls > form + form,
+.transfer {
+  border-top: 1px solid var(--border);
+  padding-top: 1.25rem;
+}
+
+.generated > button,
+.controls button,
+.row > form button {
+  justify-self: start;
+}
+
+.generated {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 2px solid var(--primary);
+  border-radius: 0.75rem;
+  background: var(--muted);
+}
+
+@media (width <= 700px) {
+  .methods {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (width <= 400px) {
+  .row > form,
+  .management {
+    flex-basis: 100%;
+  }
 }

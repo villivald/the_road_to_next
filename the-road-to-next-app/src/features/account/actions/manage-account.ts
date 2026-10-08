@@ -11,7 +11,7 @@ import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect"
 import { authActionError } from "@/features/auth/service/action-error";
 import { limitSourceRequest } from "@/features/auth/service/request-limit";
 import { deleteSessionCookie } from "@/features/auth/utils/session-cookie";
-import { accountProfilePath, signInPath } from "@/paths";
+import { accountProfilePath, browsePath, signInPath } from "@/paths";
 import { deleteAccount, updateProfile } from "../service/account";
 
 export const saveProfile = async (_state: ActionState, data: FormData) => {
@@ -25,6 +25,7 @@ export const saveProfile = async (_state: ActionState, data: FormData) => {
   }
 
   revalidatePath(accountProfilePath);
+  revalidatePath(browsePath);
   return toActionState("SUCCESS", "Profile saved.");
 };
 

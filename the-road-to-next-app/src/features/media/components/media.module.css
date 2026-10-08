@@ -2,6 +2,23 @@
   display: grid;
   gap: 1rem;
   padding-block: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.picker {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.picker button {
+  justify-self: start;
+}
+
+.filename {
+  overflow-wrap: anywhere;
+  color: var(--muted-foreground);
+  font-size: 0.85rem;
 }
 
 .image,
@@ -9,14 +26,18 @@
   display: block;
   width: 100%;
   height: auto;
-  border-radius: 0.75rem;
+  border-radius: 0.85rem;
   object-fit: contain;
+  background: var(--muted);
 }
 
 .image {
   max-width: 40rem;
+  max-height: 32rem;
 }
 
 .thumbnail {
-  max-width: 18rem;
+  aspect-ratio: 4 / 3;
+  height: auto;
+  max-height: 18rem;
 }
