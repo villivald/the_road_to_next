@@ -62,7 +62,7 @@ describe("wish permissions and lifecycle", () => {
     data.set("fulfilledAt", new Date().toISOString());
 
     await expect(addWish(listId, EMPTY_ACTION_STATE, data)).rejects.toThrow(
-      "REDIRECT:/lists/",
+      "REDIRECT:/en/lists/",
     );
     expect(
       await prisma.wish.findFirst({ where: { title: "Title-only wish" } }),

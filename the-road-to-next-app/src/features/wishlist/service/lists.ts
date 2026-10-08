@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { manageableLists, readableLists } from "./access";
 import { lockWishlist } from "./lock";
 import { publicationSchema, wishlistIdSchema, wishlistSchema } from "./schemas";
+import { readManagedWishCounts } from "./wish-counts";
 
 export class WishlistError extends Error {}
 
@@ -57,7 +58,7 @@ export const readManagedWishlist = (id: string, userId: string) => {
 
   return prisma.wishlist.findFirst({
     where: { id, ...manageableLists(userId) },
-    select: listFields,
+    select: { ...listFields, ownerId: true },
   });
 };
 
@@ -72,10 +73,19 @@ export const readOwnedWishlists = async (userId: string, page = 1) => {
     skip: (currentPage - 1) * pageSize,
     take: pageSize + 1,
   });
+  const lists = results.slice(0, pageSize);
+  const counts = await readManagedWishCounts(
+    userId,
+    lists.map(({ id }) => id),
+  );
 
   return {
-    lists: results.slice(0, pageSize).map(({ wishes, ...list }) => ({
+    lists: lists.map(({ wishes, ...list }) => ({
       ...list,
+      ...(counts.get(list.id) ?? {
+        availableWishCount: 0,
+        reservedWishCount: 0,
+      }),
       previewImages: wishes.flatMap(({ image }) => (image ? [image] : [])),
     })),
     hasNextPage: results.length > pageSize,

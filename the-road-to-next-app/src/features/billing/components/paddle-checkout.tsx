@@ -1,8 +1,8 @@
 "use client";
-
 import Script from "next/script";
 import { useState } from "react";
 import styles from "@/components/shell.module.css";
+import { useText } from "@/i18n/use-text";
 
 type PaddleClient = {
   Environment: { set: (environment: "sandbox") => void };
@@ -10,7 +10,12 @@ type PaddleClient = {
     token: string;
     checkout: { settings: Record<string, unknown> };
   }) => void;
-  Checkout: { open: (options: { transactionId: string }) => void };
+  Checkout: {
+    open: (options: {
+      transactionId: string;
+      settings: Record<string, unknown>;
+    }) => void;
+  };
 };
 
 let initializedToken: string | null = null;
@@ -22,6 +27,8 @@ export function PaddleCheckout({
   transactionId: string;
   clientToken: string;
 }) {
+  const t = useText();
+
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const paddle = () => (window as Window & { Paddle?: PaddleClient }).Paddle;
@@ -41,7 +48,7 @@ export function PaddleCheckout({
               locale: "en",
               allowLogout: false,
               showAddDiscounts: false,
-              successUrl: `${window.location.origin}/account/plan?checkout=returned`,
+              successUrl: `${window.location.origin}/${t.locale}/account/plan?checkout=returned`,
             },
           },
         });
@@ -55,6 +62,9 @@ export function PaddleCheckout({
 
   return (
     <div className={styles.form}>
+      {t.locale === "fi" && (
+        <p>{t("Paddle’s payment window opens in English.")}</p>
+      )}
       <Script
         src="https://cdn.paddle.com/paddle/v2/paddle.js"
         onReady={prepare}
@@ -62,7 +72,7 @@ export function PaddleCheckout({
       />
       {failed && (
         <p role="alert">
-          Paddle checkout could not load. Reload this page to try again.
+          {t("Paddle checkout could not load. Reload this page to try again.")}
         </p>
       )}
       <button
@@ -70,15 +80,21 @@ export function PaddleCheckout({
         disabled={!ready || failed}
         onClick={() => {
           try {
-            paddle()?.Checkout.open({ transactionId });
+            paddle()?.Checkout.open({
+              transactionId,
+              settings: {
+                locale: "en",
+                successUrl: `${window.location.origin}/${t.locale}/account/plan?checkout=returned`,
+              },
+            });
           } catch {
             setFailed(true);
           }
         }}
       >
-        {ready ? "Open secure checkout" : "Loading checkout…"}
+        {ready ? t("Open secure checkout") : t("Loading checkout…")}
       </button>
-      <noscript>JavaScript is required for Paddle checkout.</noscript>
+      <noscript>{t("JavaScript is required for Paddle checkout.")}</noscript>
     </div>
   );
 }

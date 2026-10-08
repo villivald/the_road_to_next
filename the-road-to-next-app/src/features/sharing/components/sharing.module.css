@@ -140,8 +140,21 @@
 }
 
 .identity h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 1rem;
   overflow-wrap: anywhere;
+}
+
+.self-marker {
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.4rem;
+  background: var(--accent);
+  color: var(--foreground);
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .avatar {

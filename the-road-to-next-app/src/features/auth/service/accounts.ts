@@ -40,13 +40,19 @@ export const register = async (input: {
   username: string;
   email: string;
   password: string;
+  locale?: "en" | "fi";
 }) => {
   const passwordHash = await hashPassword(input.password);
   const token = generateRandomToken();
 
   return prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
-      data: { username: input.username, email: input.email, passwordHash },
+      data: {
+        username: input.username,
+        email: input.email,
+        passwordHash,
+        locale: input.locale ?? "en",
+      },
     });
     const session = await createSession(token, user.id, tx);
 

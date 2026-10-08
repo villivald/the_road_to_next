@@ -1,7 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import {
   type ActionState,
   toActionState,
@@ -10,6 +8,7 @@ import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect"
 import { authActionError } from "@/features/auth/service/action-error";
 import { limitSourceRequest } from "@/features/auth/service/request-limit";
 import { consumeRateLimit } from "@/features/auth/service/security";
+import { redirect, revalidatePath } from "@/i18n/server-navigation";
 import { prisma } from "@/lib/prisma";
 import { requireBillingUser } from "../service/accounts";
 import {
@@ -37,7 +36,9 @@ export const subscribe = async (
   } catch (error) {
     return authActionError(error);
   }
-  redirect(`/account/checkout?id=${encodeURIComponent(checkoutId)}`);
+  return await redirect(
+    `/account/checkout?id=${encodeURIComponent(checkoutId)}`,
+  );
 };
 
 export const manageSubscription = async (
@@ -54,7 +55,7 @@ export const manageSubscription = async (
   } catch (error) {
     return authActionError(error);
   }
-  redirect(url);
+  return await redirect(url);
 };
 
 export const refreshBilling = async (_state: ActionState, _data: FormData) => {

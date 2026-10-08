@@ -163,3 +163,58 @@ describe("durable invitation delivery", () => {
     expect(send).not.toHaveBeenCalled();
   });
 });
+
+it("freezes recipient language for invitation retries and uses sender language for unknown recipients", async () => {
+  await revokeInvitation(
+    account.user.id,
+    account.session.id,
+    "e2e-private-list",
+    id,
+  );
+  await prisma.user.update({
+    where: { id: "e2e-owner" },
+    data: { locale: "fi" },
+  });
+  const existing = await inviteMember(
+    account.user.id,
+    account.session.id,
+    "e2e-private-list",
+    { email: accounts.owner.email, role: "MEMBER" },
+    "en",
+  );
+  const unknown = await inviteMember(
+    account.user.id,
+    account.session.id,
+    "e2e-private-list",
+    { email: "unknown-fi@example.test", role: "MEMBER" },
+    "fi",
+  );
+  await prisma.user.update({
+    where: { id: "e2e-owner" },
+    data: { locale: "en" },
+  });
+  const send = vi
+    .spyOn(mail, "deliverEmail")
+    .mockRejectedValueOnce(new Error("temporary outage"))
+    .mockResolvedValue({ error: null });
+  expect(await deliverInvitations(existing.id)).toEqual({ sent: 0, failed: 1 });
+  await prisma.invitation.update({
+    where: { id: existing.id },
+    data: { nextAttemptAt: new Date(0) },
+  });
+  await deliverInvitations(existing.id);
+  await deliverInvitations(unknown.id);
+  expect(send.mock.calls.map((call) => call[1])).toEqual([
+    "Kutsusi Wishlistiin",
+    "Kutsusi Wishlistiin",
+    "Kutsusi Wishlistiin",
+  ]);
+  expect(send.mock.calls[0][2]).toEqual(send.mock.calls[1][2]);
+  expect(JSON.stringify(send.mock.calls[1][2])).toContain(
+    `/fi/invitations/${existing.id}`,
+  );
+  expect(
+    (await prisma.invitation.findUniqueOrThrow({ where: { id: unknown.id } }))
+      .locale,
+  ).toBe("fi");
+});

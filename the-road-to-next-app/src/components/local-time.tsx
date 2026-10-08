@@ -1,6 +1,8 @@
 "use client";
 
+import { useLocale } from "next-intl";
 import { useSyncExternalStore } from "react";
+import { languageTag } from "@/i18n/config";
 
 const subscribe = () => () => {};
 const options: Intl.DateTimeFormatOptions = {
@@ -13,13 +15,14 @@ const options: Intl.DateTimeFormatOptions = {
 };
 
 export function LocalTime({ value }: { value: string }) {
-  const fallback = new Intl.DateTimeFormat("en-GB", {
+  const locale = languageTag(useLocale());
+  const fallback = new Intl.DateTimeFormat(locale, {
     ...options,
     timeZone: "UTC",
   }).format(new Date(value));
   const label = useSyncExternalStore(
     subscribe,
-    () => new Intl.DateTimeFormat(undefined, options).format(new Date(value)),
+    () => new Intl.DateTimeFormat(locale, options).format(new Date(value)),
     () => fallback,
   );
 

@@ -1,6 +1,7 @@
 import { Gift, Layers, UserRound } from "lucide-react";
 import { MediaImage } from "@/features/media/components/media-image";
 import type { MediaImage as ImageDetails } from "@/features/media/types";
+import { useText } from "@/i18n/use-text";
 import styles from "./cards.module.css";
 
 export function CardMedia({
@@ -12,6 +13,8 @@ export function CardMedia({
   kind?: "wish" | "list";
   guestListId?: string;
 }) {
+  const t = useText();
+
   return (
     <div className={styles.media}>
       {image ? (
@@ -20,7 +23,7 @@ export function CardMedia({
         <div className={styles.placeholder} aria-hidden="true">
           {kind === "wish" ? <Gift /> : <Layers />}
           <span>
-            {kind === "wish" ? "A little wish" : "A collection of wishes"}
+            {kind === "wish" ? t("A little wish") : t("A collection of wishes")}
           </span>
         </div>
       )}
@@ -35,10 +38,12 @@ export function ListPreview({
   image: ImageDetails | null;
   images: ImageDetails[];
 }) {
+  const t = useText();
+
   if (image || !images.length) return <CardMedia image={image} kind="list" />;
 
   return (
-    <div className={styles.stack} aria-label="Preview of available wishes">
+    <div className={styles.stack} aria-label={t("Preview of available wishes")}>
       {images.map((preview) => (
         <div key={preview.id} className={styles["stack-image"]}>
           <MediaImage image={preview} compact />

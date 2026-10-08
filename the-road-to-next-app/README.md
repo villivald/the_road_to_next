@@ -26,13 +26,15 @@ Skip the copy if `.env.local` already exists. It takes precedence over `.env`. K
 
 Register in the app, then open the local inbox for verification codes and reset links. Local email is captured by Mailpit; it is not delivered to recipients. For real delivery, unset `MAILPIT_URL` and configure `RESEND_API_KEY` and `EMAIL_FROM`. Hosted Inngest needs its event/signing keys with `INNGEST_DEV` unset.
 
-Images use private files in `.local/media` locally (no extra service). To use cloud storage, create a **private** Vercel Blob store, set `MEDIA_STORAGE=vercel` and its `BLOB_READ_WRITE_TOKEN` in `.env.local`, then restart. Use separate stores for development/preview and production. Upload images from Edit list, Edit wish, or Your account.
+Choose **English / Suomi** in the header. Both versions are also available directly at `/en` and `/fi`; your choice is saved for future visits.
+
+Images use private files in `.local/media` locally (no extra service). To use cloud storage, create a **private** Vercel Blob store, set `MEDIA_STORAGE=vercel` and its `BLOB_READ_WRITE_TOKEN` in `.env.local`, then restart. Use separate stores for development/preview and production. Add images when creating a wish, or upload them from List settings, Edit wish, or Your account.
 
 Inngest retries media cleanup every five minutes; run `npm run media:cleanup` to process one batch manually. Keep Inngest running for automatic cleanup.
 
-Invite people from a list’s **Sharing and members** page; local invitations arrive in Mailpit. Failed sends retry through Inngest every five minutes, or run `npm run invitations:deliver` for one batch. Joined lists appear under **My lists → Lists with access to**.
+Invite people from a list’s **Sharing and members** page; local invitations arrive in Mailpit. Failed sends retry through Inngest every five minutes, or run `npm run invitations:deliver` for one batch. Joined lists appear under **My lists → Lists you’ve joined**.
 
-For read-only access without an account, open **Sharing and members → Manage read-only guest links**. The list owner needs Premium to create links; publish the list, copy the new link, and share it privately. Links expire and can be revoked there.
+For read-only access without an account, open **List settings → Manage guest links**. The list owner needs Premium to create links; choose **Show list** in List settings, copy the new link, and share it privately. Links expire and can be revoked there.
 
 Stop the local services with `npm run db:rebuild:down`; development database data is retained.
 

@@ -90,6 +90,41 @@ afterAll(async () => {
 });
 
 describe("private lists and collaboration", () => {
+  it("returns wish counts only while a joined user is an admin", async () => {
+    await join((await invite()).id);
+    await reserveWish(member.user.id, listId, "e2e-sharing-wish");
+    expect(
+      (await readSharedLists(member.user.id)).lists[0].management,
+    ).toBeNull();
+    const target = await membership();
+    await changeMemberRole(
+      owner.user.id,
+      owner.session.id,
+      listId,
+      target.id,
+      "ADMIN",
+    );
+    const shared = await readSharedLists(member.user.id);
+    expect(shared.lists[0].management).toEqual({
+      availableWishCount: 0,
+      reservedWishCount: 1,
+      reservationsEnabled: true,
+    });
+    expect(JSON.stringify(shared)).not.toContain(owner.user.id);
+    expect(JSON.stringify(shared)).not.toContain(member.user.id);
+
+    await changeMemberRole(
+      owner.user.id,
+      owner.session.id,
+      listId,
+      target.id,
+      "MEMBER",
+    );
+    expect(
+      (await readSharedLists(member.user.id)).lists[0].management,
+    ).toBeNull();
+  });
+
   it("requires Premium for new private lists and ignores spoofed ownership", async () => {
     const input = {
       title: "Created private list",

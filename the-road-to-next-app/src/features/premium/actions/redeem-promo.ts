@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import {
   type ActionState,
   toActionState,
@@ -8,6 +7,7 @@ import {
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import { authActionError } from "@/features/auth/service/action-error";
 import { limitSourceRequest } from "@/features/auth/service/request-limit";
+import { revalidatePath } from "@/i18n/server-navigation";
 import { accountPlanPath, accountProfilePath } from "@/paths";
 import { PremiumError } from "../service/entitlements";
 import { redeemPromo } from "../service/promotions";

@@ -3,10 +3,10 @@ import { randomBytes } from "node:crypto";
 import sharp from "sharp";
 import { accounts, resetFixtures, testPrisma } from "./seed";
 
-const listUrl = "/lists/e2e-media-list";
+const listUrl = "/en/lists/e2e-media-list";
 const wishUrl = `${listUrl}/wishes/e2e-media-wish`;
 const signIn = async (page: Page) => {
-  await page.goto("/sign-in");
+  await page.goto("/en/sign-in");
   await page.getByLabel("Email", { exact: true }).fill(accounts.owner.email);
   await page
     .getByLabel("Password", { exact: true })
@@ -268,6 +268,7 @@ test("list image upload, replacement, removal and revocation work through the UI
   await expect(
     page.getByRole("img", { name: "A second blue landscape" }),
   ).toHaveJSProperty("naturalWidth", 900);
+  await page.getByRole("link", { name: "List settings", exact: true }).click();
   await page.getByRole("button", { name: "Hide list", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Show list", exact: true }),
@@ -343,7 +344,7 @@ test("avatars are public only for public list owners, resized and removable", as
   request,
 }) => {
   await signIn(page);
-  await page.goto("/account/profile");
+  await page.goto("/en/account/profile");
   const buffer = await sharp({
     create: { width: 900, height: 600, channels: 3, background: "#467cb0" },
   })

@@ -103,6 +103,31 @@
   position: relative;
 }
 
+.list-footer {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: auto;
+}
+
+.list-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  color: var(--muted-foreground);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.list-counts > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.list-counts svg {
+  flex-shrink: 0;
+}
+
 .edge-badge {
   position: absolute;
   z-index: 1;
@@ -148,6 +173,16 @@
 
 .state svg {
   flex-shrink: 0;
+}
+
+.reservation-status {
+  width: fit-content;
+  max-width: 100%;
+}
+
+.reservation-status[data-enabled="true"] {
+  color: var(--foreground);
+  background: var(--accent);
 }
 
 .reserved {

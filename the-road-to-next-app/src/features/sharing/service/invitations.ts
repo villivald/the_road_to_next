@@ -25,6 +25,7 @@ export const inviteMember = async (
   sessionId: string,
   listId: string,
   input: unknown,
+  locale = "en",
 ) => {
   const data = invitationSchema.parse(input);
   await consumeRateLimit("invite-create", userId, 20, 60 * 60 * 1000);
@@ -62,9 +63,14 @@ export const inviteMember = async (
       });
     }
     await consumeRateLimit("invite-recipient", data.email, 5, 60 * 60 * 1000);
+    const recipient = await tx.user.findUnique({
+      where: { email: data.email },
+      select: { locale: true },
+    });
     return tx.invitation.create({
       data: {
         ...data,
+        locale: recipient?.locale ?? locale,
         wishlistId: listId,
         inviterId: userId,
         expiresAt: new Date(Date.now() + 7 * 86400000),

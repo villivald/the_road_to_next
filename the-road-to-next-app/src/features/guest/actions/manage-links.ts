@@ -1,7 +1,5 @@
 "use server";
-
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import { z } from "zod";
 import {
   type ActionState,
@@ -12,6 +10,8 @@ import { authActionError } from "@/features/auth/service/action-error";
 import { limitSourceRequest } from "@/features/auth/service/request-limit";
 import { PremiumError } from "@/features/premium/service/entitlements";
 import { SharingError } from "@/features/sharing/service/access";
+import { localizedPath } from "@/i18n/config";
+import { redirect, revalidatePath } from "@/i18n/server-navigation";
 import { guestLinksPath } from "@/paths";
 import { getBaseUrl } from "@/utils/url";
 import { createGuestLink, revokeGuestLink } from "../service/links";
@@ -43,7 +43,9 @@ export const createLink = async (
       "SUCCESS",
       "Guest link created. Copy it now; it will not be shown again.",
       undefined,
-      { url: `${getBaseUrl()}/guest#${token}` },
+      {
+        url: `${getBaseUrl()}${localizedPath("/guest", await getLocale())}#${token}`,
+      },
     );
   } catch (error) {
     return actionError(error, data);
@@ -64,5 +66,5 @@ export const revokeLink = async (
     return actionError(error);
   }
   revalidatePath(guestLinksPath(listId));
-  redirect(`${guestLinksPath(listId)}?revoked=1`);
+  return await redirect(`${guestLinksPath(listId)}?revoked=1`);
 };

@@ -1,5 +1,33 @@
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.75rem;
+  width: 100%;
+  max-width: 760px;
+  min-width: 0;
+  margin-inline: auto;
+  overflow-wrap: anywhere;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.header > a,
+.back-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  justify-self: start;
+}
+
 .settings {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.5rem;
   padding: clamp(1rem, 3vw, 1.75rem);
   background: var(--surface);
@@ -7,6 +35,7 @@
   border-radius: 1rem;
   width: 100%;
   max-width: 760px;
+  min-width: 0;
 }
 
 .heading,
@@ -21,11 +50,13 @@
 
 .summary {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
 }
 
 .summary > div {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.35rem;
 }
 
@@ -68,8 +99,7 @@
 }
 
 .deletion {
-  padding-top: 1rem;
-  border-top: 1px solid var(--border);
+  align-items: start;
 }
 
 .delete-link {
@@ -78,4 +108,13 @@
   gap: 0.4rem;
   min-height: 44px;
   color: var(--destructive);
+}
+
+.settings h2 {
+  font-size: 1.25rem;
+}
+
+.image-panel > section {
+  padding-block: 0;
+  border-top: 0;
 }

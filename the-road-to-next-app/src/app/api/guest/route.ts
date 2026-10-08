@@ -1,9 +1,9 @@
-import { cookies } from "next/headers";
 import { limitSourceRequest } from "@/features/auth/service/request-limit";
 import { AuthError } from "@/features/auth/service/security";
 import { GUEST_COOKIE, guestHeaders } from "@/features/guest/http";
 import { resolveGuestLink } from "@/features/guest/service/access";
 import { guestTokenSchema } from "@/features/guest/service/schemas";
+import { localizedPath } from "@/i18n/config";
 import { guestListPath } from "@/paths";
 
 export const dynamic = "force-dynamic";
@@ -43,14 +43,19 @@ export async function POST(request: Request) {
       return new Response(null, { status: 404, headers: guestHeaders });
 
     const destination = guestListPath(link.wishlistId);
-    (await cookies()).set(GUEST_COOKIE, parsed.data, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: destination,
-      expires: link.expiresAt,
-    });
-    return Response.json({ destination }, { headers: guestHeaders });
+    const response = Response.json({ destination }, { headers: guestHeaders });
+    for (const path of [
+      destination,
+      localizedPath(destination, "en"),
+      localizedPath(destination, "fi"),
+    ])
+      // cookies().set replaces same-name entries even when their paths differ.
+      // Append each scoped cookie explicitly so both languages and legacy media work.
+      response.headers.append(
+        "Set-Cookie",
+        `${GUEST_COOKIE}=${parsed.data}; Path=${path}; Expires=${link.expiresAt.toUTCString()}; HttpOnly; SameSite=Lax${process.env.NODE_ENV === "production" ? "; Secure" : ""}`,
+      );
+    return response;
   } catch (error) {
     // Never log request bodies, cookies, or bearer tokens.
     return new Response(null, {

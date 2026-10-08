@@ -1,5 +1,7 @@
 import InvitationEmail from "@/emails/sharing/invitation";
 import { readPremiumAccess } from "@/features/premium/service/entitlements";
+import { localizedPath } from "@/i18n/config";
+import { createText } from "@/i18n/text";
 import { deliverEmail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
 import { invitationPath } from "@/paths";
@@ -107,9 +109,10 @@ export const deliverInvitations = async (id?: string) => {
     try {
       await deliverEmail(
         invitation.email,
-        "Your Wishlist invitation",
+        createText(invitation.locale)("Your Wishlist invitation"),
         <InvitationEmail
-          url={`${getBaseUrl()}${invitationPath(invitation.id)}`}
+          locale={invitation.locale}
+          url={`${getBaseUrl()}${localizedPath(invitationPath(invitation.id), invitation.locale)}`}
         />,
         `wishlist-invitation/${invitation.id}`,
       );

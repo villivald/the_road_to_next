@@ -5,6 +5,8 @@ export default defineConfig({
   resolve: { alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) } },
   test: {
     environment: "node",
+    server: { deps: { inline: [/next-intl/] } },
+    setupFiles: ["./tests/i18n-setup.ts"],
     include: integration
       ? ["tests/**/*.integration.test.ts"]
       : ["tests/**/*.test.ts"],

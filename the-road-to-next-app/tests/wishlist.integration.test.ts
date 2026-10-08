@@ -1,5 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
+import { cancelReservation } from "@/features/reservation/service/reservations";
 import {
   changePublication,
   createList,
@@ -50,6 +51,69 @@ afterAll(async () => {
 });
 
 describe("wishlist management and authorization", () => {
+  it("counts available wishes and active reservations without hidden content, history or reserver identities", async () => {
+    const list = await createWishlist("e2e-owner", {
+      ...input,
+      reservationsEnabled: true,
+    });
+    await setWishlistPublication("e2e-owner", list.id, "PUBLISHED");
+    await prisma.wish.createMany({
+      data: [
+        { id: "count-available", wishlistId: list.id, title: "Available" },
+        { id: "count-reserved", wishlistId: list.id, title: "Reserved" },
+        { id: "count-canceled", wishlistId: list.id, title: "Canceled" },
+        {
+          id: "count-hidden",
+          wishlistId: list.id,
+          title: "Hidden",
+          hidden: true,
+        },
+        {
+          id: "count-fulfilled",
+          wishlistId: list.id,
+          title: "Fulfilled",
+          fulfilledAt: new Date(),
+        },
+      ],
+    });
+    const reservation = await prisma.reservation.create({
+      data: { wishId: "count-reserved", userId: "e2e-member" },
+    });
+    await prisma.reservation.create({
+      data: {
+        wishId: "count-canceled",
+        userId: "e2e-member",
+        endedAt: new Date(),
+      },
+    });
+    await updateWishlist("e2e-owner", list.id, input);
+
+    const owned = await readOwnedWishlists("e2e-owner");
+    expect(owned.lists).toMatchObject([
+      {
+        id: list.id,
+        availableWishCount: 2,
+        reservedWishCount: 1,
+        reservationsEnabled: false,
+      },
+    ]);
+    expect(JSON.stringify(owned)).not.toContain("e2e-member");
+    expect(JSON.stringify(owned)).not.toContain(reservation.id);
+    expect((await readOwnedWishlists("e2e-member")).lists).not.toContainEqual(
+      expect.objectContaining({ id: list.id }),
+    );
+
+    await cancelReservation(
+      "e2e-member",
+      list.id,
+      "count-reserved",
+      reservation.id,
+    );
+    expect((await readOwnedWishlists("e2e-owner")).lists).toMatchObject([
+      { availableWishCount: 3, reservedWishCount: 0 },
+    ]);
+  });
+
   it("creates a public draft and admin membership using session identity, ignoring injected fields", async () => {
     const data = new FormData();
     data.set("title", "  Birthday ideas  ");
@@ -58,7 +122,7 @@ describe("wishlist management and authorization", () => {
     data.set("publication", "PUBLISHED");
 
     await expect(createList(EMPTY_ACTION_STATE, data)).rejects.toThrow(
-      "REDIRECT:/lists/",
+      "REDIRECT:/en/lists/",
     );
 
     const list = await prisma.wishlist.findFirstOrThrow({
@@ -79,6 +143,32 @@ describe("wishlist management and authorization", () => {
     await expect(createWishlist("e2e-owner", input)).resolves.toHaveProperty(
       "id",
     );
+  });
+
+  it("saves settings in place and keeps ownership and visibility unchanged", async () => {
+    const list = await createWishlist("e2e-owner", input);
+    const data = new FormData();
+    data.set("title", "  Updated ideas  ");
+    data.set("description", "  For the summer  ");
+    data.set("reservationsEnabled", "on");
+    data.set("ownerId", "e2e-member");
+    data.set("publication", "PUBLISHED");
+    data.set("visibility", "PRIVATE");
+
+    await expect(
+      updateList(list.id, EMPTY_ACTION_STATE, data),
+    ).resolves.toMatchObject({
+      status: "SUCCESS",
+      message: "Changes saved.",
+    });
+    expect(await readManagedWishlist(list.id, "e2e-owner")).toMatchObject({
+      title: "Updated ideas",
+      description: "For the summer",
+      reservationsEnabled: true,
+      ownerId: "e2e-owner",
+      publication: "DRAFT",
+      visibility: "PUBLIC",
+    });
   });
 
   it("rejects invalid fields and unverified actors without persisting a list", async () => {

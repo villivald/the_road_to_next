@@ -23,7 +23,13 @@ export const validateSession = async (token: string) => {
     where: { id: hashToken(token) },
     include: {
       user: {
-        select: { id: true, username: true, email: true, emailVerified: true },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          emailVerified: true,
+          locale: true,
+        },
       },
     },
   });

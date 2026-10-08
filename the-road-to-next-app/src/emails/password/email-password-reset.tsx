@@ -7,15 +7,22 @@ import {
   Section,
   Text,
 } from "react-email";
+import { createText } from "@/i18n/text";
 
 type EmailPasswordResetProps = {
   toName: string;
   url: string;
+  locale?: string;
 };
 
-const EmailPasswordReset = ({ toName, url }: EmailPasswordResetProps) => {
+const EmailPasswordReset = ({
+  toName,
+  url,
+  locale = "en",
+}: EmailPasswordResetProps) => {
+  const t = createText(locale);
   return (
-    <Html>
+    <Html lang={locale}>
       <Head />
       <Body
         style={{
@@ -27,7 +34,10 @@ const EmailPasswordReset = ({ toName, url }: EmailPasswordResetProps) => {
         <Container>
           <Section>
             <Text>
-              Hi {toName}, use the link below to reset your Wishlist password.
+              {t(
+                "Hi {name}, use the link below to reset your Wishlist password.",
+                { name: toName },
+              )}
             </Text>
           </Section>
           <Section>
@@ -41,12 +51,15 @@ const EmailPasswordReset = ({ toName, url }: EmailPasswordResetProps) => {
               }}
               href={url}
             >
-              Reset password
+              {t("Reset password")}
             </Button>
-            <Text>This link expires in 30 minutes and can be used once.</Text>
             <Text>
-              If you did not request this, ignore this email. Your password will
-              stay the same.
+              {t("This link expires in 30 minutes and can be used once.")}
+            </Text>
+            <Text>
+              {t(
+                "If you did not request this, ignore this email. Your password will stay the same.",
+              )}
             </Text>
           </Section>
         </Container>

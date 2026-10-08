@@ -314,6 +314,9 @@
 .secondary-button,
 .danger-button {
   display: inline-flex;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
@@ -838,4 +841,56 @@
     transition: none !important;
     scroll-behavior: auto !important;
   }
+}
+
+.language-switcher {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.language-control {
+  position: relative;
+  max-width: 100%;
+}
+
+.language-control select {
+  appearance: none;
+  width: 7.25rem;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 0.5rem 1.75rem 0.5rem 2rem;
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  background: var(--surface);
+  color: var(--foreground);
+  font-size: 0.875rem;
+  font-weight: 550;
+  line-height: 1.4;
+}
+
+.language-control select:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.language-control select:hover:not(:disabled) {
+  background: var(--muted);
+}
+
+.language-icon,
+.language-chevron {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.language-icon {
+  inset-inline-start: 0.65rem;
+}
+
+.language-chevron {
+  inset-inline-end: 0.5rem;
 }

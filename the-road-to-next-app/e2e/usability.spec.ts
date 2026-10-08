@@ -3,11 +3,11 @@ import { expect, type Page, test } from "@playwright/test";
 import { testOrigin } from "./environment";
 import { accounts, resetFixtures, testPrisma } from "./seed";
 
-const listUrl = "/lists/e2e-design";
+const listUrl = "/en/lists/e2e-design";
 const wishUrl = `${listUrl}/wishes/e2e-design-wish`;
 
 const signIn = async (page: Page) => {
-  await page.goto("/sign-in");
+  await page.goto("/en/sign-in");
   await page.getByLabel("Email", { exact: true }).fill(accounts.owner.email);
   await page
     .getByLabel("Password", { exact: true })
@@ -17,6 +17,7 @@ const signIn = async (page: Page) => {
 };
 
 const checkPage = async (page: Page) => {
+  await expect(page.locator("[data-loading-preview]")).toHaveCount(0);
   await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
   expect(
     await page.evaluate(
@@ -96,16 +97,16 @@ for (const theme of ["light", "dark"] as const) {
     await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
     for (const path of [
       "/",
-      "/sign-in",
-      "/sign-up",
-      "/browse?view=wishes",
+      "/en/sign-in",
+      "/en/sign-up",
+      "/en/browse?view=wishes",
       listUrl,
       wishUrl,
     ]) {
       await page.goto(path);
       await expect(page.locator("html")).toHaveClass(new RegExp(theme));
       await checkPage(page);
-      if (path === "/" || path.startsWith("/browse")) {
+      if (path === "/" || path.startsWith("/en/browse")) {
         await page.screenshot({
           path: info.outputPath(path === "/" ? "home.png" : "browse.png"),
           fullPage: true,
@@ -121,24 +122,25 @@ for (const theme of ["light", "dark"] as const) {
     await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
     await signIn(page);
     for (const path of [
-      "/lists",
-      "/lists/new",
+      "/en/lists",
+      "/en/lists/new",
       listUrl,
+      `${listUrl}/edit`,
       `${wishUrl}/edit`,
       `${listUrl}/wishes/new`,
       `${listUrl}/sharing`,
       `${listUrl}/guest-links`,
-      "/reservations",
-      "/account/profile",
-      "/account/plan",
-      "/account/delete",
+      "/en/reservations",
+      "/en/account/profile",
+      "/en/account/plan",
+      "/en/account/delete",
     ]) {
       await page.goto(path);
       await checkPage(page);
       if (
         path === listUrl ||
-        path === "/lists/new" ||
-        path === "/account/profile" ||
+        path === "/en/lists/new" ||
+        path === "/en/account/profile" ||
         path === `${listUrl}/wishes/new` ||
         path.endsWith("/edit") ||
         path.endsWith("/sharing") ||
@@ -148,17 +150,19 @@ for (const theme of ["light", "dark"] as const) {
           path: info.outputPath(
             path === listUrl
               ? "list.png"
-              : path === "/lists/new"
+              : path === "/en/lists/new"
                 ? "new-list.png"
-                : path === "/account/profile"
+                : path === "/en/account/profile"
                   ? "profile.png"
                   : path === `${listUrl}/wishes/new`
                     ? "new-wish.png"
-                    : path.endsWith("/edit")
-                      ? "editor.png"
-                      : path.endsWith("/sharing")
-                        ? "sharing.png"
-                        : "guest-links.png",
+                    : path === `${listUrl}/edit`
+                      ? "list-settings.png"
+                      : path.endsWith("/edit")
+                        ? "editor.png"
+                        : path.endsWith("/sharing")
+                          ? "sharing.png"
+                          : "guest-links.png",
           ),
           fullPage: true,
         });
@@ -217,13 +221,14 @@ test("narrow navigation, expanded filters, text resizing and reduced motion", as
     .evaluate((element) => getComputedStyle(element).transitionDuration);
   expect(motion).toBe("0s");
   for (const path of [
-    "/lists",
-    "/lists/new",
+    "/en/lists",
+    "/en/lists/new",
+    `${listUrl}/edit`,
     `${wishUrl}/edit`,
     `${listUrl}/wishes/new`,
     `${listUrl}/sharing`,
     `${listUrl}/guest-links`,
-    "/account/profile",
+    "/en/account/profile",
   ]) {
     await page.goto(path);
     await page.evaluate(() => {
@@ -250,10 +255,10 @@ test("dates use the viewer's timezone and theme selection persists", async ({
   const page = await context.newPage();
   try {
     await signIn(page);
-    await page.goto("/account/plan");
+    await page.goto("/en/account/plan");
     const time = page.locator("main time").first();
     const expected = await time.evaluate((element) =>
-      new Intl.DateTimeFormat(undefined, {
+      new Intl.DateTimeFormat("en-GB", {
         year: "numeric",
         month: "short",
         day: "numeric",

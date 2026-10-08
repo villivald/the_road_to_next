@@ -1,18 +1,22 @@
-import Link from "next/link";
 import styles from "@/components/shell.module.css";
 import { currencies } from "@/features/wish/utils/money";
+import { localizedPath } from "@/i18n/config";
+import { Link } from "@/i18n/navigation";
+import { useText } from "@/i18n/use-text";
 import { browsePath } from "@/paths";
 import type { DiscoveryFilters as Filters } from "../service/query";
 
 export function DiscoveryFilters({ filters }: { filters: Filters }) {
+  const t = useText();
+
   const wishes = filters.view === "wishes";
   const users = filters.view === "users";
 
   return (
     <form
-      action={browsePath}
+      action={localizedPath(browsePath, t.locale)}
       className={styles["filter-panel"]}
-      aria-label="Browse filters"
+      aria-label={t("Browse filters")}
     >
       <input type="hidden" name="view" value={filters.view} />
       {filters.owner && (
@@ -21,7 +25,11 @@ export function DiscoveryFilters({ filters }: { filters: Filters }) {
       <div className={styles["form-row"]}>
         <div className={styles.field}>
           <label htmlFor="browse-search">
-            Search {users ? "people" : filters.view}
+            {users
+              ? t("Search people")
+              : wishes
+                ? t("Search wishes")
+                : t("Search lists")}
           </label>
           <input
             id="browse-search"
@@ -32,15 +40,17 @@ export function DiscoveryFilters({ filters }: { filters: Filters }) {
           />
         </div>
         <div className={styles.field}>
-          <label htmlFor="browse-sort">Sort by</label>
+          <label htmlFor="browse-sort">{t("Sort by")}</label>
           <select id="browse-sort" name="sort" defaultValue={filters.sort}>
-            <option value="newest">Newest first</option>
-            <option value="title">{users ? "Name A–Z" : "Title A–Z"}</option>
+            <option value="newest">{t("Newest first")}</option>
+            <option value="title">
+              {users ? t("Name A–Z") : t("Title A–Z")}
+            </option>
             {wishes && (
               <>
-                <option value="priority">Highest priority</option>
-                <option value="price-low">Price: low to high</option>
-                <option value="price-high">Price: high to low</option>
+                <option value="priority">{t("Highest priority")}</option>
+                <option value="price-low">{t("Price: low to high")}</option>
+                <option value="price-high">{t("Price: high to low")}</option>
               </>
             )}
           </select>
@@ -59,17 +69,17 @@ export function DiscoveryFilters({ filters }: { filters: Filters }) {
             )
           }
         >
-          <summary>Price and priority filters</summary>
+          <summary>{t("Price and priority filters")}</summary>
           <div className={styles["form-row"]}>
             <div className={styles.field}>
-              <label htmlFor="browse-currency">Currency</label>
+              <label htmlFor="browse-currency">{t("Currency")}</label>
               <select
                 id="browse-currency"
                 name="currency"
                 defaultValue={filters.currency ?? ""}
                 aria-describedby="price-filter-help"
               >
-                <option value="">Any currency</option>
+                <option value="">{t("Any currency")}</option>
                 {currencies.map((currency) => (
                   <option key={currency} value={currency}>
                     {currency}
@@ -78,7 +88,7 @@ export function DiscoveryFilters({ filters }: { filters: Filters }) {
               </select>
             </div>
             <div className={styles.field}>
-              <label htmlFor="browse-min">Minimum price</label>
+              <label htmlFor="browse-min">{t("Minimum price")}</label>
               <input
                 id="browse-min"
                 name="min"
@@ -89,7 +99,7 @@ export function DiscoveryFilters({ filters }: { filters: Filters }) {
               />
             </div>
             <div className={styles.field}>
-              <label htmlFor="browse-max">Maximum price</label>
+              <label htmlFor="browse-max">{t("Maximum price")}</label>
               <input
                 id="browse-max"
                 name="max"
@@ -100,24 +110,25 @@ export function DiscoveryFilters({ filters }: { filters: Filters }) {
               />
             </div>
             <div className={styles.field}>
-              <label htmlFor="browse-priority">Minimum priority</label>
+              <label htmlFor="browse-priority">{t("Minimum priority")}</label>
               <select
                 id="browse-priority"
                 name="priority"
                 defaultValue={filters.priority}
               >
-                <option value="">Any priority</option>
+                <option value="">{t("Any priority")}</option>
                 {[1, 2, 3, 4, 5].map((priority) => (
                   <option key={priority} value={priority}>
-                    {priority} {priority === 1 ? "star" : "stars"}
+                    {t.plural("{count} star", "{count} stars", priority)}
                   </option>
                 ))}
               </select>
             </div>
           </div>
           <p id="price-filter-help" className={styles.muted}>
-            Choose a currency to filter or sort by price. Only wishes priced in
-            that currency are included.
+            {t(
+              "Choose a currency to filter or sort by price. Only wishes priced in that currency are included.",
+            )}
           </p>
         </details>
       )}
@@ -128,20 +139,23 @@ export function DiscoveryFilters({ filters }: { filters: Filters }) {
             name="reservable"
             defaultChecked={filters.reservable}
           />
-          Reservations enabled
+          {t("Reservations enabled")}
         </label>
       )}
       {users && (
         <p className={styles.muted}>
-          Find people by display name or username. Only people with a list
-          visible to anyone appear here.
+          {t(
+            "Find people by display name or username. Only people with a list visible to anyone appear here.",
+          )}
         </p>
       )}
       <div className={styles.actions}>
         <button type="submit" className={styles.button}>
-          Search
+          {t("Search")}
         </button>
-        <Link href={`${browsePath}?view=${filters.view}`}>Clear filters</Link>
+        <Link href={`${browsePath}?view=${filters.view}`}>
+          {t("Clear filters")}
+        </Link>
       </div>
     </form>
   );

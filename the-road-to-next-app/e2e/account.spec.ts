@@ -4,7 +4,7 @@ import { testEnvironment, testOrigin } from "./environment";
 import { accounts, newAccount, resetFixtures, testPrisma } from "./seed";
 
 const signIn = async (page: Page, account = accounts.owner) => {
-  await page.goto("/sign-in");
+  await page.goto("/en/sign-in");
   await page.getByLabel("Email", { exact: true }).fill(account.email);
   await page.getByLabel("Password", { exact: true }).fill(account.password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
@@ -86,9 +86,9 @@ test("profile details validate, preserve invalid input, save, clear, and stay un
   await expect(page.getByLabel("About you")).toHaveValue(
     /Private profile marker/,
   );
-  expect(await (await request.get("/browse?view=users")).text()).not.toContain(
-    "Private profile marker",
-  );
+  expect(
+    await (await request.get("/en/browse?view=users")).text(),
+  ).not.toContain("Private profile marker");
   await page.screenshot({
     path: info.outputPath("account-profile.png"),
     fullPage: true,
@@ -111,7 +111,7 @@ test("register, publish, reserve, cancel, fulfill and delete without a successor
   await fetch(`${testEnvironment.MAILPIT_URL}/api/v1/messages`, {
     method: "DELETE",
   });
-  await page.goto("/sign-up");
+  await page.goto("/en/sign-up");
   await page.getByLabel("Username", { exact: true }).fill(newAccount.username);
   await page.getByLabel("Email", { exact: true }).fill(newAccount.email);
   await page.getByLabel("Password", { exact: true }).fill(newAccount.password);
@@ -151,8 +151,12 @@ test("register, publish, reserve, cancel, fulfill and delete without a successor
       }),
     ).toBeVisible();
     listId = new URL(page.url()).pathname.split("/").at(-1);
+    await page
+      .getByRole("link", { name: "List settings", exact: true })
+      .click();
     await page.getByRole("button", { name: "Show list", exact: true }).click();
     await expect(page.getByRole("button", { name: "Hide list" })).toBeVisible();
+    await page.getByRole("link", { name: "Back to list", exact: true }).click();
     await page.getByRole("link", { name: "Add a wish", exact: true }).click();
     await page.getByLabel("Title", { exact: true }).fill("A free account wish");
     await page.getByRole("button", { name: "Add wish", exact: true }).click();
@@ -225,9 +229,9 @@ test("register, publish, reserve, cancel, fulfill and delete without a successor
     expect(await (await request.get(wishUrl)).text()).not.toContain(
       "A free account wish",
     );
-    expect(await (await request.get(`/lists/${listId}`)).text()).not.toContain(
-      "My free account journey",
-    );
+    expect(
+      await (await request.get(`/en/lists/${listId}`)).text(),
+    ).not.toContain("My free account journey");
     const prisma = testPrisma();
     try {
       expect(
@@ -261,24 +265,24 @@ test("deleting an owner transfers the list and preserves another admin's reserva
   const member = await browser.newPage({ baseURL: testOrigin });
   try {
     await signIn(member, accounts.member);
-    await member.goto("/lists/e2e-account-list/wishes/e2e-account-wish");
+    await member.goto("/en/lists/e2e-account-list/wishes/e2e-account-wish");
     await member
       .getByRole("button", { name: "Reserve wish", exact: true })
       .click();
     await expect(
       member.getByRole("button", { name: "Cancel reservation", exact: true }),
     ).toBeVisible();
-    await page.goto("/account/delete");
+    await page.goto("/en/account/delete");
     await expect(page.getByRole("main")).toContainText(
       "Transfer to e2e-member",
     );
     await confirmDeletion(page);
     await expect(page).toHaveURL(/\/sign-in\?deleted=1$/);
-    await member.goto("/lists");
+    await member.goto("/en/lists");
     await expect(
       member.getByRole("link", { name: "Shared birthday gifts", exact: true }),
     ).toBeVisible();
-    await member.goto("/reservations");
+    await member.goto("/en/reservations");
     await expect(
       member.getByRole("link", { name: "A garden book", exact: true }),
     ).toBeVisible();
@@ -301,7 +305,7 @@ test("stale deletion summaries require review, and keeping the account leaves it
 }) => {
   await seedList();
   await signIn(page);
-  await page.goto("/account/delete");
+  await page.goto("/en/account/delete");
   const prisma = testPrisma();
   try {
     await prisma.membership.create({
@@ -331,7 +335,7 @@ test("a revoked session cannot submit an already open deletion form", async ({
   page,
 }) => {
   await signIn(page);
-  await page.goto("/account/delete");
+  await page.goto("/en/account/delete");
   const prisma = testPrisma();
   try {
     await prisma.session.deleteMany({ where: { userId: "e2e-owner" } });
@@ -346,7 +350,7 @@ test("a revoked session cannot submit an already open deletion form", async ({
 test("duplicate registration gives neutral feedback without changing an existing account", async ({
   page,
 }) => {
-  await page.goto("/sign-up");
+  await page.goto("/en/sign-up");
   await page
     .getByLabel("Username", { exact: true })
     .fill("new-available-username");
@@ -371,7 +375,7 @@ test("profile and deletion work with a keyboard in a 320px dark layout", async (
   await signIn(page);
   await page.setViewportSize({ width: 320, height: 740 });
   await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
-  await page.goto("/account/profile");
+  await page.goto("/en/account/profile");
   await page.getByLabel("Display name").fill("Keyboard profile");
   await page.getByRole("button", { name: "Save profile" }).focus();
   await page.keyboard.press("Enter");

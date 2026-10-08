@@ -1,5 +1,4 @@
-import { Gift, List } from "lucide-react";
-import Link from "next/link";
+import { List } from "lucide-react";
 import { CardActions, OwnershipBadge } from "@/components/cards/card-actions";
 import {
   CardMedia,
@@ -8,10 +7,13 @@ import {
 } from "@/components/cards/card-media";
 import cardStyles from "@/components/cards/cards.module.css";
 import { ProfileBio } from "@/components/cards/profile-bio";
+import { ReservationAvailability } from "@/components/cards/reservation-availability";
 import styles from "@/components/shell.module.css";
 import { WishPriority } from "@/features/wish/components/wish-priority";
 import { formatWishPrice } from "@/features/wish/utils/money";
-import { listPath, sharingPath, wishPath } from "@/paths";
+import { Link } from "@/i18n/navigation";
+import { useText } from "@/i18n/use-text";
+import { listPath, listSettingsPath, sharingPath, wishPath } from "@/paths";
 import type {
   discoverLists,
   discoverUsers,
@@ -25,13 +27,17 @@ type Results = Awaited<
 >;
 
 export function DiscoveryResults({ result }: { result: Results }) {
+  const t = useText();
+
   return (
     <ul
       className={styles["list-grid"]}
       aria-label={
         result.filters.view === "users"
-          ? "People with public lists"
-          : `Public ${result.filters.view}`
+          ? t("People with public lists")
+          : result.filters.view === "lists"
+            ? t("Public lists")
+            : t("Public wishes")
       }
     >
       {"lists" in result
@@ -51,24 +57,25 @@ export function DiscoveryResults({ result }: { result: Results }) {
                   {list.description.length > 180 ? "…" : ""}
                 </p>
               )}
-              <p className={styles["icon-label"]}>
-                <List size={18} aria-hidden="true" />
-                {list.availableWishCount} available{" "}
-                {list.availableWishCount === 1 ? "wish" : "wishes"}
-              </p>
-              {list.reservationsEnabled && (
+              <div className={cardStyles["list-footer"]}>
                 <p className={styles["icon-label"]}>
-                  <Gift size={18} aria-hidden="true" />
-                  Reservations enabled
+                  <List size={18} aria-hidden="true" />
+                  {t.plural(
+                    "{count} available wish",
+                    "{count} available wishes",
+                    list.availableWishCount,
+                  )}
                 </p>
-              )}
-              <CardActions
-                path={listPath(list.id)}
-                title={list.title}
-                canCopy
-                canManage={list.isOwner}
-                sharingPath={list.isOwner ? sharingPath(list.id) : undefined}
-              />
+                <ReservationAvailability enabled={list.reservationsEnabled} />
+                <CardActions
+                  path={listPath(list.id)}
+                  settingsPath={listSettingsPath(list.id)}
+                  title={list.title}
+                  canCopy
+                  canManage={list.isOwner}
+                  sharingPath={list.isOwner ? sharingPath(list.id) : undefined}
+                />
+              </div>
             </li>
           ))
         : "wishes" in result
@@ -93,7 +100,11 @@ export function DiscoveryResults({ result }: { result: Results }) {
                   </p>
                   <div className={cardStyles["wish-facts"]}>
                     <p className={styles.price}>
-                      {formatWishPrice(wish.priceMinor, wish.currency)}
+                      {formatWishPrice(
+                        wish.priceMinor,
+                        wish.currency,
+                        t.locale,
+                      )}
                     </p>
                     <WishPriority priority={wish.priority} />
                   </div>
@@ -117,8 +128,11 @@ export function DiscoveryResults({ result }: { result: Results }) {
                 </div>
                 <h2>{user.name ?? user.username}</h2>
                 <p>
-                  {user.publicListCount} public{" "}
-                  {user.publicListCount === 1 ? "list" : "lists"}
+                  {t.plural(
+                    "{count} public list",
+                    "{count} public lists",
+                    user.publicListCount,
+                  )}
                 </p>
                 {user.description && (
                   <ProfileBio
@@ -130,7 +144,7 @@ export function DiscoveryResults({ result }: { result: Results }) {
                   className={styles["secondary-button"]}
                   href={`/browse?${new URLSearchParams({ view: "lists", owner: user.username })}`}
                 >
-                  View public lists
+                  {t("View public lists")}
                 </Link>
               </li>
             ))}

@@ -20,8 +20,13 @@ export const passwordForgot = async (_state: ActionState, data: FormData) => {
 
     if (user) {
       try {
-        const url = await generatePasswordResetLink(user.id);
-        await sendEmailPasswordReset(user.username, user.email, url);
+        const url = await generatePasswordResetLink(user.id, user.locale);
+        await sendEmailPasswordReset(
+          user.username,
+          user.email,
+          url,
+          user.locale,
+        );
       } catch {
         console.error("Password recovery email failed");
       }

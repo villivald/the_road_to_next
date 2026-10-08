@@ -1,6 +1,6 @@
 "use server";
 
-import { redirect } from "next/navigation";
+import { redirect } from "@/i18n/server-navigation";
 import { invalidateSession } from "@/lib/lucia";
 import { signInPath } from "@/paths";
 import { deleteSessionCookie } from "../utils/session-cookie";
@@ -15,5 +15,5 @@ export const signOut = async () => {
 
   await deleteSessionCookie();
 
-  redirect(signInPath);
+  return await redirect(signInPath);
 };

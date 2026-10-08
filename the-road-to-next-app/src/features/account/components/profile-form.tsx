@@ -1,10 +1,10 @@
 "use client";
-
 import { Eye, LockKeyhole } from "lucide-react";
 import { useActionState } from "react";
 import { ActionFeedback } from "@/components/form/action-feedback";
 import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
 import styles from "@/components/shell.module.css";
+import { useText } from "@/i18n/use-text";
 import { saveProfile } from "../actions/manage-account";
 
 export function ProfileForm({
@@ -12,6 +12,8 @@ export function ProfileForm({
 }: {
   profile: { name: string | null; description: string | null };
 }) {
+  const t = useText();
+
   const [state, action, pending] = useActionState(saveProfile, {
     ...EMPTY_ACTION_STATE,
     timestamp: 0,
@@ -24,22 +26,25 @@ export function ProfileForm({
         <div>
           <Eye size={20} aria-hidden="true" />
           <p>
-            <strong>Your public profile</strong>
+            <strong>{t("Your public profile")}</strong>
             <span>
-              Your name, avatar, and About you appear in People when you have a
-              list visible to anyone.
+              {t(
+                "Your name, avatar, and About you appear in People when you have a list visible to anyone.",
+              )}
             </span>
           </p>
         </div>
         <div className={styles.muted}>
           <LockKeyhole size={20} aria-hidden="true" />
-          <p>Your email stays private.</p>
+          <p>{t("Your email stays private.")}</p>
         </div>
       </div>
       <fieldset className={styles["form-fields"]} disabled={pending}>
-        <legend className={styles["visually-hidden"]}>Profile details</legend>
+        <legend className={styles["visually-hidden"]}>
+          {t("Profile details")}
+        </legend>
         <div className={styles.field}>
-          <label htmlFor="profile-name">Display name</label>
+          <label htmlFor="profile-name">{t("Display name")}</label>
           <input
             key={state.timestamp}
             id="profile-name"
@@ -57,16 +62,18 @@ export function ProfileForm({
             }
           />
           <p id="profile-name-help" className={styles["field-help"]}>
-            Optional · Leave blank to show your username. Up to 80 characters.
+            {t(
+              "Optional · Leave blank to show your username. Up to 80 characters.",
+            )}
           </p>
           {state.fieldErrors.name && (
             <p id="profile-name-error" className={styles["error-text"]}>
-              {state.fieldErrors.name.join(" ")}
+              {state.fieldErrors.name.map(t.message).join(" ")}
             </p>
           )}
         </div>
         <div className={styles.field}>
-          <label htmlFor="profile-description">About you</label>
+          <label htmlFor="profile-description">{t("About you")}</label>
           <textarea
             key={state.timestamp}
             id="profile-description"
@@ -84,17 +91,18 @@ export function ProfileForm({
             }
           />
           <p id="profile-description-help" className={styles["field-help"]}>
-            Optional · Up to 1,000 characters. Longer bios have a Read more
-            button in People.
+            {t(
+              "Optional · Up to 1,000 characters. Longer bios have a Read more button in People.",
+            )}
           </p>
           {state.fieldErrors.description && (
             <p id="profile-description-error" className={styles["error-text"]}>
-              {state.fieldErrors.description.join(" ")}
+              {state.fieldErrors.description.map(t.message).join(" ")}
             </p>
           )}
         </div>
         <button type="submit" className={styles.button}>
-          {pending ? "Saving…" : "Save profile"}
+          {pending ? t("Saving…") : t("Save profile")}
         </button>
       </fieldset>
     </form>

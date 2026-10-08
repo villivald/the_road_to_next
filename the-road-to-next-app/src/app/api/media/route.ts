@@ -1,4 +1,3 @@
-import { revalidatePath } from "next/cache";
 import { ZodError } from "zod";
 import { getAuth } from "@/features/auth/actions/get-auth";
 import { limitSourceRequest } from "@/features/auth/service/request-limit";
@@ -11,6 +10,7 @@ import {
 import { readImageBody } from "@/features/media/service/validation";
 import { MediaError } from "@/features/media/types";
 import { WishlistError } from "@/features/wishlist/service/lists";
+import { revalidatePath } from "@/i18n/server-navigation";
 import { browsePath, reservationsPath } from "@/paths";
 
 export const runtime = "nodejs";

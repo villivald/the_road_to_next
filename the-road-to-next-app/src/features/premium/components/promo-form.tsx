@@ -1,12 +1,14 @@
 "use client";
-
 import { useActionState } from "react";
 import { ActionFeedback } from "@/components/form/action-feedback";
 import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
 import styles from "@/components/shell.module.css";
+import { useText } from "@/i18n/use-text";
 import { redeemPromoCode } from "../actions/redeem-promo";
 
 export function PromoForm() {
+  const t = useText();
+
   const [state, action, pending] = useActionState(redeemPromoCode, {
     ...EMPTY_ACTION_STATE,
     timestamp: 0,
@@ -17,10 +19,10 @@ export function PromoForm() {
       <ActionFeedback state={state} />
       <fieldset disabled={pending} className={styles["form-fields"]}>
         <legend className={styles["visually-hidden"]}>
-          Redeem a promo code
+          {t("Redeem a promo code")}
         </legend>
         <div className={styles.field}>
-          <label htmlFor="promo-code">Promo code</label>
+          <label htmlFor="promo-code">{t("Promo code")}</label>
           <input
             key={state.timestamp}
             id="promo-code"
@@ -33,13 +35,13 @@ export function PromoForm() {
             aria-describedby="promo-help"
           />
           <p id="promo-help" className={styles.muted}>
-            Paste your code here. Each code can be used once per account. Promo
-            days extend your current Premium period, or start today if you are
-            on Free.
+            {t(
+              "Paste your code here. Each code can be used once per account. Promo days extend your current Premium period, or start today if you are on Free.",
+            )}
           </p>
         </div>
         <button type="submit" className={styles.button}>
-          {pending ? "Redeeming…" : "Redeem code"}
+          {pending ? t("Redeeming…") : t("Redeem code")}
         </button>
       </fieldset>
     </form>

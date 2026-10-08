@@ -1,6 +1,5 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { z } from "zod";
 import type { ActionState } from "@/components/form/utils/to-action-state";
 import { resetPassword } from "@/features/auth/service/accounts";
@@ -8,6 +7,7 @@ import { authActionError } from "@/features/auth/service/action-error";
 import { limitAuthRequest } from "@/features/auth/service/request-limit";
 import { newPasswordSchema } from "@/features/auth/service/schemas";
 import { deleteSessionCookie } from "@/features/auth/utils/session-cookie";
+import { redirect } from "@/i18n/server-navigation";
 import { signInPath } from "@/paths";
 
 export const passwordReset = async (_state: ActionState, data: FormData) => {
@@ -23,5 +23,5 @@ export const passwordReset = async (_state: ActionState, data: FormData) => {
   } catch (error) {
     return authActionError(error, data);
   }
-  redirect(`${signInPath}?reset=success`);
+  return await redirect(`${signInPath}?reset=success`);
 };

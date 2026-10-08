@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { ActionForm } from "@/components/form/action-form";
 import styles from "@/components/shell.module.css";
+import { useText } from "@/i18n/use-text";
 import {
   deleteMembership,
   transferList,
@@ -31,6 +32,8 @@ export function MemberAccess({
   viewerId: string;
   premium: boolean;
 }) {
+  const t = useText();
+
   const owner = member.userId === ownerId;
   const self = member.userId === viewerId;
   const admin = member.role === "ADMIN";
@@ -44,31 +47,35 @@ export function MemberAccess({
         </span>
         <div>
           <h3>
-            {name}
-            {self ? " (you)" : ""}
+            {name}{" "}
+            {self && (
+              <span className={sharingStyles["self-marker"]}>{t("You")}</span>
+            )}
           </h3>
           <p className={styles.muted}>
-            {owner ? "Owner · Admin" : admin ? "Admin" : "Member"}
+            {owner ? t("Owner · Admin") : admin ? t("Admin") : t("Member")}
           </p>
         </div>
       </div>
       {owner ? (
         <p className={sharingStyles["row-note"]}>
-          {self ? "You own this list." : "Owns this list."}
+          {self ? t("You own this list.") : t("Owns this list.")}
         </p>
       ) : (
         <details className={sharingStyles.management}>
           <summary>
-            Manage access
-            <span className={styles["visually-hidden"]}> for {name}</span>
+            {t("Manage access")}
+            <span className={styles["visually-hidden"]}>
+              {t("Manage access for {name}", { name })}
+            </span>
           </summary>
           <div className={sharingStyles.controls}>
             {(admin || premium) && (
               <ActionForm
                 action={updateMemberRole.bind(null, listId, member.id)}
-                label={admin ? "Make member" : "Make admin"}
+                label={admin ? t("Make member") : t("Make admin")}
                 secondary
-                pendingLabel="Updating…"
+                pendingLabel={t("Updating…")}
                 icon={<Shield size={18} aria-hidden="true" />}
               >
                 <input
@@ -79,32 +86,43 @@ export function MemberAccess({
                 <label className={styles["checkbox-label"]}>
                   <input type="checkbox" name="confirm" value="yes" required />
                   {admin
-                    ? `${name} will lose admin controls. Invitations they sent that have not been accepted will be canceled.`
-                    : `${name} will be able to edit wishes, change settings, and manage members.`}
+                    ? t(
+                        "{value0} will lose admin controls. Invitations they sent that have not been accepted will be canceled.",
+                        { value0: name },
+                      )
+                    : t(
+                        "{value0} will be able to edit wishes, change settings, and manage members.",
+                        { value0: name },
+                      )}
                 </label>
               </ActionForm>
             )}
             <ActionForm
               action={deleteMembership.bind(null, listId, member.id)}
-              label={self ? "Leave list" : "Remove member"}
-              pendingLabel="Removing…"
+              label={self ? t("Leave list") : t("Remove member")}
+              pendingLabel={t("Removing…")}
               destructive
               icon={<UserRoundMinus size={18} aria-hidden="true" />}
             >
               <label className={styles["checkbox-label"]}>
                 <input type="checkbox" name="confirm" value="yes" required />
-                {self ? "I will lose" : `${name} will lose`} membership access
-                and reservations that depend on it. Access through a public list
-                or a guest link is separate.
+                {self
+                  ? t(
+                      "Remove my membership. I will lose private access and any reservations that require it.",
+                    )
+                  : t(
+                      "Remove {name} as a member. Their membership access and reservations that depend on it will end. Public lists and guest links remain separate.",
+                      { name },
+                    )}
               </label>
             </ActionForm>
             {viewerId === ownerId && admin && (
               <details className={sharingStyles.transfer}>
-                <summary>Transfer ownership</summary>
+                <summary>{t("Transfer ownership")}</summary>
                 <ActionForm
                   action={transferList.bind(null, listId, member.id)}
-                  label="Transfer ownership"
-                  pendingLabel="Transferring…"
+                  label={t("Transfer ownership")}
+                  pendingLabel={t("Transferring…")}
                   icon={<ArrowRightLeft size={18} aria-hidden="true" />}
                 >
                   <label className={styles["checkbox-label"]}>
@@ -114,9 +132,10 @@ export function MemberAccess({
                       value="yes"
                       required
                     />
-                    Make {name} the owner. I will stay an admin, but only the
-                    new owner can transfer it back. Their Premium plan will
-                    apply to this list.
+                    {t(
+                      "Transfer ownership to {name}. I will remain an admin, but only the new owner can transfer it back. Their Premium plan will apply to this list.",
+                      { name },
+                    )}
                   </label>
                 </ActionForm>
               </details>

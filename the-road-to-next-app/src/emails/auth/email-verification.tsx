@@ -1,13 +1,20 @@
 import { Body, Container, Head, Html, Section, Text } from "react-email";
+import { createText } from "@/i18n/text";
 
 type EmailVerificationProps = {
   toName: string;
   code: string;
+  locale?: string;
 };
 
-const EmailVerification = ({ toName, code }: EmailVerificationProps) => {
+const EmailVerification = ({
+  toName,
+  code,
+  locale = "en",
+}: EmailVerificationProps) => {
+  const t = createText(locale);
   return (
-    <Html>
+    <Html lang={locale}>
       <Head />
       <Body
         style={{
@@ -19,17 +26,21 @@ const EmailVerification = ({ toName, code }: EmailVerificationProps) => {
         <Container>
           <Section>
             <Text>
-              Hi {toName}, enter this code in Wishlist to verify your email:
+              {t(
+                "Hi {name}, enter this code in Wishlist to verify your email:",
+                { name: toName },
+              )}
             </Text>
           </Section>
           <Section>
             <Text>{code}</Text>
             <Text>
-              This code expires in 30 minutes. Use only your latest code.
+              {t("This code expires in 30 minutes. Use only your latest code.")}
             </Text>
             <Text>
-              If you did not create a Wishlist account, you can ignore this
-              email.
+              {t(
+                "If you did not create a Wishlist account, you can ignore this email.",
+              )}
             </Text>
           </Section>
         </Container>

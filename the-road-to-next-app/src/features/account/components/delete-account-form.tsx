@@ -1,12 +1,14 @@
 "use client";
-
 import { useActionState } from "react";
 import { ActionFeedback } from "@/components/form/action-feedback";
 import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
 import styles from "@/components/shell.module.css";
+import { useText } from "@/i18n/use-text";
 import { removeAccount } from "../actions/manage-account";
 
 export function DeleteAccountForm({ impactToken }: { impactToken: string }) {
+  const t = useText();
+
   const [state, action, pending] = useActionState(removeAccount, {
     ...EMPTY_ACTION_STATE,
     timestamp: 0,
@@ -18,10 +20,10 @@ export function DeleteAccountForm({ impactToken }: { impactToken: string }) {
       <input type="hidden" name="impactToken" value={impactToken} />
       <fieldset className={styles["form-fields"]} disabled={pending}>
         <legend className={styles["visually-hidden"]}>
-          Confirm account deletion
+          {t("Confirm account deletion")}
         </legend>
         <div className={styles.field}>
-          <label htmlFor="delete-password">Current password</label>
+          <label htmlFor="delete-password">{t("Current password")}</label>
           <input
             key={state.timestamp}
             id="delete-password"
@@ -33,7 +35,9 @@ export function DeleteAccountForm({ impactToken }: { impactToken: string }) {
           />
         </div>
         <div className={styles.field}>
-          <label htmlFor="delete-confirmation">Type DELETE to confirm</label>
+          <label htmlFor="delete-confirmation">
+            {t("Type DELETE to confirm")}
+          </label>
           <input
             id="delete-confirmation"
             name="confirmation"
@@ -44,7 +48,7 @@ export function DeleteAccountForm({ impactToken }: { impactToken: string }) {
           />
         </div>
         <button type="submit" className={styles["danger-button"]}>
-          {pending ? "Deleting…" : "Permanently delete account"}
+          {pending ? t("Deleting…") : t("Permanently delete account")}
         </button>
       </fieldset>
     </form>

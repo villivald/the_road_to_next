@@ -185,7 +185,7 @@ describe("reservations", () => {
     expect(await active()).toHaveLength(1);
     await expect(
       cancel(listId, wishId, id, EMPTY_ACTION_STATE, data),
-    ).rejects.toThrow("REDIRECT:/reservations?canceled=1");
+    ).rejects.toThrow("REDIRECT:/en/reservations?canceled=1");
   });
 
   it("protects content, direct links and media, revealing only status to admins", async () => {

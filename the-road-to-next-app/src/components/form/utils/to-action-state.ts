@@ -1,9 +1,11 @@
 import { flattenError, ZodError } from "zod";
+import { type MessageCode, messageCode } from "@/i18n/message-codes";
 
 export type ActionState<T = unknown> = {
   status?: string;
 
   message: string;
+  messageCode?: MessageCode;
 
   payload?: FormData;
 
@@ -37,6 +39,7 @@ export const toActionState = (
 ): ActionState => ({
   status,
   message,
+  messageCode: messageCode(message),
   fieldErrors: {},
   timestamp: Date.now(),
   payload: safePayload(formData),
@@ -48,10 +51,15 @@ export const fromErrorToActionState = (
   formData?: FormData,
 ): ActionState => {
   if (error instanceof ZodError) {
-    const errors = flattenError(error);
+    const errors = flattenError(error, (issue) =>
+      messageCode(issue.message)
+        ? issue.message
+        : "Please check the highlighted fields.",
+    );
     return {
       status: "ERROR",
       message: errors.formErrors.join(" "),
+      messageCode: messageCode(errors.formErrors[0] ?? ""),
       fieldErrors: errors.fieldErrors,
       payload: safePayload(formData),
       timestamp: Date.now(),

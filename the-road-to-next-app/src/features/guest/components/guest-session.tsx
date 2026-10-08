@@ -1,7 +1,7 @@
 "use client";
-
 import { type ReactNode, useEffect, useState } from "react";
 import styles from "@/components/shell.module.css";
+import { useText } from "@/i18n/use-text";
 
 // Clear expired content and refresh restored/backgrounded views. This cannot
 // retract content someone already saw or saved; every new server read is checked.
@@ -12,6 +12,8 @@ export function GuestSession({
   expiresAt: string;
   children: ReactNode;
 }) {
+  const t = useText();
+
   const [expired, setExpired] = useState(false);
   useEffect(() => {
     const timestamp = new Date(expiresAt).getTime();
@@ -41,8 +43,8 @@ export function GuestSession({
   }, [expiresAt]);
   return expired ? (
     <section className={styles.editor}>
-      <h1>Guest link expired</h1>
-      <p role="alert">Ask a list admin for a new link.</p>
+      <h1>{t("Guest link expired")}</h1>
+      <p role="alert">{t("Ask a list admin for a new link.")}</p>
     </section>
   ) : (
     children

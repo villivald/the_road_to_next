@@ -3,7 +3,7 @@ import { generateRandomToken, hashToken } from "../src/utils/crypto";
 import { accounts, resetFixtures, testPrisma } from "./seed";
 
 const signIn = async (page: Page, account = accounts.owner) => {
-  await page.goto("/sign-in");
+  await page.goto("/en/sign-in");
   await page.getByLabel("Email", { exact: true }).fill(account.email);
   await page.getByLabel("Password", { exact: true }).fill(account.password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
@@ -87,7 +87,7 @@ test("submitted identity and duration cannot change the recipient or the grant",
 }) => {
   const promo = await createPromo();
   await signIn(page);
-  await page.goto("/account/plan");
+  await page.goto("/en/account/plan");
   await page.getByLabel("Promo code", { exact: true }).evaluate((input) => {
     for (const [name, value] of Object.entries({
       userId: "e2e-member",
@@ -132,7 +132,7 @@ test("scheduled access starts and expires while the plan page remains open", asy
         expiresAt: new Date(Date.now() + 8000),
       },
     });
-    await page.goto("/account/plan");
+    await page.goto("/en/account/plan");
     await expect(
       page.getByRole("heading", { name: "Free", exact: true }),
     ).toBeVisible();
@@ -159,7 +159,7 @@ test("revoked codes and expired sessions cannot consume a grant", async ({
   const revoked = await createPromo(new Date());
   const valid = await createPromo();
   await signIn(page);
-  await page.goto("/account/plan");
+  await page.goto("/en/account/plan");
   await redeem(page, revoked.code);
   await expect(page.getByRole("main").getByRole("alert")).toContainText(
     "unavailable",
@@ -187,7 +187,7 @@ test("plan and redemption work with a keyboard at 320px in dark mode", async ({
   await signIn(page);
   await page.setViewportSize({ width: 320, height: 740 });
   await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
-  await page.goto("/account/plan");
+  await page.goto("/en/account/plan");
   await page.getByLabel("Promo code", { exact: true }).fill(promo.code);
   await page.keyboard.press("Tab");
   await expect(

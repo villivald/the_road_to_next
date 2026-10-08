@@ -1,3 +1,4 @@
+import { withoutLocale } from "@/i18n/config";
 import { browsePath, listsPath, reservationsPath } from "@/paths";
 
 // Only known viewing routes are valid login destinations. Reject encoded paths,
@@ -7,10 +8,11 @@ export const safeReturnTo = (value: unknown) => {
     return listsPath;
   }
 
-  return [browsePath, listsPath, reservationsPath].includes(value) ||
-    /^\/invitations\/[a-zA-Z0-9_-]{1,128}$/.test(value) ||
+  const path = withoutLocale(value);
+  return [browsePath, listsPath, reservationsPath].includes(path) ||
+    /^\/invitations\/[a-zA-Z0-9_-]{1,128}$/.test(path) ||
     /^\/lists\/[a-zA-Z0-9_-]{1,128}(?:\/wishes\/[a-zA-Z0-9_-]{1,128})?$/.test(
-      value,
+      path,
     )
     ? value
     : listsPath;

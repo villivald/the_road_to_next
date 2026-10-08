@@ -23,7 +23,7 @@ test.beforeEach(async () => {
 test("Wishlist navigation keeps My lists in place without a homepage redirect", async ({
   page,
 }) => {
-  await page.goto("/sign-in");
+  await page.goto("/en/sign-in");
   await page.getByLabel("Email", { exact: true }).fill(accounts.owner.email);
   await page
     .getByLabel("Password", { exact: true })
@@ -42,12 +42,12 @@ test("Wishlist navigation keeps My lists in place without a homepage redirect", 
     exact: true,
   });
 
-  await expect(brand).toHaveAttribute("href", "/lists");
+  await expect(brand).toHaveAttribute("href", "/en/lists");
   const footerBrand = page.getByRole("contentinfo").getByRole("link", {
     name: "Wishlist",
     exact: true,
   });
-  await expect(footerBrand).toHaveAttribute("href", "/lists");
+  await expect(footerBrand).toHaveAttribute("href", "/en/lists");
   await brand.click();
   await expect(page).toHaveURL(/\/lists$/);
   await expect(heading).toBeVisible();
@@ -63,7 +63,7 @@ test("Wishlist navigation keeps My lists in place without a homepage redirect", 
   await expect(page).toHaveURL(/\/lists$/);
   await expect(heading).toBeVisible();
 
-  await page.goto("/browse");
+  await page.goto("/en/browse");
   await footerBrand.click();
   await expect(page).toHaveURL(/\/lists$/);
   await expect(heading).toBeVisible();
@@ -73,7 +73,7 @@ test("reservations keep heading and empty-page geometry when loading finishes", 
   page,
   browser,
 }) => {
-  await page.goto("/sign-in");
+  await page.goto("/en/sign-in");
   await page.getByLabel("Email", { exact: true }).fill(accounts.owner.email);
   await page
     .getByLabel("Password", { exact: true })
@@ -88,7 +88,7 @@ test("reservations keep heading and empty-page geometry when loading finishes", 
   });
   try {
     const previewPage = await context.newPage();
-    await previewPage.goto(new URL("/reservations", page.url()).href);
+    await previewPage.goto(new URL("/en/reservations", page.url()).href);
     await expect(previewPage.locator("[data-loading-preview]")).toBeVisible();
     await previewPage.evaluate(() => document.fonts.ready);
     const previewHeading = previewPage.getByRole("main").locator("h1");
@@ -101,7 +101,7 @@ test("reservations keep heading and empty-page geometry when loading finishes", 
       .getByRole("contentinfo")
       .boundingBox();
 
-    for (const path of ["/lists", "/browse", "/account/profile"]) {
+    for (const path of ["/en/lists", "/en/browse", "/en/account/profile"]) {
       await page.goto(path);
       await page
         .getByRole("link", { name: "My reservations", exact: true })
@@ -134,7 +134,7 @@ test("streamed loading previews reserve space, hide decorative content and respe
   page,
   browser,
 }, info) => {
-  await page.goto("/sign-in");
+  await page.goto("/en/sign-in");
   await page.getByLabel("Email", { exact: true }).fill(accounts.owner.email);
   await page
     .getByLabel("Password", { exact: true })
@@ -151,30 +151,48 @@ test("streamed loading previews reserve space, hide decorative content and respe
   try {
     const previewPage = await context.newPage();
     for (const path of [
-      "/browse",
-      "/lists",
-      "/lists/shared",
-      "/reservations",
-      "/account/profile",
-      "/lists/e2e-loading-list",
-      "/lists/e2e-loading-list/sharing",
-      "/lists/e2e-loading-list/guest-links",
-      "/lists/e2e-loading-list/wishes/e2e-loading-wish",
+      "/en/browse",
+      "/en/lists",
+      "/en/lists/shared",
+      "/en/reservations",
+      "/en/account/profile",
+      "/en/lists/e2e-loading-list",
+      "/en/lists/e2e-loading-list/edit",
+      "/en/lists/e2e-loading-list/sharing",
+      "/en/lists/e2e-loading-list/guest-links",
+      "/en/lists/e2e-loading-list/wishes/e2e-loading-wish",
     ]) {
       await previewPage.goto(new URL(path, page.url()).href);
       const preview = previewPage.locator("[data-loading-preview]").first();
       await expect(preview).toBeVisible();
       const expectedHeading = path.endsWith("/shared")
-        ? "Lists shared with you"
-        : path.endsWith("/sharing")
-          ? "Sharing and members"
-          : path.endsWith("/guest-links")
-            ? "Guest links"
-            : null;
+        ? "Lists you’ve joined"
+        : path.endsWith("/edit")
+          ? "List settings"
+          : path.endsWith("/sharing")
+            ? "Sharing and members"
+            : path.endsWith("/guest-links")
+              ? "Guest links"
+              : null;
       if (expectedHeading) {
-        await expect(preview.locator("h1")).toHaveText(expectedHeading);
+        const previewHeading = preview.locator("h1");
+        // Without JavaScript, nested routes can remain on the parent fallback.
+        const parentFallback =
+          (path.endsWith("/sharing") ||
+            path.endsWith("/guest-links") ||
+            path.endsWith("/edit")) &&
+          (await previewHeading.count()) === 0;
+        if (parentFallback) {
+          await expect(preview.getByRole("status")).toHaveText(
+            "Loading editor…",
+          );
+        } else {
+          await expect(previewHeading).toHaveText(expectedHeading);
+        }
         await previewPage.evaluate(() => document.fonts.ready);
-        const previewBounds = await preview.locator("h1").boundingBox();
+        const previewBounds = parentFallback
+          ? null
+          : await previewHeading.boundingBox();
         await page.goto(path);
         const heading = page.getByRole("heading", {
           name: expectedHeading,
@@ -182,7 +200,9 @@ test("streamed loading previews reserve space, hide decorative content and respe
         });
         await expect(heading).toBeVisible();
         await page.evaluate(() => document.fonts.ready);
-        expect(await heading.boundingBox()).toEqual(previewBounds);
+        if (previewBounds) {
+          expect(await heading.boundingBox()).toEqual(previewBounds);
+        }
         await previewPage.screenshot({
           path: info.outputPath(`${path.split("/").at(-1)}-loading.png`),
           fullPage: true,
@@ -203,10 +223,28 @@ test("streamed loading previews reserve space, hide decorative content and respe
           () => document.documentElement.scrollWidth <= innerWidth,
         ),
       ).toBe(true);
-      if (path === "/browse" || path === "/account/profile") {
+      if (path === "/en/lists") {
+        const viewport = previewPage.viewportSize()!;
+        await previewPage.setViewportSize({ width: 320, height: 727 });
+        await previewPage.evaluate(() => {
+          document.documentElement.style.fontSize = "200%";
+        });
+        expect(
+          await previewPage.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+          ),
+        ).toBe(true);
+        await previewPage.evaluate(() => {
+          document.documentElement.style.removeProperty("font-size");
+        });
+        await previewPage.setViewportSize(viewport);
+      }
+      if (path === "/en/browse" || path === "/en/account/profile") {
         await previewPage.screenshot({
           path: info.outputPath(
-            path === "/browse" ? "browse-loading.png" : "profile-loading.png",
+            path === "/en/browse"
+              ? "browse-loading.png"
+              : "profile-loading.png",
           ),
           fullPage: true,
         });

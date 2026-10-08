@@ -20,6 +20,8 @@ export const newListPath = `${listsPath}/new`;
 export const listPath = (id: string) =>
   `${listsPath}/${encodeURIComponent(id)}`;
 
+export const listSettingsPath = (id: string) => `${listPath(id)}/edit`;
+
 export const newWishPath = (listId: string) => `${listPath(listId)}/wishes/new`;
 
 export const wishPath = (listId: string, wishId: string) =>

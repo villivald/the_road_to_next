@@ -1,7 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { z } from "zod";
 import {
   type ActionState,
@@ -11,7 +9,15 @@ import {
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import { MAX_IMAGE_BYTES, MediaError } from "@/features/media/types";
 import { WishlistError } from "@/features/wishlist/service/lists";
-import { browsePath, listPath, reservationsPath, wishPath } from "@/paths";
+import { redirect, revalidatePath } from "@/i18n/server-navigation";
+import {
+  browsePath,
+  listPath,
+  listsPath,
+  reservationsPath,
+  sharedListsPath,
+  wishPath,
+} from "@/paths";
 import {
   createWish,
   deleteWish,
@@ -43,6 +49,8 @@ const actionError = (error: unknown, data?: FormData) => {
 };
 
 const refreshWish = (listId: string, wishId: string) => {
+  revalidatePath(listsPath);
+  revalidatePath(sharedListsPath);
   revalidatePath(browsePath);
   revalidatePath(reservationsPath);
   revalidatePath(listPath(listId));
@@ -83,9 +91,8 @@ export const addWish = async (
     return actionError(error, payload);
   }
 
-  revalidatePath(browsePath);
-  revalidatePath(listPath(listId));
-  redirect(`${wishPath(listId, id)}?created=1`);
+  refreshWish(listId, id);
+  return await redirect(`${wishPath(listId, id)}?created=1`);
 };
 
 export const editWish = async (
@@ -103,7 +110,7 @@ export const editWish = async (
   }
 
   refreshWish(listId, wishId);
-  redirect(`${wishPath(listId, wishId)}?saved=1`);
+  return await redirect(`${wishPath(listId, wishId)}?saved=1`);
 };
 
 export const changeWishState = async (
@@ -143,5 +150,5 @@ export const removeWish = async (
   }
 
   refreshWish(listId, wishId);
-  redirect(`${listPath(listId)}?wishDeleted=1`);
+  return await redirect(`${listPath(listId)}?wishDeleted=1`);
 };

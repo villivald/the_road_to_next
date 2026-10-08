@@ -73,6 +73,9 @@ describe("public discovery", () => {
     expect((await discoverLists({ q: "secret marker" })).lists).toEqual([]);
     expect(JSON.stringify(lists)).not.toContain("ownerId");
     expect(JSON.stringify(lists)).not.toContain("e2e-member");
+    expect(JSON.stringify(await discoverLists({}, "e2e-owner"))).not.toContain(
+      "reservedWishCount",
+    );
     expect(JSON.stringify(await discoverWishes({}))).not.toContain("authorId");
   });
 

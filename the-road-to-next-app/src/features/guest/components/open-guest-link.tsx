@@ -1,9 +1,14 @@
 "use client";
-
+import { useLocale } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import styles from "@/components/shell.module.css";
+import { localizedPath } from "@/i18n/config";
+import { useText } from "@/i18n/use-text";
 
 export function OpenGuestLink() {
+  const t = useText();
+
+  const locale = useLocale();
   const token = useRef<string | null>(null);
   const [unavailable, setUnavailable] = useState(false);
 
@@ -11,7 +16,7 @@ export function OpenGuestLink() {
     token.current ??= window.location.hash.slice(1);
     // The secret never becomes a query/path parameter, referrer, or history entry
     // after opening. No analytics or logging may be added to this exchange.
-    window.history.replaceState(null, "", "/guest");
+    window.history.replaceState(null, "", localizedPath("/guest", locale));
     const controller = new AbortController();
     const open = async () => {
       try {
@@ -28,7 +33,8 @@ export function OpenGuestLink() {
         };
         if (!/^\/guest\/lists\/[a-zA-Z0-9_-]{1,128}$/.test(destination))
           throw new Error("Unavailable");
-        if (!controller.signal.aborted) window.location.replace(destination);
+        if (!controller.signal.aborted)
+          window.location.replace(localizedPath(destination, locale));
       } catch {
         if (!controller.signal.aborted) setUnavailable(true);
       }
@@ -44,22 +50,22 @@ export function OpenGuestLink() {
       controller.abort();
       window.removeEventListener("hashchange", reopen);
     };
-  }, []);
+  }, [locale]);
 
   return (
     <section className={styles.editor}>
-      <h1>Guest link</h1>
+      <h1>{t("Guest link")}</h1>
       {unavailable ? (
         <p role="alert">
-          This guest link is unavailable. It may have expired or been revoked.
-          Ask a list admin for a new link, or reopen your original link to try
-          again.
+          {t(
+            "This guest link is unavailable. It may have expired or been revoked. Ask a list admin for a new link, or reopen your original link to try again.",
+          )}
         </p>
       ) : (
-        <p role="status">Opening the shared list…</p>
+        <p role="status">{t("Opening the shared list…")}</p>
       )}
       <noscript>
-        JavaScript is required to open this private guest link.
+        {t("JavaScript is required to open this private guest link.")}
       </noscript>
     </section>
   );

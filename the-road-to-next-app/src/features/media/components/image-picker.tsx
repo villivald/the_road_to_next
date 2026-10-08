@@ -1,5 +1,4 @@
 "use client";
-
 import Image from "next/image";
 import {
   type ChangeEvent,
@@ -10,6 +9,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import shell from "@/components/shell.module.css";
+import { useText } from "@/i18n/use-text";
 import { MAX_IMAGE_BYTES } from "../types";
 import styles from "./media.module.css";
 
@@ -25,6 +25,8 @@ export function ImagePicker({
   onChange: (image: SelectedImage | null) => void;
   resetKey: number;
 }) {
+  const t = useText();
+
   const id = useId();
   const input = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -62,7 +64,7 @@ export function ImagePicker({
           : ""
       : "";
 
-    event.currentTarget.setCustomValidity(message);
+    event.currentTarget.setCustomValidity(t.message(message));
     setError(message);
     setPreviewUrl(file && !message ? URL.createObjectURL(file) : null);
     onChange(file && !message ? { file, alt: value?.alt ?? "" } : null);
@@ -81,7 +83,7 @@ export function ImagePicker({
   return (
     <div className={styles.picker}>
       <div className={shell.field}>
-        <label htmlFor={`${id}-file`}>Image (optional)</label>
+        <label htmlFor={`${id}-file`}>{t("Image (optional)")}</label>
         <input
           ref={input}
           id={`${id}-file`}
@@ -94,12 +96,13 @@ export function ImagePicker({
           aria-describedby={`${id}-help${error ? ` ${id}-error` : ""}`}
         />
         <p id={`${id}-help`} className={shell["field-help"]}>
-          One JPEG, PNG, or WebP, up to 3 MB and 20 megapixels. Saved with your
-          wish and resized automatically.
+          {t(
+            "One JPEG, PNG, or WebP, up to 3 MB and 20 megapixels. Saved with your wish and resized automatically.",
+          )}
         </p>
         {error && (
           <p id={`${id}-error`} role="alert" className={shell["error-text"]}>
-            {error}
+            {t.message(error)}
           </p>
         )}
       </div>
@@ -107,7 +110,7 @@ export function ImagePicker({
         <>
           <Image
             src={previewUrl}
-            alt={value.alt || "Selected image preview"}
+            alt={value.alt || t("Selected image preview")}
             width={640}
             height={480}
             unoptimized
@@ -115,7 +118,9 @@ export function ImagePicker({
           />
           <p className={styles.filename}>{value.file.name}</p>
           <div className={shell.field}>
-            <label htmlFor={`${id}-alt`}>Image description (optional)</label>
+            <label htmlFor={`${id}-alt`}>
+              {t("Image description (optional)")}
+            </label>
             <input
               id={`${id}-alt`}
               name="imageAlt"
@@ -127,8 +132,9 @@ export function ImagePicker({
               aria-describedby={`${id}-alt-help`}
             />
             <p id={`${id}-alt-help`} className={shell["field-help"]}>
-              Describe the image for people using screen readers. If blank, your
-              wish title is used.
+              {t(
+                "Describe the image for people using screen readers. If blank, your wish title is used.",
+              )}
             </p>
           </div>
         </>
@@ -139,7 +145,7 @@ export function ImagePicker({
           className={shell["secondary-button"]}
           onClick={clear}
         >
-          Remove selected image
+          {t("Remove selected image")}
         </button>
       )}
     </div>

@@ -1,8 +1,8 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { z } from "zod";
 import type { ActionState } from "@/components/form/utils/to-action-state";
+import { redirect } from "@/i18n/server-navigation";
 import { getAuthOrRedirect } from "../queries/get-auth-or-redirect";
 import { verifyEmail } from "../service/accounts";
 import { authActionError } from "../service/action-error";
@@ -21,7 +21,7 @@ export const emailVerification = async (
   });
 
   if (user.emailVerified) {
-    redirect(returnTo);
+    return await redirect(returnTo);
   }
   try {
     await limitAuthRequest("verification", user.id);
@@ -36,5 +36,5 @@ export const emailVerification = async (
   } catch (error) {
     return authActionError(error, data);
   }
-  redirect(returnTo);
+  return await redirect(returnTo);
 };

@@ -1,7 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import {
   type ActionState,
   fromErrorToActionState,
@@ -11,7 +9,15 @@ import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect"
 import { limitSourceRequest } from "@/features/auth/service/request-limit";
 import { AuthError } from "@/features/auth/service/security";
 import { WishlistError } from "@/features/wishlist/service/lists";
-import { browsePath, listPath, reservationsPath, wishPath } from "@/paths";
+import { redirect, revalidatePath } from "@/i18n/server-navigation";
+import {
+  browsePath,
+  listPath,
+  listsPath,
+  reservationsPath,
+  sharedListsPath,
+  wishPath,
+} from "@/paths";
 import {
   cancelReservation,
   ReservationError,
@@ -32,6 +38,8 @@ const actionError = (error: unknown) => {
 };
 
 const refreshReservation = (listId: string, wishId: string) => {
+  revalidatePath(listsPath);
+  revalidatePath(sharedListsPath);
   revalidatePath(browsePath);
   revalidatePath(reservationsPath);
   revalidatePath(listPath(listId));
@@ -81,7 +89,7 @@ export const cancel = async (
   }
 
   refreshReservation(listId, wishId);
-  redirect(`${reservationsPath}?canceled=1`);
+  return await redirect(`${reservationsPath}?canceled=1`);
 };
 
 export const revoke = async (

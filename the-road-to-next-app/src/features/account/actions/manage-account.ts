@@ -1,7 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { ZodError } from "zod";
 import {
   type ActionState,
@@ -11,6 +9,7 @@ import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect"
 import { authActionError } from "@/features/auth/service/action-error";
 import { limitSourceRequest } from "@/features/auth/service/request-limit";
 import { deleteSessionCookie } from "@/features/auth/utils/session-cookie";
+import { redirect, revalidatePath } from "@/i18n/server-navigation";
 import { accountProfilePath, browsePath, signInPath } from "@/paths";
 import { deleteAccount, updateProfile } from "../service/account";
 
@@ -47,5 +46,5 @@ export const removeAccount = async (_state: ActionState, data: FormData) => {
 
   await deleteSessionCookie();
   revalidatePath("/", "layout");
-  redirect(`${signInPath}?deleted=1`);
+  return await redirect(`${signInPath}?deleted=1`);
 };

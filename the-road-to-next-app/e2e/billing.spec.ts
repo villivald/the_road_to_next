@@ -21,14 +21,14 @@ test.beforeEach(async ({ page }) => {
       body: `window.Paddle={Environment:{set:()=>{}},Initialize:()=>{},Checkout:{open:()=>{document.body.dataset.checkoutOpened='true'}}};`,
     }),
   );
-  await page.goto("/sign-in");
+  await page.goto("/en/sign-in");
   await page.getByLabel("Email", { exact: true }).fill(accounts.owner.email);
   await page
     .getByLabel("Password", { exact: true })
     .fill(accounts.owner.password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/lists$/);
-  await page.goto("/account/plan");
+  await page.goto("/en/account/plan");
 });
 
 const choose = async (
@@ -74,7 +74,7 @@ test("checkout is server-bound, returns never grant access, confirmation and can
   } finally {
     await other.close();
   }
-  await page.goto("/account/plan?checkout=returned");
+  await page.goto("/en/account/plan?checkout=returned");
   await expect(
     page.getByRole("heading", { name: "Free", exact: true }),
   ).toBeVisible();
@@ -122,7 +122,7 @@ test("abandoned checkouts can be resumed or discarded before selecting the annua
   page,
 }) => {
   await choose(page);
-  await page.goto("/account/plan");
+  await page.goto("/en/account/plan");
   await page
     .getByRole("button", { name: "Discard checkout", exact: true })
     .click();
@@ -143,7 +143,7 @@ test("refunds remove paid access and provider outages have recoverable feedback"
   const state = await providerState();
   completePayment(state, state.transactions[0].id);
   await save(state);
-  await page.goto("/account/plan");
+  await page.goto("/en/account/plan");
   await refresh(page);
   state.fail = true;
   await save(state);

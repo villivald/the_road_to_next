@@ -3,7 +3,7 @@ import { testOrigin } from "./environment";
 import { accounts, resetFixtures, testPrisma } from "./seed";
 
 const signIn = async (page: Page, account = accounts.owner) => {
-  await page.goto("/sign-in");
+  await page.goto("/en/sign-in");
   await page.getByLabel("Email", { exact: true }).fill(account.email);
   await page.getByLabel("Password", { exact: true }).fill(account.password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
@@ -18,10 +18,17 @@ const createPublishedList = async (page: Page) => {
   await expect(
     page.getByRole("heading", { name: "Birthday list", exact: true }),
   ).toBeVisible();
+  const listUrl = new URL(page.url()).pathname;
+  await page.getByRole("link", { name: "List settings", exact: true }).click();
   await page.getByRole("button", { name: "Show list", exact: true }).click();
   await expect(page.getByRole("button", { name: "Hide list" })).toBeVisible();
 
-  return new URL(page.url()).pathname;
+  await page.getByRole("link", { name: "Back to list", exact: true }).click();
+  await expect(page).toHaveURL(listUrl);
+  await expect(
+    page.getByRole("link", { name: "Add a wish", exact: true }),
+  ).toBeVisible();
+  return listUrl;
 };
 
 const addWish = async (page: Page, title: string) => {
@@ -327,7 +334,7 @@ test("a removed admin cannot submit an already open wish editor", async ({
       },
     });
     await signIn(page);
-    await page.goto("/lists/e2e-private-list/wishes/e2e-wish/edit");
+    await page.goto("/en/lists/e2e-private-list/wishes/e2e-wish/edit");
     await page.getByLabel("Title", { exact: true }).fill("Unauthorized change");
     await prisma.membership.delete({
       where: {

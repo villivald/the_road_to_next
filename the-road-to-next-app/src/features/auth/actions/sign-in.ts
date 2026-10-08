@@ -1,7 +1,7 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import type { ActionState } from "@/components/form/utils/to-action-state";
+import { redirect } from "@/i18n/server-navigation";
 import { emailVerificationPath } from "@/paths";
 import { authenticate } from "../service/accounts";
 import { authActionError } from "../service/action-error";
@@ -24,7 +24,7 @@ export const signIn = async (_state: ActionState, data: FormData) => {
   } catch (error) {
     return authActionError(error, data);
   }
-  redirect(
+  return await redirect(
     verified
       ? safeReturnTo(data.get("returnTo"))
       : authReturnPath(emailVerificationPath, data.get("returnTo")),

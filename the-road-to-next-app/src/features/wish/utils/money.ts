@@ -1,3 +1,6 @@
+import { languageTag } from "@/i18n/config";
+import { createText } from "@/i18n/text";
+
 export const currencies = ["EUR", "USD", "GBP"] as const;
 
 export type WishCurrency = (typeof currencies)[number];
@@ -33,12 +36,13 @@ export const priceInputValue = (amount: number | null) =>
 export const formatWishPrice = (
   amount: number | null,
   currency: WishCurrency | null,
+  locale = "en",
 ) => {
   if (amount === null || currency === null) {
-    return "No price added";
+    return createText(locale)("No price added");
   }
 
-  return new Intl.NumberFormat("en-GB", {
+  return new Intl.NumberFormat(languageTag(locale), {
     style: "currency",
     currency,
     currencyDisplay: "code",

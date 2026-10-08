@@ -1,7 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { z } from "zod";
 import {
   type ActionState,
@@ -10,7 +8,14 @@ import {
 } from "@/components/form/utils/to-action-state";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import { PremiumError } from "@/features/premium/service/entitlements";
-import { browsePath, listPath, listsPath, reservationsPath } from "@/paths";
+import { redirect, revalidatePath } from "@/i18n/server-navigation";
+import {
+  browsePath,
+  listPath,
+  listsPath,
+  reservationsPath,
+  sharedListsPath,
+} from "@/paths";
 import {
   createWishlist,
   deleteWishlist,
@@ -37,6 +42,7 @@ const refreshList = (id: string) => {
   revalidatePath(browsePath);
   revalidatePath(reservationsPath);
   revalidatePath(listsPath);
+  revalidatePath(sharedListsPath);
   revalidatePath(listPath(id));
   revalidatePath(`${listPath(id)}/edit`);
   revalidatePath(`${listPath(id)}/delete`);
@@ -57,7 +63,7 @@ export const createList = async (_state: ActionState, data: FormData) => {
   }
 
   revalidatePath(listsPath);
-  redirect(`${listPath(id)}?created=1`);
+  return await redirect(`${listPath(id)}?created=1`);
 };
 
 export const updateList = async (
@@ -74,7 +80,7 @@ export const updateList = async (
   }
 
   refreshList(id);
-  redirect(`${listPath(id)}?saved=1`);
+  return toActionState("SUCCESS", "Changes saved.");
 };
 
 export const changePublication = async (
@@ -117,5 +123,5 @@ export const deleteList = async (
   }
 
   refreshList(id);
-  redirect(`${listsPath}?deleted=1`);
+  return await redirect(`${listsPath}?deleted=1`);
 };

@@ -3,11 +3,11 @@ import sharp from "sharp";
 import { testOrigin } from "./environment";
 import { accounts, resetFixtures, testPrisma } from "./seed";
 
-const listUrl = "/lists/e2e-reservation-list";
+const listUrl = "/en/lists/e2e-reservation-list";
 const wishUrl = `${listUrl}/wishes/e2e-reservation-wish`;
 
 const signIn = async (page: Page, account = accounts.member) => {
-  await page.goto("/sign-in");
+  await page.goto("/en/sign-in");
   await page.getByLabel("Email", { exact: true }).fill(account.email);
   await page.getByLabel("Password", { exact: true }).fill(account.password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
@@ -142,7 +142,7 @@ test("reserve, view, cancel and admin revoke preserve identity and image privacy
     await expect(
       owner.getByRole("button", { name: "Reserve wish", exact: true }),
     ).toBeVisible();
-    await page.goto("/reservations");
+    await page.goto("/en/reservations");
     await expect(
       page.getByRole("heading", { name: "No active reservations" }),
     ).toBeVisible();
@@ -185,7 +185,7 @@ test("competing browsers get one reservation and clear feedback for the loser", 
     const feedback = loser.getByRole("main").getByRole("alert");
     await expect(feedback).toContainText("can no longer be reserved");
     await expect(feedback).toBeFocused();
-    await loser.goto("/reservations");
+    await loser.goto("/en/reservations");
     await expect(
       loser.getByRole("heading", { name: "No active reservations" }),
     ).toBeVisible();
@@ -198,19 +198,39 @@ test("competing browsers get one reservation and clear feedback for the loser", 
 test("disabling preserves reservations, fulfillment ends them, and reopening never restores them", async ({
   page,
   browser,
-}) => {
+}, info) => {
   const owner = await browser.newPage({ baseURL: testOrigin });
   try {
     await signIn(page);
     await reserve(page);
     await signIn(owner, accounts.owner);
+    const card = owner.getByRole("listitem").filter({
+      has: owner.getByRole("heading", { name: "Birthday gift ideas" }),
+    });
+    await expect(card.getByText("0 available", { exact: true })).toBeVisible();
+    await expect(card.getByText("1 reserved", { exact: true })).toBeVisible();
+    await expect(
+      card.getByText("Reservations enabled", { exact: true }),
+    ).toBeVisible();
     await owner.goto(`${listUrl}/edit`);
     await owner.getByLabel("Allow reservations").uncheck();
     await owner
       .getByRole("button", { name: "Save changes", exact: true })
       .click();
-    await expect(owner).toHaveURL(`${listUrl}?saved=1`);
-    await page.goto("/reservations");
+    await expect(owner.getByRole("status")).toContainText("Changes saved.");
+    await expect(owner).toHaveURL(`${listUrl}/edit`);
+    await owner.goto("/fi/lists");
+    await expect(card.getByText("0 vapaana", { exact: true })).toBeVisible();
+    await expect(card.getByText("1 varattuna", { exact: true })).toBeVisible();
+    await expect(
+      card.getByText("Varaukset pois käytöstä", { exact: true }),
+    ).toBeVisible();
+    await owner.screenshot({
+      path: info.outputPath("finnish-list-counts.png"),
+      fullPage: true,
+      scale: "css",
+    });
+    await page.goto("/en/reservations");
     await page
       .getByRole("link", { name: "A beautiful notebook", exact: true })
       .click();
@@ -222,7 +242,7 @@ test("disabling preserves reservations, fulfillment ends them, and reopening nev
     await expect(
       owner.getByRole("button", { name: "Reopen wish" }),
     ).toBeVisible();
-    await page.goto("/reservations");
+    await page.goto("/en/reservations");
     await expect(
       page.getByRole("heading", { name: "No active reservations" }),
     ).toBeVisible();
@@ -233,6 +253,9 @@ test("disabling preserves reservations, fulfillment ends them, and reopening nev
     await expect(
       owner.getByRole("button", { name: "Reserve wish", exact: true }),
     ).toHaveCount(0);
+    await owner.goto("/en/lists");
+    await expect(card.getByText("1 available", { exact: true })).toBeVisible();
+    await expect(card.getByText("0 reserved", { exact: true })).toBeVisible();
     await page.goto(wishUrl);
     await expect(page.getByRole("main")).toContainText(
       "Reservations are not available",
@@ -256,7 +279,7 @@ test("private access removal clears reservations and rejects a stale reserve for
     });
     await signIn(page);
     await reserve(page);
-    await page.goto("/reservations");
+    await page.goto("/en/reservations");
     await expect(
       page.getByRole("link", { name: "A beautiful notebook", exact: true }),
     ).toBeVisible();

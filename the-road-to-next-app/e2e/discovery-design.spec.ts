@@ -8,7 +8,7 @@ const listId = "e2e-design-discovery";
 const title = "Small everyday joys";
 const biography = `${"Books, gardens, and thoughtful little gifts. ".repeat(20)}\nBio end marker <script>alert(1)</script>`;
 const signIn = async (page: Page) => {
-  await page.goto("/sign-in");
+  await page.goto("/en/sign-in");
   await page.getByLabel("Email", { exact: true }).fill(accounts.owner.email);
   await page
     .getByLabel("Password", { exact: true })
@@ -30,8 +30,8 @@ const upload = async (
   const target = new URLSearchParams(query);
   await page.goto(
     target.get("kind") === "avatar"
-      ? "/account/profile"
-      : `/lists/${target.get("listId")}/wishes/${target.get("wishId")}/edit`,
+      ? "/en/account/profile"
+      : `/en/lists/${target.get("listId")}/wishes/${target.get("wishId")}/edit`,
   );
   await page
     .locator('input[type="file"]')
@@ -126,7 +126,7 @@ test("image previews, placeholders, ownership and card actions work", async ({
     await imagesReady;
     await route.continue();
   });
-  await page.goto("/lists", { waitUntil: "domcontentloaded" });
+  await page.goto("/en/lists", { waitUntil: "domcontentloaded" });
   const ownedCard = page
     .getByRole("listitem")
     .filter({ has: page.getByRole("heading", { name: title }) });
@@ -145,7 +145,7 @@ test("image previews, placeholders, ownership and card actions work", async ({
   }));
   expect(afterImageLoad).toEqual(beforeImageLoad);
   await page.unroute("**/api/media/**");
-  await expect(ownedCard.getByText("Visible · Anyone")).toBeVisible();
+  await expect(ownedCard.getByText("Anyone can view")).toBeVisible();
   await accessible(page);
   await page.screenshot({
     path: info.outputPath("my-list-previews.png"),
@@ -164,7 +164,7 @@ test("image previews, placeholders, ownership and card actions work", async ({
         ownedCard.getByText(
           state.publication === "DRAFT"
             ? "Hidden · Admins only"
-            : "Visible · People with access",
+            : "Restricted access",
         ),
       ).toBeVisible();
     }
@@ -175,7 +175,7 @@ test("image previews, placeholders, ownership and card actions work", async ({
   } finally {
     await prisma.$disconnect();
   }
-  await page.goto("/browse");
+  await page.goto("/en/browse");
   const card = page
     .getByRole("listitem")
     .filter({ has: page.getByRole("heading", { name: title }) });
@@ -192,18 +192,20 @@ test("image previews, placeholders, ownership and card actions work", async ({
   await card.getByRole("button", { name: `Copy link to ${title}` }).click();
   await expect(card.getByRole("status")).toHaveText("Link copied");
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
-    `${testOrigin}/lists/${listId}`,
+    `${testOrigin}/en/lists/${listId}`,
   );
   await accessible(page);
   await page.screenshot({
     path: info.outputPath("list-previews.png"),
     fullPage: true,
   });
-  await card.getByRole("link", { name: `Edit ${title}`, exact: true }).click();
-  await expect(page).toHaveURL(new RegExp(`/lists/${listId}/edit$`));
+  await card
+    .getByRole("link", { name: `Settings for ${title}`, exact: true })
+    .click();
+  await expect(page).toHaveURL(new RegExp(`/en/lists/${listId}/edit$`));
   for (const theme of ["light", "dark"] as const) {
     await page.emulateMedia({ colorScheme: theme });
-    await page.goto("/browse?view=wishes&q=Coffee");
+    await page.goto("/en/browse?view=wishes&q=Coffee");
     const wishCard = page
       .getByRole("listitem")
       .filter({ has: page.getByRole("heading", { name: "Coffee cup" }) });
@@ -227,7 +229,7 @@ test("image previews, placeholders, ownership and card actions work", async ({
     });
   }
   await page.emulateMedia({ colorScheme: "light" });
-  await page.goto(`/lists/${listId}`);
+  await page.goto(`/en/lists/${listId}`);
   await expect(
     page.getByText("A little wish", { exact: true }).first(),
   ).toBeVisible();
@@ -241,10 +243,10 @@ test("image previews, placeholders, ownership and card actions work", async ({
   await expect(page).toHaveURL(/e2e-design-trip\/edit$/);
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(page).toHaveURL(/\/sign-in$/);
-  await page.goto("/browse");
+  await page.goto("/en/browse");
   await expect(page.getByText("Your list", { exact: true })).toHaveCount(0);
   await expect(
-    page.getByRole("link", { name: `Edit ${title}`, exact: true }),
+    page.getByRole("link", { name: `Settings for ${title}`, exact: true }),
   ).toHaveCount(0);
 });
 
@@ -270,7 +272,7 @@ test("people search shows public names and avatars and filters their public list
   }
   for (const theme of ["light", "dark"] as const) {
     await page.emulateMedia({ colorScheme: theme });
-    await page.goto("/browse?view=users");
+    await page.goto("/en/browse?view=users");
     const ownCard = page
       .getByRole("listitem")
       .filter({ has: page.getByRole("heading", { name: "Ada Müller" }) });
@@ -304,7 +306,7 @@ test("people search shows public names and avatars and filters their public list
   await page.emulateMedia({ colorScheme: "light" });
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(page).toHaveURL(/\/sign-in$/);
-  await page.goto("/browse?view=users");
+  await page.goto("/en/browse?view=users");
   await page.getByLabel("Search people").fill("MÜLLER");
   await page.getByRole("button", { name: "Search", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Ada Müller" })).toBeVisible();
@@ -341,7 +343,7 @@ test("people search shows public names and avatars and filters their public list
     await prisma.$disconnect();
   }
   expect((await request.get(src)).status()).toBe(404);
-  await page.goto("/browse?view=users&q=Müller");
+  await page.goto("/en/browse?view=users&q=Müller");
   await expect(
     page.getByRole("heading", { name: "No results found" }),
   ).toBeVisible();
@@ -357,12 +359,12 @@ test("footer links and information pages are accessible in both themes", async (
     await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
     for (const path of [
       "/",
-      "/about",
-      "/privacy",
-      "/terms",
-      "/accessibility",
-      "/site-map",
-      "/browse?view=users",
+      "/en/about",
+      "/en/privacy",
+      "/en/terms",
+      "/en/accessibility",
+      "/en/site-map",
+      "/en/browse?view=users",
     ]) {
       await page.goto(path);
       await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);

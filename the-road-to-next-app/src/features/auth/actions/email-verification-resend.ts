@@ -21,7 +21,7 @@ export const emailVerificationResend = async (
   try {
     await limitAuthRequest("verification-resend", user.id, 3, 60_000);
     const code = await generateEmailVerificationCode(user.id, user.email);
-    await sendEmailVerification(user.username, user.email, code);
+    await sendEmailVerification(user.username, user.email, code, user.locale);
     return toActionState(
       "SUCCESS",
       "A new code has been sent. Check your inbox.",

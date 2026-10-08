@@ -1,6 +1,4 @@
 "use client";
-
-import Link from "next/link";
 import { type ReactNode, useActionState, useId, useState } from "react";
 import { ActionFeedback } from "@/components/form/action-feedback";
 import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
@@ -9,6 +7,8 @@ import {
   ImagePicker,
   type SelectedImage,
 } from "@/features/media/components/image-picker";
+import { Link } from "@/i18n/navigation";
+import { useText } from "@/i18n/use-text";
 import { listPath, wishPath } from "@/paths";
 import { addWish, editWish } from "../actions/manage-wish";
 import { currencies, priceInputValue, type WishCurrency } from "../utils/money";
@@ -37,6 +37,7 @@ function Field({
   errors?: string[];
   children: ReactNode;
 }) {
+  const t = useText();
   return (
     <div className={styles.field}>
       <label htmlFor={id}>{label}</label>
@@ -45,7 +46,7 @@ function Field({
         id={`${id}-help`}
         className={errors?.length ? styles["error-text"] : styles.muted}
       >
-        {errors?.join(" ") ?? hint}
+        {errors?.map(t.message).join(" ") ?? hint}
       </p>
     </div>
   );
@@ -58,6 +59,8 @@ export function WishForm({
   listId: string;
   wish?: WishValues;
 }) {
+  const t = useText();
+
   const [image, setImage] = useState<SelectedImage | null>(null);
   const [state, action, pending] = useActionState(
     wish ? editWish.bind(null, listId, wish.id) : addWish.bind(null, listId),
@@ -94,12 +97,14 @@ export function WishForm({
         disabled={pending}
         className={styles["form-fields"]}
       >
-        <legend className={styles["visually-hidden"]}>Wish details</legend>
+        <legend className={styles["visually-hidden"]}>
+          {t("Wish details")}
+        </legend>
 
         <Field
           id={`${prefix}-title`}
-          label="Title"
-          hint="The only required field. Up to 200 characters."
+          label={t("Title")}
+          hint={t("The only required field. Up to 200 characters.")}
           errors={state.fieldErrors.title}
         >
           <input {...fieldProps("title")} required maxLength={200} />
@@ -107,8 +112,10 @@ export function WishForm({
 
         <Field
           id={`${prefix}-description`}
-          label="Description (optional)"
-          hint="Details, sizes, or anything worth remembering. Up to 4,000 characters."
+          label={t("Description (optional)")}
+          hint={t(
+            "Details, sizes, or anything worth remembering. Up to 4,000 characters.",
+          )}
           errors={state.fieldErrors.description}
         >
           <textarea {...fieldProps("description")} rows={4} maxLength={4000} />
@@ -116,8 +123,8 @@ export function WishForm({
 
         <Field
           id={`${prefix}-externalUrl`}
-          label="Product link (optional)"
-          hint="A full link starting with https:// or http://."
+          label={t("Product link (optional)")}
+          hint={t("A full link starting with https:// or http://.")}
           errors={state.fieldErrors.externalUrl}
         >
           <input {...fieldProps("externalUrl")} type="url" maxLength={2048} />
@@ -126,8 +133,8 @@ export function WishForm({
         <div className={styles["form-row"]}>
           <Field
             id={`${prefix}-price`}
-            label="Price (optional)"
-            hint="For example, 12.50 or 12,50. Leave blank for no price."
+            label={t("Price (optional)")}
+            hint={t("For example, 12.50 or 12,50. Leave blank for no price.")}
             errors={state.fieldErrors.price}
           >
             <input
@@ -139,12 +146,12 @@ export function WishForm({
 
           <Field
             id={`${prefix}-currency`}
-            label="Currency"
-            hint="Required only when a price is entered."
+            label={t("Currency")}
+            hint={t("Required only when a price is entered.")}
             errors={state.fieldErrors.currency}
           >
             <select {...fieldProps("currency")}>
-              <option value="">Choose a currency</option>
+              <option value="">{t("Choose a currency")}</option>
               {currencies.map((currency) => (
                 <option key={currency} value={currency}>
                   {currency}
@@ -156,15 +163,15 @@ export function WishForm({
 
         <Field
           id={`${prefix}-priority`}
-          label="Priority (optional)"
-          hint="Five stars is the highest priority."
+          label={t("Priority (optional)")}
+          hint={t("Five stars is the highest priority.")}
           errors={state.fieldErrors.priority}
         >
           <select {...fieldProps("priority")}>
-            <option value="">No priority</option>
+            <option value="">{t("No priority")}</option>
             {[1, 2, 3, 4, 5].map((priority) => (
               <option key={priority} value={priority}>
-                {priority} {priority === 1 ? "star" : "stars"}
+                {t.plural("{count} star", "{count} stars", priority)}
               </option>
             ))}
           </select>
@@ -182,17 +189,20 @@ export function WishForm({
               }
               aria-describedby={`${prefix}-hidden-help`}
             />
-            Hide this wish
+            {t("Hide this wish")}
           </label>
           <p id={`${prefix}-hidden-help`} className={styles.muted}>
-            Only list admins can see hidden wishes. Hiding a wish ends its
-            active reservation.
+            {t(
+              "Only list admins can see hidden wishes. Hiding a wish ends its active reservation.",
+            )}
           </p>
         </div>
       </fieldset>
       {!wish && (
         <fieldset disabled={pending} className={styles["form-fields"]}>
-          <legend className={styles["visually-hidden"]}>Wish image</legend>
+          <legend className={styles["visually-hidden"]}>
+            {t("Wish image")}
+          </legend>
           <ImagePicker
             value={image}
             onChange={setImage}
@@ -202,10 +212,10 @@ export function WishForm({
       )}
       <div className={styles.actions}>
         <button type="submit" disabled={pending} className={styles.button}>
-          {pending ? "Saving…" : wish ? "Save changes" : "Add wish"}
+          {pending ? t("Saving…") : wish ? t("Save changes") : t("Add wish")}
         </button>
         <Link href={wish ? wishPath(listId, wish.id) : listPath(listId)}>
-          Cancel
+          {t("Cancel")}
         </Link>
       </div>
     </form>

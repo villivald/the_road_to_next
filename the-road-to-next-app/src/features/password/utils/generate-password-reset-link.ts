@@ -1,10 +1,14 @@
 import { lockUser } from "@/features/auth/service/security";
+import { localizedPath } from "@/i18n/config";
 import { prisma } from "@/lib/prisma";
 import { passwordResetPath } from "@/paths";
 import { generateRandomToken, hashToken } from "@/utils/crypto";
 import { getBaseUrl } from "@/utils/url";
 
-export const generatePasswordResetLink = async (userId: string) => {
+export const generatePasswordResetLink = async (
+  userId: string,
+  locale = "en",
+) => {
   const token = generateRandomToken();
 
   await prisma.$transaction(async (tx) => {
@@ -23,5 +27,5 @@ export const generatePasswordResetLink = async (userId: string) => {
       },
     });
   });
-  return `${getBaseUrl()}${passwordResetPath}${token}`;
+  return `${getBaseUrl()}${localizedPath(`${passwordResetPath}${token}`, locale)}`;
 };

@@ -1,10 +1,13 @@
 "use client";
-
 import { Check, Copy } from "lucide-react";
 import { useEffect, useState } from "react";
+import { localizedPath } from "@/i18n/config";
+import { useText } from "@/i18n/use-text";
 import styles from "./cards.module.css";
 
 export function CopyLink({ path, title }: { path: string; title: string }) {
+  const t = useText();
+
   const [status, setStatus] = useState<"idle" | "copied" | "failed">("idle");
 
   useEffect(() => {
@@ -16,7 +19,7 @@ export function CopyLink({ path, title }: { path: string; title: string }) {
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(
-        new URL(path, window.location.origin).href,
+        new URL(localizedPath(path, t.locale), window.location.origin).href,
       );
       setStatus("copied");
     } catch {
@@ -30,8 +33,8 @@ export function CopyLink({ path, title }: { path: string; title: string }) {
         type="button"
         className={styles["icon-action"]}
         onClick={copy}
-        aria-label={`Copy link to ${title}`}
-        title="Copy link"
+        aria-label={t("Copy link to {value0}", { value0: title })}
+        title={t("Copy link")}
       >
         {status === "copied" ? (
           <Check size={18} aria-hidden="true" />
@@ -44,9 +47,9 @@ export function CopyLink({ path, title }: { path: string; title: string }) {
         className={styles["copy-status"]}
       >
         {status === "copied"
-          ? "Link copied"
+          ? t("Link copied")
           : status === "failed"
-            ? "Copy unavailable. Open this item and copy its address."
+            ? t("Copy unavailable. Open this item and copy its address.")
             : ""}
       </span>
     </div>

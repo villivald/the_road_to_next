@@ -1,9 +1,11 @@
 import { Sparkles } from "lucide-react";
-import Link from "next/link";
 import { CardActions } from "@/components/cards/card-actions";
 import { CardMedia } from "@/components/cards/card-media";
 import { WishStatus } from "@/components/cards/wish-status";
 import styles from "@/components/shell.module.css";
+import { localizedPath } from "@/i18n/config";
+import { Link } from "@/i18n/navigation";
+import { getText } from "@/i18n/server";
 import { listPath, newWishPath, wishPath } from "@/paths";
 import { readListWishes } from "../service/wishes";
 import { formatWishPrice } from "../utils/money";
@@ -20,6 +22,8 @@ export async function WishCollection({
   canManage: boolean;
   searchParams: { sort?: string; view?: string; page?: string };
 }) {
+  const t = await getText();
+
   const { wishes, sort, view, page, hasNextPage } = await readListWishes(
     listId,
     userId,
@@ -37,36 +41,39 @@ export async function WishCollection({
     <section className={styles.page} aria-labelledby="wishes-heading">
       <div className={styles["page-heading"]}>
         <h2 id="wishes-heading">
-          {view === "fulfilled" ? "Fulfilled wishes" : "Wishes"}
+          {view === "fulfilled" ? t("Fulfilled wishes") : t("Wishes")}
         </h2>
         {canManage && (
           <Link href={newWishPath(listId)} className={styles.button}>
-            Add a wish
+            {t("Add a wish")}
           </Link>
         )}
       </div>
 
-      <form action={listPath(listId)} className={styles["wish-toolbar"]}>
+      <form
+        action={localizedPath(listPath(listId), t.locale)}
+        className={styles["wish-toolbar"]}
+      >
         <div className={styles.field}>
-          <label htmlFor="wish-sort">Sort wishes</label>
+          <label htmlFor="wish-sort">{t("Sort wishes")}</label>
           <select id="wish-sort" name="sort" defaultValue={sort}>
-            <option value="newest">Newest first</option>
-            <option value="oldest">Oldest first</option>
-            <option value="priority">Highest priority</option>
-            <option value="title">Title A–Z</option>
+            <option value="newest">{t("Newest first")}</option>
+            <option value="oldest">{t("Oldest first")}</option>
+            <option value="priority">{t("Highest priority")}</option>
+            <option value="title">{t("Title A–Z")}</option>
           </select>
         </div>
         {canManage && (
           <div className={styles.field}>
-            <label htmlFor="wish-view">Show</label>
+            <label htmlFor="wish-view">{t("Show")}</label>
             <select id="wish-view" name="view" defaultValue={view}>
-              <option value="current">Current wishes</option>
-              <option value="fulfilled">Fulfilled history</option>
+              <option value="current">{t("Current wishes")}</option>
+              <option value="fulfilled">{t("Fulfilled history")}</option>
             </select>
           </div>
         )}
         <button className={styles["secondary-button"]} type="submit">
-          Apply
+          {t("Apply")}
         </button>
       </form>
 
@@ -79,7 +86,7 @@ export async function WishCollection({
                 <Link href={wishPath(listId, wish.id)}>{wish.title}</Link>
               </h3>
               <p className={styles.price}>
-                {formatWishPrice(wish.priceMinor, wish.currency)}
+                {formatWishPrice(wish.priceMinor, wish.currency, t.locale)}
               </p>
               <WishPriority priority={wish.priority} />
               {canManage && (
@@ -103,30 +110,36 @@ export async function WishCollection({
           <Sparkles aria-hidden="true" />
           <h3>
             {page > 1
-              ? "No more wishes"
+              ? t("No more wishes")
               : view === "fulfilled"
-                ? "No fulfilled wishes yet"
+                ? t("No fulfilled wishes yet")
                 : canManage
-                  ? "No wishes yet"
-                  : "No wishes available"}
+                  ? t("No wishes yet")
+                  : t("No wishes available")}
           </h3>
           <p className={styles.muted}>
             {page > 1
-              ? "Return to an earlier page."
+              ? t("Return to an earlier page.")
               : view === "fulfilled"
-                ? "Wishes you mark as fulfilled will appear here."
+                ? t("Wishes you mark as fulfilled will appear here.")
                 : canManage
-                  ? "Start with just a title. You can add details later."
-                  : "Check back for new wishes."}
+                  ? t("Start with just a title. You can add details later.")
+                  : t("Check back for new wishes.")}
           </p>
         </div>
       )}
 
       {(page > 1 || hasNextPage) && (
-        <nav aria-label="Wish pages" className={styles.actions}>
-          {page > 1 && <Link href={pageUrl(page - 1)}>Previous page</Link>}
-          <span>Page {page}</span>
-          {hasNextPage && <Link href={pageUrl(page + 1)}>Next page</Link>}
+        <nav aria-label={t("Wish pages")} className={styles.actions}>
+          {page > 1 && (
+            <Link href={pageUrl(page - 1)}>{t("Previous page")}</Link>
+          )}
+          <span>
+            {t("Page")} {page}
+          </span>
+          {hasNextPage && (
+            <Link href={pageUrl(page + 1)}>{t("Next page")}</Link>
+          )}
         </nav>
       )}
     </section>

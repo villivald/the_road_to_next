@@ -1,7 +1,5 @@
 "use server";
-
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import { z } from "zod";
 import {
   type ActionState,
@@ -12,6 +10,7 @@ import { authActionError } from "@/features/auth/service/action-error";
 import { limitSourceRequest } from "@/features/auth/service/request-limit";
 import { consumeRateLimit } from "@/features/auth/service/security";
 import { PremiumError } from "@/features/premium/service/entitlements";
+import { redirect, revalidatePath } from "@/i18n/server-navigation";
 import {
   browsePath,
   invitationPath,
@@ -70,10 +69,16 @@ export const sendInvitation = async (
   let id: string;
   try {
     await limit(user.id);
-    ({ id } = await inviteMember(user.id, session.id, listId, {
-      email: data.get("email"),
-      role: data.get("role"),
-    }));
+    ({ id } = await inviteMember(
+      user.id,
+      session.id,
+      listId,
+      {
+        email: data.get("email"),
+        role: data.get("role"),
+      },
+      await getLocale(),
+    ));
   } catch (error) {
     return actionError(error, data);
   }
@@ -104,7 +109,7 @@ export const cancelInvitation = async (
     return actionError(error);
   }
   refresh(listId);
-  redirect(`${sharingPath(listId)}?changed=revoked`);
+  return await redirect(`${sharingPath(listId)}?changed=revoked`);
 };
 
 export const joinList = async (
@@ -125,7 +130,7 @@ export const joinList = async (
   }
   refresh(listId);
   revalidatePath(invitationPath(id));
-  redirect(`${sharedListsPath}?joined=1`);
+  return await redirect(`${sharedListsPath}?joined=1`);
 };
 
 export const changeVisibility = async (
@@ -170,7 +175,7 @@ export const updateMemberRole = async (
     return actionError(error);
   }
   refresh(listId);
-  if (leftManagement) redirect(`${sharedListsPath}?roleChanged=1`);
+  if (leftManagement) return await redirect(`${sharedListsPath}?roleChanged=1`);
   return toActionState("SUCCESS", "Role updated.");
 };
 
@@ -190,8 +195,8 @@ export const deleteMembership = async (
     return actionError(error);
   }
   refresh(listId);
-  if (left) redirect(`${sharedListsPath}?left=1`);
-  redirect(`${sharingPath(listId)}?changed=removed`);
+  if (left) return await redirect(`${sharedListsPath}?left=1`);
+  return await redirect(`${sharingPath(listId)}?changed=removed`);
 };
 
 export const transferList = async (
@@ -209,5 +214,5 @@ export const transferList = async (
     return actionError(error);
   }
   refresh(listId);
-  redirect(`${sharingPath(listId)}?changed=transferred`);
+  return await redirect(`${sharingPath(listId)}?changed=transferred`);
 };

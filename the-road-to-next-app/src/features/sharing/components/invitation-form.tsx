@@ -1,13 +1,15 @@
 "use client";
-
 import { Mail } from "lucide-react";
 import { useActionState, useId } from "react";
 import { ActionFeedback } from "@/components/form/action-feedback";
 import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
 import styles from "@/components/shell.module.css";
+import { useText } from "@/i18n/use-text";
 import { sendInvitation } from "../actions/manage-sharing";
 
 export function InvitationForm({ listId }: { listId: string }) {
+  const t = useText();
+
   const [state, action, pending] = useActionState(
     sendInvitation.bind(null, listId),
     { ...EMPTY_ACTION_STATE, timestamp: 0 },
@@ -21,9 +23,11 @@ export function InvitationForm({ listId }: { listId: string }) {
         disabled={pending}
         className={styles["form-fields"]}
       >
-        <legend className={styles["visually-hidden"]}>Invite someone</legend>
+        <legend className={styles["visually-hidden"]}>
+          {t("Invite someone")}
+        </legend>
         <div className={styles.field}>
-          <label htmlFor={`${id}-email`}>Invitation email</label>
+          <label htmlFor={`${id}-email`}>{t("Invitation email")}</label>
           <input
             id={`${id}-email`}
             name="email"
@@ -36,24 +40,26 @@ export function InvitationForm({ listId }: { listId: string }) {
             aria-describedby={`${id}-email-help`}
           />
           <p id={`${id}-email-help`} className={styles.muted}>
-            {state.fieldErrors.email?.join(" ") ??
-              "They will need to verify this email before joining."}
+            {state.fieldErrors.email?.map(t.message).join(" ") ??
+              t("They will need to verify this email before joining.")}
           </p>
         </div>
         <div className={styles.field}>
-          <label htmlFor={`${id}-role`}>Invitation role</label>
+          <label htmlFor={`${id}-role`}>{t("Invitation role")}</label>
           <select
             id={`${id}-role`}
             name="role"
             defaultValue={String(state.payload?.get("role") ?? "MEMBER")}
           >
-            <option value="MEMBER">Member — view and reserve</option>
-            <option value="ADMIN">Admin — edit and manage sharing</option>
+            <option value="MEMBER">{t("Member — view and reserve")}</option>
+            <option value="ADMIN">
+              {t("Admin — edit and manage sharing")}
+            </option>
           </select>
         </div>
         <button className={styles.button} type="submit">
           <Mail size={18} aria-hidden="true" />
-          {pending ? "Inviting…" : "Send invitation"}
+          {pending ? t("Inviting…") : t("Send invitation")}
         </button>
       </fieldset>
     </form>

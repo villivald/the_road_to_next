@@ -1,8 +1,9 @@
 "use client";
-
-import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useId, useRef, useState } from "react";
 import shell from "@/components/shell.module.css";
+import { notifyFormSaved } from "@/i18n/form-changes";
+import { useRouter } from "@/i18n/navigation";
+import { useText } from "@/i18n/use-text";
 import {
   MAX_IMAGE_BYTES,
   type MediaImage as ImageDetails,
@@ -22,6 +23,8 @@ export function ImageEditor({
   label?: string;
   fallbackAlt?: string;
 }) {
+  const t = useText();
+
   const router = useRouter();
   const id = useId();
   const feedbackRef = useRef<HTMLParagraphElement>(null);
@@ -77,6 +80,7 @@ export function ImageEditor({
       setFeedback({ error: !response.ok, message: result.message });
 
       if (response.ok) {
+        notifyFormSaved(form);
         form.reset();
         router.refresh();
       }
@@ -93,11 +97,12 @@ export function ImageEditor({
 
   return (
     <section className={styles.editor} aria-labelledby={`${id}-heading`}>
-      <h2 id={`${id}-heading`}>{label}</h2>
+      <h2 id={`${id}-heading`}>{t.message(label)}</h2>
       <MediaImage image={image} compact />
       <p className={shell.muted} id={`${id}-help`}>
-        One JPEG, PNG, or WebP, up to 3 MB and 20 megapixels. Images are resized
-        automatically.
+        {t(
+          "One JPEG, PNG, or WebP, up to 3 MB and 20 megapixels. Images are resized automatically.",
+        )}
       </p>
       {feedback && (
         <p
@@ -106,14 +111,14 @@ export function ImageEditor({
           role={feedback.error ? "alert" : "status"}
           className={feedback.error ? shell.error : shell.notice}
         >
-          {feedback.message}
+          {t.message(feedback.message)}
         </p>
       )}
       <form onSubmit={submit} className={shell.form}>
         <fieldset disabled={pending} className={shell["form-fields"]}>
           <div className={shell.field}>
             <label htmlFor={`${id}-file`}>
-              {image ? "Replacement image" : "Choose image"}
+              {image ? t("Replacement image") : t("Choose image")}
             </label>
             <input
               id={`${id}-file`}
@@ -124,7 +129,7 @@ export function ImageEditor({
             />
           </div>
           <div className={shell.field}>
-            <label htmlFor={`${id}-alt`}>Image description</label>
+            <label htmlFor={`${id}-alt`}>{t("Image description")}</label>
             <input
               key={image?.id ?? "empty"}
               id={`${id}-alt`}
@@ -135,13 +140,19 @@ export function ImageEditor({
               aria-describedby={`${id}-description-help`}
             />
             <p className={shell.muted} id={`${id}-description-help`}>
-              Briefly describe the image for people using screen readers.
-              {fallbackAlt && " Optional: if blank, your wish title is used."}
+              {t("Briefly describe the image for people using screen readers.")}
+              {fallbackAlt && (
+                <> {t("Optional: if blank, your wish title is used.")}</>
+              )}
             </p>
           </div>
           <div className={shell.actions}>
             <button type="submit" className={shell.button}>
-              {pending ? "Saving…" : image ? "Replace image" : "Upload image"}
+              {pending
+                ? t("Saving…")
+                : image
+                  ? t("Replace image")
+                  : t("Upload image")}
             </button>
             {image && (
               <button
@@ -150,7 +161,7 @@ export function ImageEditor({
                 formNoValidate
                 className={shell["secondary-button"]}
               >
-                Remove image
+                {t("Remove image")}
               </button>
             )}
           </div>

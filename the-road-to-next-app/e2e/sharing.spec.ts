@@ -2,7 +2,7 @@ import { expect, type Locator, type Page, test } from "@playwright/test";
 import { testEnvironment, testOrigin } from "./environment";
 import { accounts, newAccount, resetFixtures, testPrisma } from "./seed";
 
-const listUrl = "/lists/e2e-collaboration";
+const listUrl = "/en/lists/e2e-collaboration";
 const sharingUrl = `${listUrl}/sharing`;
 const title = "Private family wishlist";
 
@@ -11,7 +11,7 @@ const signIn = async (
   account = accounts.owner,
   destination?: string,
 ) => {
-  await page.goto(destination ?? "/sign-in");
+  await page.goto(destination ?? "/en/sign-in");
   await page.getByLabel("Email", { exact: true }).fill(account.email);
   await page.getByLabel("Password", { exact: true }).fill(account.password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
@@ -56,7 +56,7 @@ const join = async (page: Page) => {
 const memberCard = (page: Page, username: string) =>
   page.getByRole("listitem").filter({
     has: page.getByRole("heading", {
-      name: new RegExp(`^${username}( \\(you\\))?$`),
+      name: new RegExp(`^${username}( You)?$`),
     }),
   });
 const confirmAction = async (scope: Locator, button: string) => {
@@ -160,7 +160,7 @@ test("private creation, email invitation, member access, reservation and removal
       other.getByRole("heading", { name: title, exact: true }),
     ).toBeVisible();
     await expect(
-      other.getByRole("link", { name: "Edit list", exact: true }),
+      other.getByRole("link", { name: "List settings", exact: true }),
     ).toHaveCount(0);
     await other.goto(`${listUrl}/wishes/e2e-collaboration-wish`);
     await other
@@ -178,7 +178,7 @@ test("private creation, email invitation, member access, reservation and removal
     await expect(
       other.getByRole("heading", { name: "Secret gift", exact: true }),
     ).toHaveCount(0);
-    await other.goto("/reservations");
+    await other.goto("/en/reservations");
     await expect(
       other.getByRole("link", { name: "Secret gift", exact: true }),
     ).toHaveCount(0);
@@ -409,6 +409,12 @@ test("sharing and visibility controls support keyboard use at 320px in dark mode
     fullPage: true,
     scale: "css",
   });
+  await page
+    .getByRole("link", { name: "Go to list settings", exact: true })
+    .click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "List settings",
+  );
   await confirmAction(page.getByRole("main"), "Allow anyone");
   await expect(
     page.getByRole("button", { name: "Limit access", exact: true }),
@@ -439,7 +445,7 @@ test("sharing separates account and guest access and keeps member controls colla
   await signIn(page);
   await page.goto(sharingUrl);
   await expect(
-    page.getByText("Visible · People with access", { exact: true }),
+    page.getByText("Restricted access", { exact: true }),
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Manage guest links", exact: true }),

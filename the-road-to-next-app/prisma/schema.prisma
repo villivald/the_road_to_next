@@ -15,6 +15,7 @@ model User {
   description             String?                  @db.VarChar(1000)
   email                   String                   @unique @db.VarChar(254)
   emailVerified           Boolean                  @default(false)
+  locale                  String                   @default("en") @db.VarChar(2)
   passwordHash            String
   image                   Media?
   sessions                Session[]
@@ -121,6 +122,7 @@ model Invitation {
   createdAt        DateTime       @default(now())
   expiresAt        DateTime
   email            String         @db.VarChar(254)
+  locale           String         @default("en") @db.VarChar(2)
   role             MembershipRole
   acceptedAt       DateTime?
   revokedAt        DateTime?

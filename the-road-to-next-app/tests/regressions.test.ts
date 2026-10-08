@@ -27,7 +27,13 @@ describe("session privacy and expiry", () => {
     const result = await validateSession("token");
     expect(result.user).toEqual(user);
     expect(database.session.findUnique.mock.calls[0][0].include.user).toEqual({
-      select: { id: true, username: true, email: true, emailVerified: true },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        emailVerified: true,
+        locale: true,
+      },
     });
   });
   it("rejects expired sessions even if a concurrent request removed them", async () => {

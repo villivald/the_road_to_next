@@ -7,7 +7,7 @@ const signIn = async (
   email = accounts.owner.email,
   password = accounts.owner.password,
 ) => {
-  await page.goto("/sign-in");
+  await page.goto("/en/sign-in");
   await page.getByLabel("Email", { exact: true }).fill(email);
   await page.getByLabel("Password", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
@@ -47,7 +47,7 @@ test("keyboard navigation and narrow dark layout", async ({ page }, info) => {
   await expect(page.getByRole("main")).toBeFocused();
   await page.getByRole("button", { name: "Toggle theme" }).click();
   await expect(page.locator("html")).toHaveClass(/dark/);
-  await page.goto("/sign-in");
+  await page.goto("/en/sign-in");
   await expect(page.getByLabel("Email", { exact: true })).toBeVisible();
   expect(
     await page.evaluate(
@@ -73,9 +73,9 @@ test("public shell and protected redirects", async ({ page }, info) => {
     animations: "disabled",
     scale: "css",
   });
-  await page.goto("/lists");
+  await page.goto("/en/lists");
   await expect(page).toHaveURL(/\/sign-in$/);
-  await page.goto("/email-verification");
+  await page.goto("/en/email-verification");
   await expect(page).toHaveURL(/\/sign-in$/);
 });
 
@@ -84,7 +84,7 @@ test("register, verify from captured email, reach empty lists, and sign out", as
 }, info) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.goto("/sign-up");
+  await page.goto("/en/sign-up");
   await page.getByLabel("Username", { exact: true }).fill(newAccount.username);
   await page
     .getByLabel("Email", { exact: true })
@@ -97,7 +97,7 @@ test("register, verify from captured email, reach empty lists, and sign out", as
     .getByRole("button", { name: "Create account", exact: true })
     .click();
   await expect(page).toHaveURL(/\/email-verification$/);
-  await page.goto("/lists");
+  await page.goto("/en/lists");
   await expect(page).toHaveURL(/\/email-verification$/);
   const message = await latestMail();
   expect(message.To[0]?.Address).toBe(newAccount.email);
@@ -137,7 +137,7 @@ test("register, verify from captured email, reach empty lists, and sign out", as
   await expect(page.getByRole("main")).toContainText(newAccount.email);
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(page).toHaveURL(/\/sign-in$/);
-  await page.goto("/lists");
+  await page.goto("/en/lists");
   await expect(page).toHaveURL(/\/sign-in$/);
   expect(errors).toEqual([]);
 });
@@ -145,7 +145,7 @@ test("register, verify from captured email, reach empty lists, and sign out", as
 test("invalid credentials and database-backed attempt limits", async ({
   page,
 }) => {
-  await page.goto("/sign-in");
+  await page.goto("/en/sign-in");
   for (let attempt = 0; attempt < 11; attempt++) {
     await page.getByLabel("Email", { exact: true }).fill(accounts.owner.email);
     await page
@@ -179,7 +179,7 @@ test("recovery uses captured email, revokes old sessions, and rejects token reus
   await signIn(page);
   const recovery = await browser.newPage({ baseURL: testEnvironment.APP_URL });
   try {
-    await recovery.goto("/password-forgot");
+    await recovery.goto("/en/password-forgot");
     await recovery
       .getByLabel("Email", { exact: true })
       .fill(accounts.owner.email);
@@ -189,7 +189,7 @@ test("recovery uses captured email, revokes old sessions, and rejects token reus
     );
     const message = await latestMail();
     const link = message.Text.match(
-      /http:\/\/127\.0\.0\.1:3017\/password-reset\/[a-z2-7]{32}/,
+      /http:\/\/127\.0\.0\.1:3017\/en\/password-reset\/[a-z2-7]{32}/,
     )?.[0];
     expect(link).toBeTruthy();
     await recovery.goto(link!);
@@ -223,7 +223,7 @@ test("recovery uses captured email, revokes old sessions, and rejects token reus
 test("unknown recovery email gets the same neutral response without a message", async ({
   page,
 }) => {
-  await page.goto("/password-forgot");
+  await page.goto("/en/password-forgot");
   await page.getByLabel("Email", { exact: true }).fill("missing@example.test");
   await page.getByRole("button", { name: "Send reset link" }).click();
   await expect(page.getByRole("status")).toContainText(
@@ -243,7 +243,7 @@ test("password changes require the current password and sign out other sessions"
   const other = await browser.newPage({ baseURL: testEnvironment.APP_URL });
   try {
     await signIn(other);
-    await page.goto("/account/password");
+    await page.goto("/en/account/password");
     await page
       .getByLabel("Current password", { exact: true })
       .fill(accounts.owner.password);
@@ -257,7 +257,7 @@ test("password changes require the current password and sign out other sessions"
     await expect(page.getByRole("status")).toContainText("Password changed");
     await other.reload();
     await expect(other).toHaveURL(/\/sign-in$/);
-    await page.goto("/lists");
+    await page.goto("/en/lists");
     await expect(page).toHaveURL(/\/lists$/);
   } finally {
     await other.close();

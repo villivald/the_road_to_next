@@ -3,7 +3,7 @@ import { testOrigin } from "./environment";
 import { accounts, resetFixtures, testPrisma } from "./seed";
 
 const signIn = async (page: Page, account = accounts.owner) => {
-  await page.goto("/sign-in");
+  await page.goto("/en/sign-in");
   await page.getByLabel("Email", { exact: true }).fill(account.email);
   await page.getByLabel("Password", { exact: true }).fill(account.password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
@@ -58,19 +58,20 @@ test("create, validate, edit, publish, unpublish, and confirm deletion", async (
   );
   const listUrl = new URL(page.url()).pathname;
 
-  await page.getByRole("link", { name: "Edit list", exact: true }).click();
+  await page.getByRole("link", { name: "List settings", exact: true }).click();
   await page.getByLabel("Title", { exact: true }).fill("Birthday wishes");
   await page.getByLabel("Allow reservations").uncheck();
   await page.getByRole("button", { name: "Save changes" }).click();
   await expect(
-    page.getByRole("heading", { name: "Birthday wishes", exact: true }),
+    page.getByRole("heading", { name: "List settings", exact: true }),
   ).toBeVisible();
-  await expect(
-    page.getByText("Reservations: disabled.", { exact: true }),
-  ).toBeVisible();
+  await expect(page.getByLabel("Title", { exact: true })).toHaveValue(
+    "Birthday wishes",
+  );
+  await expect(page.getByLabel("Allow reservations")).not.toBeChecked();
   await expect(page.getByRole("status")).toContainText("Changes saved");
 
-  await page.goto(listUrl);
+  await page.goto(`${listUrl}/edit`);
   await page.getByRole("button", { name: "Show list", exact: true }).click();
   await expect(page.getByRole("status")).toContainText("List is now visible");
   await expect(page.getByRole("button", { name: "Hide list" })).toBeVisible();
@@ -83,7 +84,7 @@ test("create, validate, edit, publish, unpublish, and confirm deletion", async (
       visitor.getByRole("heading", { name: "Birthday wishes", exact: true }),
     ).toBeVisible();
     await expect(
-      visitor.getByRole("link", { name: "Edit list", exact: true }),
+      visitor.getByRole("link", { name: "List settings", exact: true }),
     ).toHaveCount(0);
 
     await page.screenshot({
@@ -104,7 +105,7 @@ test("create, validate, edit, publish, unpublish, and confirm deletion", async (
     await page.getByRole("link", { name: "Delete list", exact: true }).click();
     await page.getByRole("link", { name: "Cancel and keep list" }).click();
     await expect(
-      page.getByRole("heading", { name: "Birthday wishes", exact: true }),
+      page.getByRole("heading", { name: "List settings", exact: true }),
     ).toBeVisible();
 
     await page.getByRole("link", { name: "Delete list", exact: true }).click();
@@ -139,8 +140,8 @@ test("draft/private content stays out of direct responses and another account ca
   try {
     for (const path of [
       listUrl,
-      "/lists/e2e-private-list",
-      "/lists/e2e-archived-list",
+      "/en/lists/e2e-private-list",
+      "/en/lists/e2e-archived-list",
     ]) {
       const response = await other.request.get(path);
       expect(await response.text()).not.toContain(
@@ -167,6 +168,9 @@ test("draft/private content stays out of direct responses and another account ca
       other.getByRole("button", { name: "Delete permanently" }),
     ).toHaveCount(0);
 
+    await page
+      .getByRole("link", { name: "List settings", exact: true })
+      .click();
     await page.getByRole("button", { name: "Show list", exact: true }).click();
     await expect(page.getByRole("button", { name: "Hide list" })).toBeVisible();
     await other.goto(listUrl);
@@ -177,7 +181,6 @@ test("draft/private content stays out of direct responses and another account ca
       }),
     ).toBeVisible();
 
-    await page.getByRole("link", { name: "Edit list", exact: true }).click();
     await page
       .getByLabel("Title", { exact: true })
       .fill("First legitimate edit");
@@ -187,15 +190,20 @@ test("draft/private content stays out of direct responses and another account ca
     );
     await page.getByRole("button", { name: "Save changes" }).click();
     const originalRequest = await requestPromise;
+    await expect(page.getByLabel("Title", { exact: true })).toHaveValue(
+      "First legitimate edit",
+    );
     await expect(
-      page.getByRole("heading", { name: "First legitimate edit", exact: true }),
+      page.getByText("First legitimate edit", { exact: true }),
     ).toBeVisible();
 
-    await page.getByRole("link", { name: "Edit list", exact: true }).click();
     await page.getByLabel("Title", { exact: true }).fill("Latest owner edit");
     await page.getByRole("button", { name: "Save changes" }).click();
+    await expect(page.getByLabel("Title", { exact: true })).toHaveValue(
+      "Latest owner edit",
+    );
     await expect(
-      page.getByRole("heading", { name: "Latest owner edit", exact: true }),
+      page.getByText("Latest owner edit", { exact: true }),
     ).toBeVisible();
 
     // Replay a real action with the other browser's session, without parsing action internals.
@@ -228,8 +236,11 @@ test("draft/private content stays out of direct responses and another account ca
 
     expect(replay).toContain("do not have permission");
     await page.reload();
+    await expect(page.getByLabel("Title", { exact: true })).toHaveValue(
+      "Latest owner edit",
+    );
     await expect(
-      page.getByRole("heading", { name: "Latest owner edit", exact: true }),
+      page.getByText("Latest owner edit", { exact: true }),
     ).toBeVisible();
   } finally {
     await other.close();
@@ -256,7 +267,7 @@ test("a stale admin form is denied after access is revoked", async ({
     });
 
     await signIn(page, accounts.member);
-    await page.goto(`/lists/${list.id}/edit`);
+    await page.goto(`/en/lists/${list.id}/edit`);
     await page
       .getByLabel("Title", { exact: true })
       .fill("An unauthorized change");
@@ -305,7 +316,7 @@ test("long titles and forms fit a narrow dark screen with keyboard access", asyn
       () => document.documentElement.scrollWidth <= window.innerWidth,
     ),
   ).toBe(true);
-  await page.getByRole("link", { name: "Edit list", exact: true }).click();
+  await page.getByRole("link", { name: "List settings", exact: true }).click();
 
   await page.getByLabel("Title", { exact: true }).focus();
   await page.keyboard.press("Tab");

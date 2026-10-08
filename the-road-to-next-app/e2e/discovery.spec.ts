@@ -4,7 +4,7 @@ import { accounts, newAccount, resetFixtures, testPrisma } from "./seed";
 
 const listId = "e2e-discovery-list";
 const wishId = "e2e-discovery-wish";
-const wishUrl = `/lists/${listId}/wishes/${wishId}`;
+const wishUrl = `/en/lists/${listId}/wishes/${wishId}`;
 
 const submitSignIn = async (page: Page, account = accounts.member) => {
   await page.getByLabel("Email", { exact: true }).fill(account.email);
@@ -86,7 +86,7 @@ test("browse another user's list, sign in, reserve and remove it from discovery"
   await expect(
     page.getByRole("heading", { name: "No results found" }),
   ).toBeVisible();
-  const response = await request.get("/browse?view=wishes");
+  const response = await request.get("/en/browse?view=wishes");
   expect(await response.text()).not.toContain("A garden book");
   expect(response.headers()["cache-control"]).toContain("no-store");
   await page
@@ -101,7 +101,7 @@ test("browse another user's list, sign in, reserve and remove it from discovery"
   await expect(page.getByRole("main").getByRole("status")).toHaveText(
     "Reservation canceled.",
   );
-  await page.goto("/browse?view=wishes");
+  await page.goto("/en/browse?view=wishes");
   await expect(
     page.getByRole("link", { name: "A garden book", exact: true }),
   ).toBeVisible();
@@ -112,11 +112,11 @@ test("discovery uses public permissions even for an owner and unavailable links 
   page,
   request,
 }) => {
-  await page.goto("/sign-in");
+  await page.goto("/en/sign-in");
   await submitSignIn(page, accounts.owner);
   await expect(page).toHaveURL(/\/lists$/);
   for (const view of ["lists", "wishes"]) {
-    const response = await page.goto(`/browse?view=${view}`);
+    const response = await page.goto(`/en/browse?view=${view}`);
     const body = await response!.text();
     for (const secret of [
       "Hidden discovery secret",
@@ -130,7 +130,7 @@ test("discovery uses public permissions even for an owner and unavailable links 
     }
   }
   for (const id of ["e2e-hidden-discovery", "e2e-fulfilled-discovery"]) {
-    const response = await request.get(`/lists/${listId}/wishes/${id}`);
+    const response = await request.get(`/en/lists/${listId}/wishes/${id}`);
     expect(await response.text()).toContain("Page not found");
     expect(await response.text()).not.toContain("discovery secret");
   }
@@ -172,7 +172,7 @@ test("currency filters, pagination and keyboard search work in a narrow dark lay
   }
   await page.setViewportSize({ width: 320, height: 740 });
   await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
-  await page.goto("/browse?view=wishes");
+  await page.goto("/en/browse?view=wishes");
   await page.getByLabel("Search wishes").fill("Reading pick");
   await page.getByLabel("Sort by").selectOption("price-low");
   await page.getByRole("button", { name: "Search", exact: true }).click();

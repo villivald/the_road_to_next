@@ -1,5 +1,4 @@
 "use client";
-
 import { useActionState, useEffect, useId, useRef } from "react";
 import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
 import { emailVerification } from "@/features/auth/actions/email-verification";
@@ -9,6 +8,9 @@ import { signUp } from "@/features/auth/actions/sign-up";
 import { passwordChange } from "@/features/password/actions/password-change";
 import { passwordForgot } from "@/features/password/actions/password-forgot";
 import { passwordReset } from "@/features/password/actions/password-reset";
+import { notifyFormSaved } from "@/i18n/form-changes";
+import type { TextKey } from "@/i18n/text";
+import { useText } from "@/i18n/use-text";
 import styles from "./shell.module.css";
 
 const actions = {
@@ -25,12 +27,12 @@ type Mode = keyof typeof actions;
 
 type Field = {
   name: string;
-  label: string;
+  label: TextKey;
   type?: string;
   autoComplete?: string;
   minLength?: number;
   maxLength?: number;
-  hint?: string;
+  hint?: TextKey;
 };
 
 const email: Field = {
@@ -108,7 +110,7 @@ const fields: Record<Mode, Field[]> = {
   ],
 };
 
-const labels: Record<Mode, string> = {
+const labels: Record<Mode, TextKey> = {
   signIn: "Sign in",
   signUp: "Create account",
   emailVerification: "Verify email",
@@ -127,6 +129,8 @@ export function AccountForm({
   tokenId?: string;
   returnTo?: string;
 }) {
+  const t = useText();
+
   const [state, action, pending] = useActionState(actions[mode], {
     ...EMPTY_ACTION_STATE,
     timestamp: 0,
@@ -135,6 +139,7 @@ export function AccountForm({
   const feedback = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (state.status === "ERROR") feedback.current?.focus();
+    else if (state.status === "SUCCESS") notifyFormSaved(feedback.current);
   }, [state.timestamp, state.status]);
   const hasErrors = Object.values(state.fieldErrors).some(
     (errors) => errors?.length,
@@ -143,14 +148,14 @@ export function AccountForm({
     <form action={action} className={styles.form} aria-busy={pending}>
       {returnTo && <input type="hidden" name="returnTo" value={returnTo} />}
       {tokenId && <input type="hidden" name="tokenId" value={tokenId} />}
-      {(state.message || hasErrors) && (
+      {(t.feedback(state) || hasErrors) && (
         <div
           ref={feedback}
           tabIndex={-1}
           role={state.status === "ERROR" ? "alert" : "status"}
           className={state.status === "ERROR" ? styles.error : styles.notice}
         >
-          {state.message || "Please check the highlighted fields."}
+          {t.feedback(state) || t("Please check the highlighted fields.")}
         </div>
       )}
       {fields[mode].map((field) => {
@@ -159,7 +164,7 @@ export function AccountForm({
         const value = state.payload?.get(field.name);
         return (
           <div key={field.name} className={styles.field}>
-            <label htmlFor={id}>{field.label}</label>
+            <label htmlFor={id}>{t(field.label)}</label>
             <input
               key={state.timestamp}
               id={id}
@@ -180,7 +185,8 @@ export function AccountForm({
                 id={`${id}-help`}
                 className={errors?.length ? styles["error-text"] : styles.muted}
               >
-                {errors?.join(" ") ?? field.hint}
+                {errors?.map(t.message).join(" ") ??
+                  (field.hint ? t(field.hint) : undefined)}
               </p>
             )}
           </div>
@@ -195,7 +201,7 @@ export function AccountForm({
         disabled={pending}
         type="submit"
       >
-        {pending ? "Please wait…" : labels[mode]}
+        {pending ? t("Please wait…") : t(labels[mode])}
       </button>
     </form>
   );

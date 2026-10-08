@@ -1,10 +1,10 @@
 "use client";
-
-import Link from "next/link";
 import { useActionState, useId } from "react";
 import { ActionFeedback } from "@/components/form/action-feedback";
 import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
 import styles from "@/components/shell.module.css";
+import { Link } from "@/i18n/navigation";
+import { useText } from "@/i18n/use-text";
 import { listPath, listsPath } from "@/paths";
 import { createList, updateList } from "../actions/manage-list";
 import formStyles from "./list-form.module.css";
@@ -23,6 +23,8 @@ export function ListForm({
   list?: ListValues;
   canCreatePrivate?: boolean;
 }) {
+  const t = useText();
+
   const [state, action, pending] = useActionState(
     list ? updateList.bind(null, list.id) : createList,
     { ...EMPTY_ACTION_STATE, timestamp: 0 },
@@ -44,10 +46,12 @@ export function ListForm({
         disabled={pending}
         className={styles["form-fields"]}
       >
-        <legend className={styles["visually-hidden"]}>List details</legend>
+        <legend className={styles["visually-hidden"]}>
+          {t("List details")}
+        </legend>
 
         <div className={styles.field}>
-          <label htmlFor={`${prefix}-title`}>Title</label>
+          <label htmlFor={`${prefix}-title`}>{t("Title")}</label>
           <input
             id={`${prefix}-title`}
             name="title"
@@ -63,14 +67,14 @@ export function ListForm({
               state.fieldErrors.title ? styles["error-text"] : styles.muted
             }
           >
-            {state.fieldErrors.title?.join(" ") ??
-              "Give your list a name. Up to 200 characters."}
+            {state.fieldErrors.title?.map(t.message).join(" ") ??
+              t("Give your list a name. Up to 200 characters.")}
           </p>
         </div>
 
         <div className={styles.field}>
           <label htmlFor={`${prefix}-description`}>
-            Description (optional)
+            {t("Description (optional)")}
           </label>
           <textarea
             id={`${prefix}-description`}
@@ -89,8 +93,8 @@ export function ListForm({
                 : styles.muted
             }
           >
-            {state.fieldErrors.description?.join(" ") ??
-              "Add a little context. Up to 2,000 characters."}
+            {state.fieldErrors.description?.map(t.message).join(" ") ??
+              t("Add a little context. Up to 2,000 characters.")}
           </p>
         </div>
 
@@ -106,11 +110,12 @@ export function ListForm({
               }
               aria-describedby={`${prefix}-reservations-help`}
             />
-            Allow reservations
+            {t("Allow reservations")}
           </label>
           <p id={`${prefix}-reservations-help`} className={styles.muted}>
-            Applies once the list is visible. Turning this off keeps existing
-            reservations.
+            {t(
+              "Applies once the list is visible. Turning this off keeps existing reservations.",
+            )}
           </p>
         </div>
 
@@ -119,7 +124,7 @@ export function ListForm({
             className={formStyles.audience}
             aria-describedby={`${prefix}-visibility-help`}
           >
-            <legend>Who can view it when you show the list?</legend>
+            <legend>{t("Who can view it when you show the list?")}</legend>
             <label className={formStyles.choice}>
               <input
                 type="radio"
@@ -132,9 +137,11 @@ export function ListForm({
                 aria-describedby={`${prefix}-public-help`}
               />
               <span>
-                <strong id={`${prefix}-public-label`}>Anyone</strong>
+                <strong id={`${prefix}-public-label`}>{t("Anyone")}</strong>
                 <span id={`${prefix}-public-help`}>
-                  Appears in Browse. Anyone can view it without an account.
+                  {t(
+                    "Appears in Browse. Anyone can view it without an account.",
+                  )}
                 </span>
               </span>
             </label>
@@ -150,28 +157,33 @@ export function ListForm({
               />
               <span>
                 <strong id={`${prefix}-private-label`}>
-                  People with access
+                  {t("People with access")}
                 </strong>
                 <span id={`${prefix}-private-help`}>
-                  Stays out of Browse. Invited members and anyone with a guest
-                  link can view it.
-                  {!canCreatePrivate && " Requires Premium."}
+                  {t(
+                    "Stays out of Browse. Invited members and anyone with a guest link can view it.",
+                  )}
+                  {!canCreatePrivate && <> {t("Requires Premium.")}</>}
                 </span>
               </span>
             </label>
             <p id={`${prefix}-visibility-help`} className={styles.muted}>
-              Your list starts hidden. Only admins can view it until you choose
-              Show list. You can change its audience later in Sharing and
-              members.
+              {t(
+                "Your list starts hidden. Only admins can view it until you choose Show list. You can change its audience later in Sharing and members.",
+              )}
             </p>
           </fieldset>
         )}
 
         <div className={styles.actions}>
           <button type="submit" className={styles.button}>
-            {pending ? "Saving…" : list ? "Save changes" : "Create list"}
+            {pending
+              ? t("Saving…")
+              : list
+                ? t("Save changes")
+                : t("Create list")}
           </button>
-          <Link href={list ? listPath(list.id) : listsPath}>Cancel</Link>
+          <Link href={list ? listPath(list.id) : listsPath}>{t("Cancel")}</Link>
         </div>
       </fieldset>
     </form>

@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { redirect } from "@/i18n/server-navigation";
 import { emailVerificationPath, signInPath } from "@/paths";
 import { getAuth } from "../actions/get-auth";
 import { authReturnPath } from "../utils/return-to";
@@ -10,11 +10,13 @@ export const getAuthOrRedirect = async (options?: {
   const auth = await getAuth();
 
   if (!auth.user) {
-    redirect(authReturnPath(signInPath, options?.returnTo));
+    return await redirect(authReturnPath(signInPath, options?.returnTo));
   }
 
   if ((options?.checkEmailVerified ?? true) && !auth.user.emailVerified) {
-    redirect(authReturnPath(emailVerificationPath, options?.returnTo));
+    return await redirect(
+      authReturnPath(emailVerificationPath, options?.returnTo),
+    );
   }
   return { user: auth.user, session: auth.session };
 };

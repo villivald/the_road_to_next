@@ -4,8 +4,8 @@ import { testOrigin } from "./environment";
 import { accounts, resetFixtures, testPrisma } from "./seed";
 
 const listId = "e2e-guest-browser";
-const listUrl = `/lists/${listId}`;
-const guestUrl = `/guest/lists/${listId}`;
+const listUrl = `/en/lists/${listId}`;
+const guestUrl = `/en/guest/lists/${listId}`;
 const managementUrl = `${listUrl}/guest-links`;
 
 const guestPage = (browser: Browser) => {
@@ -14,7 +14,7 @@ const guestPage = (browser: Browser) => {
 };
 
 const signIn = async (page: Page, account = accounts.owner) => {
-  await page.goto("/sign-in");
+  await page.goto("/en/sign-in");
   await page.getByLabel("Email", { exact: true }).fill(account.email);
   await page.getByLabel("Password", { exact: true }).fill(account.password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
@@ -43,7 +43,7 @@ const visit = async (page: Page, link: string) => {
   await page.goto(link);
   await expect(page).toHaveURL(guestUrl);
   await expect(
-    page.getByRole("heading", { name: "Guest-only private list", exact: true }),
+    page.getByText("Guest-only private list", { exact: true }),
   ).toBeVisible();
 };
 
@@ -161,11 +161,15 @@ test("create once, open anonymously, protect secrets, show only available conten
     const cover = guest.getByRole("img", { name: "Guest cover" });
     await expect(cover).toHaveJSProperty("naturalWidth", 40);
     const imageUrl = (await cover.getAttribute("src"))!;
-    expect(imageUrl).toContain(`${guestUrl}/media/`);
+    expect(imageUrl).toContain(`${guestUrl.replace("/en", "")}/media/`);
     expect(await guest.evaluate(() => document.cookie)).not.toContain(token);
     expect(await guest.content()).not.toContain(token);
     const cookies = await guest.context().cookies();
-    expect(cookies.find(({ name }) => name === "guest_access")).toMatchObject({
+    expect(
+      cookies.find(
+        ({ name, path }) => name === "guest_access" && path === guestUrl,
+      ),
+    ).toMatchObject({
       httpOnly: true,
       secure: true,
       sameSite: "Lax",
@@ -222,8 +226,15 @@ test("create once, open anonymously, protect secrets, show only available conten
       "Guest-only private list",
     );
     expect(
-      (await status(guest, imageUrl.replace(`${guestUrl}/media`, "/api/media")))
-        .status,
+      (
+        await status(
+          guest,
+          imageUrl.replace(
+            `${guestUrl.replace("/en", "")}/media`,
+            "/api/media",
+          ),
+        )
+      ).status,
     ).toBe(404);
   } finally {
     await guest.close();
@@ -245,15 +256,9 @@ test("signed-in owners get the same guest restrictions and cannot replay a write
   await page.getByRole("button", { name: "Save changes", exact: true }).click();
   const actionRequest = await submitted;
   await expect(
-    page.getByRole("heading", { name: "Guest-only private list", exact: true }),
+    page.getByText("Guest-only private list", { exact: true }),
   ).toBeVisible();
-  await visit(page, link);
-  for (const id of ["hidden", "fulfilled", "reserved"]) {
-    const response = await status(page, `${guestUrl}/wishes/e2e-guest-${id}`);
-    expect(response.text).not.toContain(
-      `${id[0].toUpperCase()}${id.slice(1)} guest secret`,
-    );
-  }
+  await expect(page.getByRole("status")).toContainText("Changes saved.");
   const headers = Object.fromEntries(
     Object.entries(await actionRequest.allHeaders()).filter(([key]) =>
       [
@@ -264,6 +269,13 @@ test("signed-in owners get the same guest restrictions and cannot replay a write
       ].includes(key),
     ),
   );
+  await visit(page, link);
+  for (const id of ["hidden", "fulfilled", "reserved"]) {
+    const response = await status(page, `${guestUrl}/wishes/e2e-guest-${id}`);
+    expect(response.text).not.toContain(
+      `${id[0].toUpperCase()}${id.slice(1)} guest secret`,
+    );
+  }
   const replayStatus = await page.evaluate(
     async ({ url, headers, body }) =>
       (
@@ -290,7 +302,7 @@ test("signed-in owners get the same guest restrictions and cannot replay a write
   ).toBeVisible();
   await page.goto(listUrl);
   await expect(
-    page.getByRole("link", { name: "Edit list", exact: true }),
+    page.getByRole("link", { name: "List settings", exact: true }),
   ).toBeVisible();
 });
 
@@ -422,7 +434,7 @@ test("expiry clears open content and links cannot be used across lists or withou
     });
     await visit(guest, link);
     expect(
-      (await status(guest, "/guest/lists/e2e-private-list")).text,
+      (await status(guest, "/en/guest/lists/e2e-private-list")).text,
     ).not.toContain("Another person's private list");
     await expect(
       guest.getByRole("heading", { name: "Guest link expired", exact: true }),
@@ -440,7 +452,7 @@ test("expiry clears open content and links cannot be used across lists or withou
         exact: true,
       }),
     ).toHaveCount(0);
-    await guest.goto("/guest");
+    await guest.goto("/en/guest");
     await expect(guest.getByRole("main").getByRole("alert")).toContainText(
       "unavailable",
     );

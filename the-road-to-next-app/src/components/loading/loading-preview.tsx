@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import shell from "@/components/shell.module.css";
+import { useText } from "@/i18n/use-text";
 import styles from "./loading-preview.module.css";
 
 function LoadingFrame({
@@ -62,23 +63,31 @@ export function CatalogSkeleton({
 }: {
   kind?: "browse" | "lists" | "shared";
 }) {
+  const t = useText();
+
   const { heading, description } = {
     browse: {
-      heading: "Browse wishlists",
-      description:
+      heading: t("Browse wishlists"),
+      description: t(
         "Explore public lists, available wishes, and the people behind them.",
+      ),
     },
-    lists: { heading: "My lists", description: "Your wishes, in one place." },
+    lists: {
+      heading: t("My lists"),
+      description: t("Your wishes, in one place."),
+    },
     shared: {
-      heading: "Lists shared with you",
-      description: "Lists owned by other people that you have joined.",
+      heading: t("Lists shared with you"),
+      description: t("Lists owned by other people that you have joined."),
     },
   }[kind];
 
   return (
-    <LoadingFrame label={`Loading ${heading.toLowerCase()}…`}>
+    <LoadingFrame
+      label={t("Loading {value0}…", { value0: heading.toLowerCase() })}
+    >
       {kind === "shared" && (
-        <span className={styles["back-label"]}>Back to my lists</span>
+        <span className={styles["back-label"]}>{t("Back to my lists")}</span>
       )}
       <div className={shell["page-heading"]}>
         <div>
@@ -114,8 +123,14 @@ export function CatalogSkeleton({
 }
 
 export function DetailSkeleton({ kind = "list" }: { kind?: "list" | "wish" }) {
+  const t = useText();
+
   return (
-    <LoadingFrame label={`Loading ${kind === "list" ? "wishlist" : "wish"}…`}>
+    <LoadingFrame
+      label={t("Loading {value0}…", {
+        value0: kind === "list" ? t("Shared list") : t("Wish details"),
+      })}
+    >
       <div className={`${styles.block} ${styles["back-link"]}`} />
       <div className={`${styles.block} ${styles.heading}`} />
       <div className={`${styles.block} ${styles.line}`} />
@@ -140,13 +155,15 @@ export function DetailSkeleton({ kind = "list" }: { kind?: "list" | "wish" }) {
 }
 
 export function EditorSkeleton({ profile = false }: { profile?: boolean }) {
+  const t = useText();
+
   return (
     <LoadingFrame
-      label={profile ? "Loading your profile…" : "Loading editor…"}
+      label={profile ? t("Loading your profile…") : t("Loading editor…")}
       className={profile ? shell["account-panel"] : shell.editor}
     >
       {profile ? (
-        <h1>Your account</h1>
+        <h1>{t("Your account")}</h1>
       ) : (
         <div className={`${styles.block} ${styles.heading}`} />
       )}
