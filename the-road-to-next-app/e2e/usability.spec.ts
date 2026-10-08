@@ -94,6 +94,8 @@ for (const theme of ["light", "dark"] as const) {
     page,
   }, info) => {
     test.setTimeout(90000);
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
     await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
     for (const path of [
       "/",
@@ -106,6 +108,7 @@ for (const theme of ["light", "dark"] as const) {
       await page.goto(path);
       await expect(page.locator("html")).toHaveClass(new RegExp(theme));
       await checkPage(page);
+      expect(errors).toEqual([]);
       if (path === "/" || path.startsWith("/en/browse")) {
         await page.screenshot({
           path: info.outputPath(path === "/" ? "home.png" : "browse.png"),
@@ -253,6 +256,8 @@ test("dates use the viewer's timezone and theme selection persists", async ({
     colorScheme: "light",
   });
   const page = await context.newPage();
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
   try {
     await signIn(page);
     await page.goto("/en/account/plan");
@@ -271,6 +276,10 @@ test("dates use the viewer's timezone and theme selection persists", async ({
     await page.getByRole("button", { name: "Toggle theme" }).click();
     await page.reload();
     await expect(page.locator("html")).toHaveClass(/dark/);
+    await expect(
+      page.getByRole("button", { name: "Toggle theme" }),
+    ).toBeVisible();
+    expect(errors).toEqual([]);
   } finally {
     await context.close();
   }
