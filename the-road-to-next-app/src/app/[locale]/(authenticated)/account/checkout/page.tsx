@@ -59,7 +59,7 @@ export default async function CheckoutPage({
       />
       <p>
         {t(
-          "After checkout, return to Your plan and select Refresh billing. Closing checkout or returning here does not confirm a payment.",
+          "After payment, we’ll check its status when you return to Your plan. If your subscription does not appear, select Refresh billing.",
         )}
       </p>
     </section>

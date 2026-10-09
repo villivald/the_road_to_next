@@ -61,7 +61,7 @@ const refresh = async (page: import("@playwright/test").Page) => {
   await expect(page.getByRole("status")).toContainText("Billing updated");
 };
 
-test("checkout is server-bound, returns never grant access, confirmation and cancellation appear after refresh", async ({
+test("checkout return checks Paddle automatically without trusting the return URL", async ({
   page,
   browser,
 }, info) => {
@@ -79,16 +79,22 @@ test("checkout is server-bound, returns never grant access, confirmation and can
     page.getByRole("heading", { name: "Free", exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "Resume checkout", exact: true }),
+    page.getByRole("heading", { name: "Checking your payment", exact: true }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Discard checkout", exact: true }),
+  ).toHaveCount(0);
   const state = await providerState();
   completePayment(state, state.transactions[0].id);
   await save(state);
-  await refresh(page);
   await expect(
     page.getByRole("heading", { name: "Premium", exact: true }),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 15000 });
   await expect(page.getByText("Status: active", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Unfinished checkout", exact: true }),
+  ).toHaveCount(0);
+  expect((await providerState()).createCount).toBe(1);
   await expect(
     page.getByRole("button", { name: "Choose monthly", exact: true }),
   ).toHaveCount(0);
@@ -102,10 +108,32 @@ test("checkout is server-bound, returns never grant access, confirmation and can
     action: "cancel",
     effective_at: scheduled.transactions[0].billing_period!.ends_at,
   };
+  scheduled.subscriptions[0].next_billed_at = null;
   scheduled.subscriptions[0].updated_at = new Date().toISOString();
   await save(scheduled);
-  await refresh(page);
-  await expect(page.getByText(/Cancellation scheduled for/)).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByText("Status: Renewal canceled", { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText(/Subscription ends on/)).toBeVisible();
+  await expect(
+    page.getByText("This subscription will not renew.", { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText(/Next payment:/)).toHaveCount(0);
+  await expect(
+    page.getByRole("heading", { name: "Premium", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Choose monthly", exact: true }),
+  ).toHaveCount(0);
+  await page.goto("/fi/account/plan");
+  await expect(
+    page.getByText("Tila: Automaattinen uusiminen peruttu", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Tilaus ei uusiudu automaattisesti.", { exact: true }),
+  ).toBeVisible();
+  await page.goto("/en/account/plan");
   await page.route("https://sandbox-customer-portal.paddle.com/**", (route) =>
     route.fulfill({
       body: "<h1>Paddle customer portal fixture</h1>",
@@ -116,6 +144,69 @@ test("checkout is server-bound, returns never grant access, confirmation and can
     .getByRole("button", { name: "Manage subscription", exact: true })
     .click();
   await expect(page).toHaveURL(/sandbox-customer-portal.paddle.com/);
+});
+
+test("checkout return falls back to manual controls when Paddle is unavailable, in Finnish", async ({
+  page,
+}) => {
+  await choose(page);
+  const state = await providerState();
+  state.fail = true;
+  await save(state);
+  await page.goto("/fi/account/plan?checkout=returned");
+  await expect(
+    page.getByRole("heading", { name: "Tarkistetaan maksua", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Sinun ei tarvitse maksaa uudelleen."),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/Maksun vahvistus kestää tavallista pidempään/),
+  ).toBeVisible({ timeout: 15000 });
+  await expect(
+    page.getByRole("link", { name: "Jatka maksamista", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Päivitä maksutiedot", exact: true }),
+  ).toBeVisible();
+  expect((await providerState()).createCount).toBe(1);
+});
+
+test("returning focus to the plan page picks up cancellation without another payment", async ({
+  page,
+}) => {
+  await choose(page);
+  const state = await providerState();
+  completePayment(state, state.transactions[0].id);
+  await save(state);
+  const synced = page.waitForResponse(
+    (response) =>
+      response.url().includes("/account/plan") &&
+      response.request().method() === "POST",
+  );
+  await page.goto("/en/account/plan?checkout=returned");
+  await synced;
+  await expect(page.getByText("Status: active", { exact: true })).toBeVisible();
+
+  const canceled = await providerState();
+  canceled.subscriptions[0].scheduled_change = {
+    action: "cancel",
+    effective_at: canceled.transactions[0].billing_period!.ends_at,
+  };
+  canceled.subscriptions[0].next_billed_at = null;
+  canceled.subscriptions[0].updated_at = new Date().toISOString();
+  await save(canceled);
+  await page.clock.install();
+  await page.clock.fastForward(6000);
+  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  await expect(
+    page.getByText("Status: Renewal canceled", { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText(/Next payment:/)).toHaveCount(0);
+  await expect(
+    page.getByRole("heading", { name: "Premium", exact: true }),
+  ).toBeVisible();
+  expect((await providerState()).createCount).toBe(1);
 });
 
 test("abandoned checkouts can be resumed or discarded before selecting the annual plan", async ({

@@ -11,8 +11,16 @@ import {
   subscribe,
 } from "../actions/manage-billing";
 import { billingEnabled, type BillingInterval, plans } from "../service/config";
+import { BillingRefresh } from "./billing-refresh";
+import { CheckoutReturn } from "./checkout-return";
 
-export async function BillingPanel({ userId }: { userId: string }) {
+export async function BillingPanel({
+  userId,
+  returned = false,
+}: {
+  userId: string;
+  returned?: boolean;
+}) {
   const t = await getText();
 
   const account = await prisma.billingAccount.findUnique({
@@ -36,6 +44,42 @@ export async function BillingPanel({ userId }: { userId: string }) {
       })
     : 0;
 
+  const pendingCard = pending && (
+    <div className={styles["list-card"]}>
+      <h3>{t("Unfinished checkout")}</h3>
+      <p>
+        {pending.cancelRequested
+          ? t("Closing checkout. Refresh billing to check the result.")
+          : t(
+              "Resume your existing checkout, or discard it before selecting another plan.",
+            )}
+      </p>
+      {pending.transactionId && !pending.cancelRequested && (
+        <Link href={`/account/checkout?id=${pending.id}`}>
+          {t("Resume checkout")}
+        </Link>
+      )}
+      {!pending.cancelRequested && (
+        <ActionForm
+          action={abandonCheckout}
+          label={t("Discard checkout")}
+          pendingLabel={t("Closing…")}
+        >
+          {null}
+        </ActionForm>
+      )}
+      {!pending.transactionId && (
+        <p>
+          {t(
+            "Your checkout is still being confirmed. Select Refresh billing shortly. If it stays unfinished,",
+          )}{" "}
+          <Link href="/about">{t("contact support")}</Link>
+          {t(". We will not start another payment automatically.")}
+        </p>
+      )}
+    </div>
+  );
+
   return (
     <div className={styles.form}>
       <h2>{t("Subscription")}</h2>
@@ -47,6 +91,7 @@ export async function BillingPanel({ userId }: { userId: string }) {
         </p>
       ) : (
         <>
+          {!!account?.subscriptions.length && <BillingRefresh />}
           <p className={styles.notice}>
             {t(
               "Sandbox billing · Test payments only. No real money is charged.",
@@ -68,20 +113,26 @@ export async function BillingPanel({ userId }: { userId: string }) {
                 {t("Status:")}{" "}
                 {subscription.status === "past_due"
                   ? t("Payment overdue")
-                  : ({
-                      active: t("Active subscription"),
-                      canceled: t("Canceled subscription"),
-                      paused: t("Paused subscription"),
-                      trialing: t("Trialing subscription"),
-                    }[subscription.status] ??
-                    t("Subscription status unavailable"))}
+                  : subscription.cancelAt && subscription.status !== "canceled"
+                    ? t("Renewal canceled")
+                    : ({
+                        active: t("Active subscription"),
+                        canceled: t("Canceled subscription"),
+                        paused: t("Paused subscription"),
+                        trialing: t("Trialing subscription"),
+                      }[subscription.status] ??
+                      t("Subscription status unavailable"))}
               </p>
               {subscription.cancelAt ? (
-                <p>
-                  {t("Cancellation scheduled for")}{" "}
-                  <LocalTime value={subscription.cancelAt.toISOString()} />.
-                </p>
-              ) : subscription.nextBilledAt ? (
+                <>
+                  <p>
+                    {t("Subscription ends on")}{" "}
+                    <LocalTime value={subscription.cancelAt.toISOString()} />.
+                  </p>
+                  <p>{t("This subscription will not renew.")}</p>
+                </>
+              ) : subscription.nextBilledAt &&
+                subscription.status !== "canceled" ? (
                 <p>
                   {t("Next payment:")}{" "}
                   <LocalTime value={subscription.nextBilledAt.toISOString()} />.
@@ -94,46 +145,20 @@ export async function BillingPanel({ userId }: { userId: string }) {
               >
                 <p>
                   {t(
-                    "View payments, update your payment method, or cancel in Paddle.",
+                    subscription.cancelAt || subscription.status === "canceled"
+                      ? "View payments and subscription details in Paddle."
+                      : "View payments, update your payment method, or cancel in Paddle.",
                   )}
                 </p>
               </ActionForm>
             </div>
           ))}
           {pending ? (
-            <div className={styles["list-card"]}>
-              <h3>{t("Unfinished checkout")}</h3>
-              <p>
-                {pending.cancelRequested
-                  ? t("Closing checkout. Refresh billing to check the result.")
-                  : t(
-                      "Resume your existing checkout, or discard it before selecting another plan.",
-                    )}
-              </p>
-              {pending.transactionId && !pending.cancelRequested && (
-                <Link href={`/account/checkout?id=${pending.id}`}>
-                  {t("Resume checkout")}
-                </Link>
-              )}
-              {!pending.cancelRequested && (
-                <ActionForm
-                  action={abandonCheckout}
-                  label={t("Discard checkout")}
-                  pendingLabel={t("Closing…")}
-                >
-                  {null}
-                </ActionForm>
-              )}
-              {!pending.transactionId && (
-                <p>
-                  {t(
-                    "Your checkout is still being confirmed. Select Refresh billing shortly. If it stays unfinished,",
-                  )}{" "}
-                  <Link href="/about">{t("contact support")}</Link>
-                  {t(". We will not start another payment automatically.")}
-                </p>
-              )}
-            </div>
+            returned ? (
+              <CheckoutReturn key={pending.id}>{pendingCard}</CheckoutReturn>
+            ) : (
+              pendingCard
+            )
           ) : !active && !paid ? (
             <div className={styles["list-grid"]}>
               {(Object.keys(plans) as BillingInterval[]).map((interval) => (

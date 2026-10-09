@@ -130,6 +130,75 @@ describe("Paddle subscriptions", () => {
     await startCheckout(user.id, session.id, "month");
     expect(state.createCount).toBe(1);
   });
+  it.each([400, 403, 422])(
+    "closes a checkout rejected with HTTP %s so the user can retry after fixing configuration",
+    async (status) => {
+      const { user, session } = await login();
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async (input: string | URL, init?: RequestInit) => {
+          const url = new URL(String(input));
+          if (url.pathname === "/transactions" && init?.method === "POST") {
+            return Response.json(
+              { error: { code: "invalid_request" } },
+              { status },
+            );
+          }
+          return paddleFixtureResponse(state, url, init);
+        }),
+      );
+      await expect(startCheckout(user.id, session.id, "month")).rejects.toThrow(
+        "Paddle",
+      );
+      const rejected = await prisma.billingCheckout.findFirstOrThrow();
+      expect(rejected.closedAt).not.toBeNull();
+      expect(rejected.transactionId).toBeNull();
+      expect(state.transactions).toHaveLength(0);
+
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async (input: string | URL, init?: RequestInit) =>
+          paddleFixtureResponse(state, new URL(String(input)), init),
+        ),
+      );
+      const checkoutId = await startCheckout(user.id, session.id, "month");
+      expect(checkoutId).not.toBe(rejected.id);
+      expect(state.createCount).toBe(1);
+      expect(await readPremiumAccess(user.id)).toMatchObject({ plan: "FREE" });
+    },
+  );
+  it("uses Paddle's default payment link instead of an unapproved app URL", async () => {
+    vi.stubEnv("APP_URL", "https://unapproved.example.test");
+    const transport = vi.fn(async (input: string | URL, init?: RequestInit) => {
+      const url = new URL(String(input));
+      if (url.pathname === "/transactions" && init?.method === "POST") {
+        const body = JSON.parse(String(init.body));
+        if (body.checkout?.url !== null) {
+          return Response.json(
+            {
+              error: {
+                code: "transaction_checkout_url_domain_is_not_approved",
+              },
+            },
+            { status: 400 },
+          );
+        }
+      }
+      return paddleFixtureResponse(state, url, init);
+    });
+    vi.stubGlobal("fetch", transport);
+    const { checkout } = await begin();
+    expect(checkout.transactionId).not.toBeNull();
+    expect(state.createCount).toBe(1);
+    const request = transport.mock.calls.find(
+      ([input, init]) =>
+        new URL(String(input)).pathname === "/transactions" &&
+        init?.method === "POST",
+    );
+    expect(JSON.parse(String(request?.[1]?.body)).checkout).toEqual({
+      url: null,
+    });
+  });
   it("recovers an ambiguous transaction creation without creating another charge", async () => {
     state.loseCreateResponse = true;
     const { user, session } = await login();

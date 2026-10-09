@@ -61,6 +61,16 @@ export const subscriptionSchema = z.object({
 export type PaddleTransaction = z.infer<typeof transactionSchema>;
 export type PaddleSubscription = z.infer<typeof subscriptionSchema>;
 
+export class PaddleRequestError extends BillingError {
+  constructor(readonly status: number) {
+    super("Paddle could not complete this request. Please try again shortly.");
+  }
+
+  get rejected() {
+    return [400, 401, 403, 404, 405, 422].includes(this.status);
+  }
+}
+
 const responseSchema = z.object({
   data: z.unknown(),
   meta: z
@@ -99,10 +109,22 @@ export const paddleRequest = async (
   } catch {
     throw new BillingError("Paddle is unavailable. Please try again shortly.");
   }
-  if (!response.ok)
-    throw new BillingError(
-      "Paddle could not complete this request. Please try again shortly.",
-    );
+  if (!response.ok) {
+    const details = await response.json().catch(() => null);
+    const code = z
+      .string()
+      .regex(/^[a-z][a-z0-9_]{0,127}$/)
+      .safeParse(details?.error?.code);
+    const requestId = z.uuid().safeParse(details?.meta?.request_id);
+    console.error("Paddle request failed", {
+      status: response.status,
+      method,
+      resource: url.pathname.split("/")[1],
+      code: code.success ? code.data : undefined,
+      requestId: requestId.success ? requestId.data : undefined,
+    });
+    throw new PaddleRequestError(response.status);
+  }
   return responseSchema.parse(await response.json());
 };
 

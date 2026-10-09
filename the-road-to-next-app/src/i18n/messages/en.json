@@ -766,5 +766,14 @@
   "Details and reservations": "Details and reservations",
   "Back to list settings": "Back to list settings",
   "Settings for {value0}": "Settings for {value0}",
-  "A full link starting with https:// or http://.": "A full link starting with https:// or http://."
+  "A full link starting with https:// or http://.": "A full link starting with https:// or http://.",
+  "Checking your payment": "Checking your payment",
+  "We’re checking the payment status with Paddle. Your subscription will appear here once payment is confirmed.": "We’re checking the payment status with Paddle. Your subscription will appear here once payment is confirmed.",
+  "You don’t need to pay again.": "You don’t need to pay again.",
+  "Payment confirmation is taking longer than expected. Refresh billing shortly. Resume checkout only if you did not finish paying.": "Payment confirmation is taking longer than expected. Refresh billing shortly. Resume checkout only if you did not finish paying.",
+  "After payment, we’ll check its status when you return to Your plan. If your subscription does not appear, select Refresh billing.": "After payment, we’ll check its status when you return to Your plan. If your subscription does not appear, select Refresh billing.",
+  "Renewal canceled": "Renewal canceled",
+  "Subscription ends on": "Subscription ends on",
+  "This subscription will not renew.": "This subscription will not renew.",
+  "View payments and subscription details in Paddle.": "View payments and subscription details in Paddle."
 }

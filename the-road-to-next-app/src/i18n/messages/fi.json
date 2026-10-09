@@ -766,5 +766,14 @@
   "Details and reservations": "Tiedot ja varaukset",
   "Back to list settings": "Takaisin listan asetuksiin",
   "Settings for {value0}": "Listan {value0} asetukset",
-  "A full link starting with https:// or http://.": "Täydellinen linkki, joka alkaa https:// tai http://."
+  "A full link starting with https:// or http://.": "Täydellinen linkki, joka alkaa https:// tai http://.",
+  "Checking your payment": "Tarkistetaan maksua",
+  "We’re checking the payment status with Paddle. Your subscription will appear here once payment is confirmed.": "Tarkistamme maksun tilan Paddlelta. Tilauksesi näkyy täällä, kun maksu on vahvistettu.",
+  "You don’t need to pay again.": "Sinun ei tarvitse maksaa uudelleen.",
+  "Payment confirmation is taking longer than expected. Refresh billing shortly. Resume checkout only if you did not finish paying.": "Maksun vahvistus kestää tavallista pidempään. Päivitä maksutiedot hetken kuluttua. Jatka maksamista vain, jos et vielä maksanut.",
+  "After payment, we’ll check its status when you return to Your plan. If your subscription does not appear, select Refresh billing.": "Tarkistamme maksun tilan, kun palaat Oma tilaus -sivulle. Jos tilauksesi ei näy, valitse Päivitä maksutiedot.",
+  "Renewal canceled": "Automaattinen uusiminen peruttu",
+  "Subscription ends on": "Tilaus päättyy",
+  "This subscription will not renew.": "Tilaus ei uusiudu automaattisesti.",
+  "View payments and subscription details in Paddle.": "Katso maksut ja tilauksen tiedot Paddlella."
 }

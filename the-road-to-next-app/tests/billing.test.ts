@@ -7,6 +7,7 @@ import {
 import {
   fullyRefunded,
   paddleRequest,
+  PaddleRequestError,
   transactionSchema,
 } from "@/features/billing/service/paddle";
 import { validSignature } from "@/features/billing/service/webhook";
@@ -19,6 +20,7 @@ import {
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 const configure = () =>
   Object.entries(paddleEnvironment).forEach(([key, value]) =>
@@ -87,6 +89,48 @@ describe("Paddle boundaries", () => {
     ).rejects.toThrow("destination");
     expect(fetch).not.toHaveBeenCalled();
   });
+  it.each([400, 403, 422, 429, 503])(
+    "classifies HTTP %s and logs only safe Paddle diagnostics",
+    async (status) => {
+      configure();
+      const log = vi.spyOn(console, "error").mockImplementation(() => {});
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async () =>
+          Response.json(
+            {
+              error: {
+                code: "transaction_default_checkout_url_not_set",
+                detail: "Private recipient@example.test and credentials",
+              },
+              meta: { request_id: "d7fac180-71b7-414d-b89d-6628329b178d" },
+            },
+            { status },
+          ),
+        ),
+      );
+
+      const error = await paddleRequest("/transactions", "POST", {}).catch(
+        (error: unknown) => error,
+      );
+      expect(error).toBeInstanceOf(PaddleRequestError);
+      expect(error).toMatchObject({
+        status,
+        rejected: [400, 403, 422].includes(status),
+      });
+      expect(log).toHaveBeenCalledWith("Paddle request failed", {
+        status,
+        method: "POST",
+        resource: "transactions",
+        code: "transaction_default_checkout_url_not_set",
+        requestId: "d7fac180-71b7-414d-b89d-6628329b178d",
+      });
+      expect(JSON.stringify(log.mock.calls)).not.toContain("Private");
+      expect(JSON.stringify(log.mock.calls)).not.toContain(
+        "recipient@example.test",
+      );
+    },
+  );
   it("handles partial, pending, full, cumulative and reversed refunds independently", async () => {
     const state = emptyPaddleState();
     const response = paddleFixtureResponse(

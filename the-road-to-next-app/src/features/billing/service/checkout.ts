@@ -2,7 +2,6 @@ import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { consumeRateLimit } from "@/features/auth/service/security";
 import { prisma } from "@/lib/prisma";
-import { getBaseUrl } from "@/utils/url";
 import {
   queueBilling,
   requireBillingUser,
@@ -13,6 +12,7 @@ import {
   getTransaction,
   paddleList,
   paddleRequest,
+  PaddleRequestError,
   validatePrice,
 } from "./paddle";
 
@@ -142,20 +142,36 @@ export const startCheckout = async (
         },
       });
     });
+    let response: Awaited<ReturnType<typeof paddleRequest>>;
+    try {
+      response = await paddleRequest("/transactions", "POST", {
+        items: [{ price_id: priceId, quantity: 1 }],
+        customer_id: customerId,
+        currency_code: "EUR",
+        collection_mode: "automatic",
+        custom_data: { wishlist_checkout: checkout.id },
+        checkout: { url: null },
+      });
+    } catch (error) {
+      // A definite rejection created no transaction. Unknown outcomes must
+      // remain open for reconciliation rather than risk a duplicate payment.
+      if (error instanceof PaddleRequestError && error.rejected) {
+        await withBillingAccount(account.id, async (tx) => {
+          await tx.billingCheckout.updateMany({
+            where: {
+              id: checkout.id,
+              transactionId: null,
+              closedAt: null,
+            },
+            data: { closedAt: new Date() },
+          });
+        });
+      }
+      throw error;
+    }
     const transaction = z
       .object({ id: z.string().regex(/^txn_[a-z0-9]{26}$/) })
-      .parse(
-        (
-          await paddleRequest("/transactions", "POST", {
-            items: [{ price_id: priceId, quantity: 1 }],
-            customer_id: customerId,
-            currency_code: "EUR",
-            collection_mode: "automatic",
-            custom_data: { wishlist_checkout: checkout.id },
-            checkout: { url: `${getBaseUrl()}/account/checkout` },
-          })
-        ).data,
-      );
+      .parse(response.data);
     await withBillingAccount(account.id, async (tx) => {
       await tx.billingCheckout.update({
         where: { id: checkout.id },

@@ -11,10 +11,15 @@ import { accountProfilePath } from "@/paths";
 
 export const dynamic = "force-dynamic";
 
-export default async function PlanPage() {
+export default async function PlanPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ checkout?: string }>;
+}) {
   const t = await getText();
 
   const { user } = await getAuthOrRedirect();
+  const returned = (await searchParams).checkout === "returned";
   const access = await readPremiumAccess(user.id);
   const changesAt = access.expiresAt ?? access.nextStartsAt;
 
@@ -47,7 +52,7 @@ export default async function PlanPage() {
         </p>
       </div>
       <PlanRefresh changesAt={changesAt?.toISOString() ?? null} />
-      <BillingPanel userId={user.id} />
+      <BillingPanel userId={user.id} returned={returned} />
       <h2>{t("Have a promo code?")}</h2>
       <PromoForm />
       <div className={styles.form}>
