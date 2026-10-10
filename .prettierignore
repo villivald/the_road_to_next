@@ -1,0 +1,11 @@
+node_modules
+.next
+src/generated
+package-lock.json
+next-env.d.ts
+coverage
+playwright-report
+test-results
+public/illustrations/openmoji/*.svg
+Notes.md
+img/

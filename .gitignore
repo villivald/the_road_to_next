@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+/playwright-report/
+/test-results/
 
 # next.js
 /.next/
@@ -40,3 +42,14 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+!.env.example
+/src/generated/
+
+PLAN.md
+
+# Private local uploads
+/.local/
+
+# Personal reference material
+Notes.md
+/img
