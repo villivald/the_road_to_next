@@ -1,8 +1,11 @@
 import { Settings } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { DetailNavigation } from "@/app/_navigation/navigation-context";
+import { detailSection } from "@/app/_navigation/navigation-path";
 import { CopyLink } from "@/components/cards/copy-link";
 import { ListStatus } from "@/components/cards/list-status";
+import { SuccessMessage } from "@/components/form/success-message";
 import styles from "@/components/shell.module.css";
 import { getAuth } from "@/features/auth/actions/get-auth";
 import { MediaImage } from "@/features/media/components/media-image";
@@ -10,7 +13,13 @@ import { WishCollection } from "@/features/wish/components/wish-collection";
 import { readWishlist } from "@/features/wishlist/service/lists";
 import { Link } from "@/i18n/navigation";
 import { getText } from "@/i18n/server";
-import { browsePath, listPath, listSettingsPath, listsPath } from "@/paths";
+import {
+  browsePath,
+  listPath,
+  listSettingsPath,
+  listsPath,
+  reservationsPath,
+} from "@/paths";
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -25,6 +34,7 @@ export default async function ListPage({
 }: {
   params: Promise<{ listId: string }>;
   searchParams: Promise<{
+    from?: string;
     created?: string;
     saved?: string;
     wishDeleted?: string;
@@ -45,16 +55,30 @@ export default async function ListPage({
 
   const query = await searchParams;
   const { created, saved, wishDeleted } = query;
+  const section = detailSection(query.from, list.canManage);
   const published = list.publication === "PUBLISHED";
 
   return (
     <section className={styles.page}>
-      <Link href={list.canManage ? listsPath : browsePath}>
-        {list.canManage ? t("Back to my lists") : t("Back to browse")}
+      <DetailNavigation section={section} />
+      <Link
+        href={
+          section === "lists"
+            ? listsPath
+            : section === "reservations"
+              ? reservationsPath
+              : browsePath
+        }
+      >
+        {section === "lists"
+          ? t("Back to my lists")
+          : section === "reservations"
+            ? t("View my reservations")
+            : t("Back to browse")}
       </Link>
 
       {list.canManage && (created === "1" || saved === "1") && (
-        <p role="status" className={styles.notice}>
+        <SuccessMessage>
           {created === "1"
             ? t("List created. It’s hidden from viewers until you show it.")
             : t("Changes saved.")}
@@ -66,7 +90,7 @@ export default async function ListPage({
               </Link>
             </>
           )}
-        </p>
+        </SuccessMessage>
       )}
 
       <div className={styles["page-heading"]}>
@@ -96,15 +120,15 @@ export default async function ListPage({
       )}
 
       {list.canManage && wishDeleted === "1" && (
-        <p role="status" className={styles.notice}>
-          {t("Wish deleted.")}
-        </p>
+        <SuccessMessage>{t("Wish deleted.")}</SuccessMessage>
       )}
 
       <WishCollection
         listId={list.id}
         userId={user?.id ?? null}
         canManage={list.canManage}
+        section={section}
+        reservationsEnabled={published && list.reservationsEnabled}
         searchParams={query}
       />
     </section>

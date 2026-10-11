@@ -43,6 +43,14 @@ const information = (
             )}
           </li>
           <li>
+            {t("Wordmark lettering based on")}{" "}
+            <a href="https://github.com/google/fonts/tree/main/ofl/alfaslabone">
+              Alfa Slab One
+            </a>
+            {t(", licensed under")}{" "}
+            <a href="https://openfontlicense.org/">SIL Open Font License</a>.
+          </li>
+          <li>
             {t("Interface icons and the heart favicon from")}{" "}
             <a href="https://lucide.dev/">Lucide</a>.
           </li>
@@ -242,6 +250,9 @@ const information = (
             <Link href="/browse?view=users">{t("People")}</Link>
           </li>
         </ul>
+        <p>
+          <Link href="/premium">{t("Free and Premium")}</Link>
+        </p>
         <h2>{t("Your space")}</h2>
         <ul>
           <li>

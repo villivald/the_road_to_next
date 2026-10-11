@@ -1,28 +1,13 @@
 import { Gift } from "lucide-react";
 import type { ReactNode } from "react";
-import loadingStyles from "@/components/loading/loading-preview.module.css";
 import styles from "@/components/shell.module.css";
 import { useText } from "@/i18n/use-text";
 
-export function ReservationsFrame({
-  children,
-  loading = false,
-}: {
-  children: ReactNode;
-  loading?: boolean;
-}) {
+export function ReservationsFrame({ children }: { children: ReactNode }) {
   const t = useText();
 
   return (
-    <section
-      className={styles.page}
-      data-loading-preview={loading ? "reservations" : undefined}
-    >
-      {loading && (
-        <p role="status" className={styles["visually-hidden"]}>
-          {t("Loading your reservations…")}
-        </p>
-      )}
+    <section className={styles.page}>
       <div className={styles["page-heading"]}>
         <div>
           <h1>{t("My reservations")}</h1>
@@ -36,36 +21,16 @@ export function ReservationsFrame({
   );
 }
 
-export function EmptyReservations({
-  page = 1,
-  loading = false,
-}: {
-  page?: number;
-  loading?: boolean;
-}) {
+export function EmptyReservations({ page = 1 }: { page?: number }) {
   const t = useText();
 
-  const textPreview = loading
-    ? `${loadingStyles.block} ${loadingStyles["skeleton-text"]}`
-    : "";
-
   return (
-    <div
-      className={styles["empty-state"]}
-      aria-hidden={loading || undefined}
-      aria-busy={loading || undefined}
-    >
-      {loading ? (
-        <div
-          className={`${loadingStyles.block} ${loadingStyles["empty-icon"]}`}
-        />
-      ) : (
-        <Gift aria-hidden="true" />
-      )}
-      <h2 className={textPreview}>
+    <div className={styles["empty-state"]}>
+      <Gift aria-hidden="true" />
+      <h2>
         {page === 1 ? t("No active reservations") : t("No more reservations")}
       </h2>
-      <p className={`${styles.muted} ${textPreview}`}>
+      <p className={styles.muted}>
         {page === 1
           ? t("Open a shared wishlist and reserve a wish to find it here.")
           : t("Return to an earlier page.")}

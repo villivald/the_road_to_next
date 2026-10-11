@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import { CardMedia } from "@/components/cards/card-media";
+import { navigationPath } from "@/app/_navigation/navigation-path";
+import { CardMedia, CardMediaLink } from "@/components/cards/card-media";
 import { WishStatus } from "@/components/cards/wish-status";
 import { ActionForm } from "@/components/form/action-form";
+import { SuccessMessage } from "@/components/form/success-message";
 import styles from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import { cancel } from "@/features/reservation/actions/manage-reservation";
@@ -41,23 +43,39 @@ export default async function ReservationsPage({
   return (
     <ReservationsFrame>
       {query.canceled === "1" && (
-        <p role="status" className={styles.notice}>
-          {t("Reservation canceled.")}
-        </p>
+        <SuccessMessage>{t("Reservation canceled.")}</SuccessMessage>
       )}
       {reservations.length ? (
         <ul className={styles["list-grid"]}>
           {reservations.map(({ id, wish }) => (
             <li key={id} className={styles["list-card"]}>
-              <CardMedia image={wish.image} />
+              <CardMediaLink
+                path={navigationPath(
+                  wishPath(wish.wishlist.id, wish.id),
+                  "reservations",
+                )}
+                title={wish.title}
+              >
+                <CardMedia image={wish.image} />
+              </CardMediaLink>
               <h2>
-                <Link href={wishPath(wish.wishlist.id, wish.id)}>
+                <Link
+                  href={navigationPath(
+                    wishPath(wish.wishlist.id, wish.id),
+                    "reservations",
+                  )}
+                >
                   {wish.title}
                 </Link>
               </h2>
               <p>
                 {t("In")}{" "}
-                <Link href={listPath(wish.wishlist.id)}>
+                <Link
+                  href={navigationPath(
+                    listPath(wish.wishlist.id),
+                    "reservations",
+                  )}
+                >
                   {wish.wishlist.title}
                 </Link>
               </p>

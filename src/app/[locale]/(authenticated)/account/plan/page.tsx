@@ -1,4 +1,4 @@
-import { Gift, Heart, Mail, ShieldCheck, Sparkles } from "lucide-react";
+import { Gift, Heart, Mail, Sparkles } from "lucide-react";
 import { LocalTime } from "@/components/local-time";
 import shell from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
@@ -100,7 +100,7 @@ export default async function PlanPage({
         </section>
         <section className={styles.card} aria-labelledby="premium-heading">
           <h2 id="premium-heading" className={styles.fact}>
-            <ShieldCheck size={21} aria-hidden="true" />
+            <Sparkles size={21} aria-hidden="true" />
             {t("About Premium")}
           </h2>
           <ul className={styles.benefits}>
@@ -108,6 +108,7 @@ export default async function PlanPage({
             <li>{t("Invite people or share a private guest link.")}</li>
             <li>{t("Let trusted members help manage your lists.")}</li>
           </ul>
+          <Link href="/premium">{t("Compare plans")}</Link>
           <p className={styles.meta}>
             {t("Invited people can join with a Free account.")}
           </p>

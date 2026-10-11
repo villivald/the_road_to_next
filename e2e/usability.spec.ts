@@ -290,11 +290,11 @@ test("dates use the viewer's timezone and theme selection persists", async ({
         timeZone: "UTC",
       }).format(expiresAt),
     );
-    await page.getByRole("button", { name: "Toggle theme" }).click();
+    await page.getByRole("button", { name: "Switch to dark mode" }).click();
     await page.reload();
     await expect(page.locator("html")).toHaveClass(/dark/);
     await expect(
-      page.getByRole("button", { name: "Toggle theme" }),
+      page.getByRole("button", { name: "Switch to light mode" }),
     ).toBeVisible();
     expect(errors).toEqual([]);
   } finally {

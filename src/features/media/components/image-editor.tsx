@@ -1,5 +1,8 @@
 "use client";
+import { CircleCheck } from "lucide-react";
 import { type FormEvent, useEffect, useId, useRef, useState } from "react";
+import feedbackStyles from "@/components/form/feedback.module.css";
+import { useSaveConfirmation } from "@/components/form/feedback-provider";
 import shell from "@/components/shell.module.css";
 import { notifyFormSaved } from "@/i18n/form-changes";
 import { useRouter } from "@/i18n/navigation";
@@ -24,6 +27,7 @@ export function ImageEditor({
   fallbackAlt?: string;
 }) {
   const t = useText();
+  const notify = useSaveConfirmation();
 
   const router = useRouter();
   const id = useId();
@@ -81,6 +85,7 @@ export function ImageEditor({
 
       if (response.ok) {
         notifyFormSaved(form);
+        notify(t.message(result.message));
         form.reset();
         router.refresh();
       }
@@ -109,9 +114,11 @@ export function ImageEditor({
           ref={feedbackRef}
           tabIndex={-1}
           role={feedback.error ? "alert" : "status"}
-          className={feedback.error ? shell.error : shell.notice}
+          aria-live={feedback.error ? undefined : "off"}
+          className={feedback.error ? shell.error : feedbackStyles.success}
         >
-          {t.message(feedback.message)}
+          {!feedback.error && <CircleCheck size={21} aria-hidden="true" />}
+          <span>{t.message(feedback.message)}</span>
         </p>
       )}
       <form onSubmit={submit} className={shell.form}>

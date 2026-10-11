@@ -1,10 +1,14 @@
-import { Compass, Gift, Heart, List, UserRound } from "lucide-react";
+import { Compass, Gift, List, Sparkles, UserRound } from "lucide-react";
 import { headers } from "next/headers";
+import { Brand } from "@/components/brand/brand";
+import { UserAvatar } from "@/components/cards/card-media";
 import styles from "@/components/shell.module.css";
 import ThemeSwitcher from "@/components/theme/theme-switcher";
 import { getAuth } from "@/features/auth/actions/get-auth";
 import { signOut } from "@/features/auth/actions/sign-out";
 import { getHomePath } from "@/features/auth/utils/home-path";
+import { readAvatar } from "@/features/media/service/media";
+import { readPremiumAccess } from "@/features/premium/service/entitlements";
 import { localizedPath } from "@/i18n/config";
 import { LanguageSwitcher } from "@/i18n/language-switcher";
 import { Link } from "@/i18n/navigation";
@@ -27,7 +31,12 @@ export default async function Header() {
     return (
       <header className={styles.header}>
         <div className={styles["header-inner"]}>
-          <span className={styles.brand}>{t("Wishlist · Guest view")}</span>
+          <div className={styles["guest-brand"]}>
+            <Brand />
+            <span className={styles["guest-view-label"]}>
+              {t("Guest view")}
+            </span>
+          </div>
           <nav aria-label={t("Guest navigation")} className={styles.navigation}>
             <form action={localizedPath("/", t.locale)} method="get">
               <button type="submit" className={styles["text-button"]}>
@@ -42,13 +51,15 @@ export default async function Header() {
     );
   }
   const { user } = await getAuth();
+  const [avatar, access] = user?.emailVerified
+    ? await Promise.all([readAvatar(user.id), readPremiumAccess(user.id)])
+    : [null, null];
 
   return (
     <header className={styles.header}>
       <div className={styles["header-inner"]}>
         <Link href={getHomePath(user)} className={styles.brand}>
-          <Heart size={23} aria-hidden="true" />
-          Wishlist
+          <Brand />
         </Link>
         <nav
           aria-label={t("Main navigation")}
@@ -87,6 +98,28 @@ export default async function Header() {
           )}
         </nav>
         <div className={styles["header-tools"]}>
+          {user && access?.plan !== "PREMIUM" && (
+            <Link href="/premium" className={styles["premium-link"]}>
+              <Sparkles size={16} aria-hidden="true" />
+              Premium
+            </Link>
+          )}
+          {user && (
+            <Link
+              href={
+                user.emailVerified ? accountProfilePath : emailVerificationPath
+              }
+              className={styles["account-avatar"]}
+              aria-label={t("Your account: {value0}", {
+                value0: user.username,
+              })}
+              title={user.username}
+            >
+              <span aria-hidden="true">
+                <UserAvatar image={avatar} compact />
+              </span>
+            </Link>
+          )}
           {user && (
             <form action={signOut}>
               <button type="submit" className={styles["text-button"]}>

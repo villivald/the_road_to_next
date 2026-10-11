@@ -1,5 +1,13 @@
 import type { ReactNode } from "react";
 import shell from "@/components/shell.module.css";
+import {
+  AccountDetails,
+  type AccountIdentity,
+} from "@/features/account/components/account-details";
+import { ProfileForm } from "@/features/account/components/profile-form";
+import { BrowseControls } from "@/features/discovery/components/discovery-controls";
+import { parseDiscoveryQuery } from "@/features/discovery/service/query";
+import { MyListsControls } from "@/features/wishlist/components/my-lists-controls";
 import { useText } from "@/i18n/use-text";
 import styles from "./loading-preview.module.css";
 
@@ -7,17 +15,24 @@ function LoadingFrame({
   label,
   children,
   className = shell.page,
+  contentClassName,
 }: {
   label: string;
   children: ReactNode;
   className?: string;
+  contentClassName?: string;
 }) {
   return (
     <section className={className} data-loading-preview>
       <p role="status" className={shell["visually-hidden"]}>
         {label}
       </p>
-      <div aria-hidden="true" aria-busy="true" className={styles.content}>
+      <div
+        aria-hidden="true"
+        aria-busy="true"
+        inert
+        className={`${styles.content} ${contentClassName ?? ""}`}
+      >
         {children}
       </div>
     </section>
@@ -89,34 +104,18 @@ export function CatalogSkeleton({
       {kind === "shared" && (
         <span className={styles["back-label"]}>{t("Back to my lists")}</span>
       )}
-      <div className={shell["page-heading"]}>
-        <div>
-          <h1>{heading}</h1>
-          <p className={shell.muted}>{description}</p>
-        </div>
-        {kind === "lists" && (
-          <div className={`${styles.block} ${styles.button}`} />
-        )}
-      </div>
       {kind === "browse" ? (
-        <>
-          <div className={`${styles.block} ${styles.tabs}`} />
-          <div className={shell["filter-panel"]}>
-            <div className={shell["form-row"]}>
-              {[0, 1].map((index) => (
-                <div className={shell.field} key={index}>
-                  <div className={`${styles.block} ${styles.label}`} />
-                  <div className={`${styles.block} ${styles.input}`} />
-                </div>
-              ))}
-            </div>
-            <div className={`${styles.block} ${styles.line}`} />
-            <div className={`${styles.block} ${styles.button}`} />
-          </div>
-        </>
+        <BrowseControls filters={parseDiscoveryQuery({})} />
       ) : kind === "lists" ? (
-        <div className={`${styles.block} ${styles["back-link"]}`} />
-      ) : null}
+        <MyListsControls />
+      ) : (
+        <div className={shell["page-heading"]}>
+          <div>
+            <h1>{heading}</h1>
+            <p className={shell.muted}>{description}</p>
+          </div>
+        </div>
+      )}
       <SkeletonCards media={kind !== "shared"} />
     </LoadingFrame>
   );
@@ -154,29 +153,40 @@ export function DetailSkeleton({ kind = "list" }: { kind?: "list" | "wish" }) {
   );
 }
 
-export function EditorSkeleton({ profile = false }: { profile?: boolean }) {
+export function EditorSkeleton({
+  profile = false,
+  user,
+}: {
+  profile?: boolean;
+  user?: AccountIdentity;
+}) {
   const t = useText();
 
   return (
     <LoadingFrame
       label={profile ? t("Loading your profile…") : t("Loading editor…")}
       className={profile ? shell["account-panel"] : shell.editor}
+      contentClassName={profile ? styles["account-content"] : undefined}
     >
       {profile ? (
         <h1>{t("Your account")}</h1>
       ) : (
         <div className={`${styles.block} ${styles.heading}`} />
       )}
-      {profile && (
-        <>
-          <div className={`${styles.block} ${styles["account-details"]}`} />
-          <div className={`${styles.block} ${styles.toolbar}`} />
-        </>
+      {profile && user && <AccountDetails user={user} />}
+      {profile ? (
+        <ProfileForm profile={{ name: null, description: null }} loading />
+      ) : (
+        <SkeletonFields count={5} />
       )}
-      <SkeletonFields count={profile ? 2 : 5} />
       {profile && (
         <>
-          <div className={`${styles.block} ${styles["back-link"]}`} />
+          <div className={shell["plan-summary"]}>
+            <div className={`${styles.block} ${styles.label}`} />
+            <div className={`${styles.block} ${styles.title}`} />
+            <div className={`${styles.block} ${styles.line}`} />
+            <div className={`${styles.block} ${styles.button}`} />
+          </div>
           <div className={styles["avatar-editor"]}>
             <div className={`${styles.block} ${styles.title}`} />
             <div className={`${styles.block} ${styles.line}`} />

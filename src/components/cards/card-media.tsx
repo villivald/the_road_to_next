@@ -1,8 +1,31 @@
 import { Gift, Layers, UserRound } from "lucide-react";
+import type { ReactNode } from "react";
 import { MediaImage } from "@/features/media/components/media-image";
 import type { MediaImage as ImageDetails } from "@/features/media/types";
+import { Link } from "@/i18n/navigation";
 import { useText } from "@/i18n/use-text";
 import styles from "./cards.module.css";
+
+export function CardMediaLink({
+  path,
+  title,
+  children,
+}: {
+  path: string;
+  title: string;
+  children: ReactNode;
+}) {
+  const t = useText();
+  return (
+    <Link
+      href={path}
+      className={styles["media-link"]}
+      aria-label={t("Open {value0} from preview", { value0: title })}
+    >
+      {children}
+    </Link>
+  );
+}
 
 export function CardMedia({
   image,
@@ -53,9 +76,17 @@ export function ListPreview({
   );
 }
 
-export function UserAvatar({ image }: { image: ImageDetails | null }) {
+export function UserAvatar({
+  image,
+  compact = false,
+}: {
+  image: ImageDetails | null;
+  compact?: boolean;
+}) {
   return (
-    <div className={styles.avatar}>
+    <div
+      className={`${styles.avatar} ${compact ? styles["compact-avatar"] : ""}`}
+    >
       {image ? (
         <MediaImage image={image} compact />
       ) : (

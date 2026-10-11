@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { CardMedia } from "@/components/cards/card-media";
+import cardStyles from "@/components/cards/cards.module.css";
 import styles from "@/components/shell.module.css";
 import { GUEST_COOKIE } from "@/features/guest/http";
 import {
@@ -59,7 +60,15 @@ export default async function GuestListPage({
         <ul className={styles["list-grid"]}>
           {wishes.map((wish) => (
             <li key={wish.id} className={styles["list-card"]}>
-              <CardMedia image={wish.image} guestListId={listId} />
+              <a
+                href={localizedPath(guestWishPath(listId, wish.id), t.locale)}
+                className={cardStyles["media-link"]}
+                aria-label={t("Open {value0} from preview", {
+                  value0: wish.title,
+                })}
+              >
+                <CardMedia image={wish.image} guestListId={listId} />
+              </a>
               <h3>
                 <a
                   href={localizedPath(guestWishPath(listId, wish.id), t.locale)}

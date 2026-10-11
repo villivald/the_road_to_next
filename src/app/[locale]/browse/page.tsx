@@ -2,7 +2,7 @@ import { Search } from "lucide-react";
 import type { Metadata } from "next";
 import styles from "@/components/shell.module.css";
 import { getAuth } from "@/features/auth/actions/get-auth";
-import { DiscoveryFilters } from "@/features/discovery/components/discovery-filters";
+import { BrowseControls } from "@/features/discovery/components/discovery-controls";
 import { DiscoveryResults } from "@/features/discovery/components/discovery-results";
 import {
   discoverLists,
@@ -52,44 +52,7 @@ export default async function BrowsePage({
 
   return (
     <section className={styles.page}>
-      <div className={styles["page-heading"]}>
-        <div>
-          <h1>{t("Browse wishlists")}</h1>
-          <p className={styles.muted}>
-            {t(
-              "Explore public lists, available wishes, and the people behind them.",
-            )}
-          </p>
-        </div>
-      </div>
-      <nav aria-label={t("Browse content")} className={styles.tabs}>
-        <Link
-          href={discoveryUrl(filters, 1, "lists")}
-          aria-current={filters.view === "lists" ? "page" : undefined}
-        >
-          {t("Lists")}
-        </Link>
-        <Link
-          href={discoveryUrl(filters, 1, "wishes")}
-          aria-current={filters.view === "wishes" ? "page" : undefined}
-        >
-          {t("Wishes")}
-        </Link>
-        <Link
-          href={discoveryUrl(filters, 1, "users")}
-          aria-current={filters.view === "users" ? "page" : undefined}
-        >
-          {t("People")}
-        </Link>
-      </nav>
-      {filters.owner && (
-        <p className={styles.notice}>
-          {t("Public lists and wishes by @")}
-          {filters.owner}.{" "}
-          <Link href="/browse?view=users">{t("Find another person")}</Link>
-        </p>
-      )}
-      <DiscoveryFilters key={JSON.stringify(filters)} filters={filters} />
+      <BrowseControls filters={filters} />
       {filters.error ? (
         <p role="alert" className={styles.error}>
           {t.message(filters.error)}

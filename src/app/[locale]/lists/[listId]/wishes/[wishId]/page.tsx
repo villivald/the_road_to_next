@@ -1,8 +1,21 @@
-import { Check, Eye, EyeOff, RotateCcw, Trash2 } from "lucide-react";
+import {
+  CircleCheck,
+  ExternalLink,
+  Eye,
+  EyeOff,
+  RotateCcw,
+  Trash2,
+} from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { DetailNavigation } from "@/app/_navigation/navigation-context";
+import {
+  detailSection,
+  navigationPath,
+} from "@/app/_navigation/navigation-path";
 import { WishStatus } from "@/components/cards/wish-status";
 import { ActionForm } from "@/components/form/action-form";
+import { SuccessMessage } from "@/components/form/success-message";
 import styles from "@/components/shell.module.css";
 import { getAuth } from "@/features/auth/actions/get-auth";
 import { MediaImage } from "@/features/media/components/media-image";
@@ -28,7 +41,7 @@ export default async function WishPage({
   searchParams,
 }: {
   params: Promise<{ listId: string; wishId: string }>;
-  searchParams: Promise<{ created?: string; saved?: string }>;
+  searchParams: Promise<{ created?: string; saved?: string; from?: string }>;
 }) {
   const t = await getText();
 
@@ -40,18 +53,23 @@ export default async function WishPage({
     notFound();
   }
 
-  const { created, saved } = await searchParams;
+  const { created, saved, from } = await searchParams;
+  const section = detailSection(from, wish.canManage);
 
   return (
     <section className={styles.page}>
-      <Link className={styles.description} href={listPath(listId)}>
+      <DetailNavigation section={section} />
+      <Link
+        className={styles.description}
+        href={navigationPath(listPath(listId), section)}
+      >
         {t("Back to")} {wish.wishlist.title}
       </Link>
 
       {wish.canManage && (created === "1" || saved === "1") && (
-        <p role="status" className={styles.notice}>
+        <SuccessMessage>
           {created === "1" ? t("Wish added.") : t("Changes saved.")}
-        </p>
+        </SuccessMessage>
       )}
 
       <div className={styles["page-heading"]}>
@@ -88,8 +106,14 @@ export default async function WishPage({
       )}
 
       {wish.externalUrl && (
-        <a href={wish.externalUrl} target="_blank" rel="noopener noreferrer">
+        <a
+          href={wish.externalUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles["icon-label"]}
+        >
           {t("View product (opens in a new tab)")}
+          <ExternalLink size={18} aria-hidden="true" />
         </a>
       )}
 
@@ -136,7 +160,7 @@ export default async function WishPage({
                 wish.fulfilledAt ? (
                   <RotateCcw size={18} aria-hidden="true" />
                 ) : (
-                  <Check size={18} aria-hidden="true" />
+                  <CircleCheck size={18} aria-hidden="true" />
                 )
               }
             >

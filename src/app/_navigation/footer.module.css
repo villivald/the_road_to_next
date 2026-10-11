@@ -25,15 +25,9 @@
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  font-size: 1.7rem;
-  font-weight: 800;
-  letter-spacing: -0.04em;
+  max-width: 100%;
+  min-width: 0;
   text-decoration: none;
-}
-
-.brand svg {
-  fill: var(--primary);
 }
 
 .contact {
@@ -87,6 +81,11 @@
 }
 
 .guest-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 0.75rem;
   padding: 1.5rem;
   text-align: center;
   color: var(--muted-foreground);

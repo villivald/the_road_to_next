@@ -1,8 +1,34 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useLinkStatus } from "next/link";
+import { type ReactNode, useId } from "react";
+import shell from "@/components/shell.module.css";
 import { Link } from "@/i18n/navigation";
 import { usePathname } from "@/i18n/navigation";
+import { useText } from "@/i18n/use-text";
+import styles from "./nav-link.module.css";
+import { useDetailSection } from "./navigation-context";
+
+function NavigationProgress() {
+  const { pending } = useLinkStatus();
+  const t = useText();
+  return (
+    <>
+      <span
+        aria-hidden="true"
+        className={styles.progress}
+        data-navigation-pending={pending || undefined}
+      />
+      <span
+        aria-live="polite"
+        aria-atomic="true"
+        className={shell["visually-hidden"]}
+      >
+        {pending ? t("Loading") : null}
+      </span>
+    </>
+  );
+}
 
 export function NavLink({
   href,
@@ -14,11 +40,27 @@ export function NavLink({
   children: ReactNode;
 }) {
   const pathname = usePathname();
-  const active = pathname === match || pathname.startsWith(`${match}/`);
+  const labelId = useId();
+  const section = useDetailSection();
+  const detail =
+    /^\/lists\/[^/]+(?:\/wishes\/[^/]+)?$/.test(pathname) &&
+    pathname !== "/lists/shared" &&
+    !pathname.endsWith("/new");
+  const active = detail
+    ? match === `/${section}`
+    : pathname === match || pathname.startsWith(`${match}/`);
 
   return (
-    <Link href={href} aria-current={active ? "page" : undefined}>
-      {children}
+    <Link
+      href={href}
+      className={styles.link}
+      aria-labelledby={labelId}
+      aria-current={active ? "page" : undefined}
+    >
+      <span id={labelId} className={styles.label}>
+        {children}
+      </span>
+      <NavigationProgress />
     </Link>
   );
 }

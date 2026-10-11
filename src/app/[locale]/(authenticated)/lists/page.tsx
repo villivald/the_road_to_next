@@ -1,17 +1,19 @@
 import { List } from "lucide-react";
 import type { Metadata } from "next";
 import { CardActions } from "@/components/cards/card-actions";
-import { ListPreview } from "@/components/cards/card-media";
+import { CardMediaLink, ListPreview } from "@/components/cards/card-media";
 import cardStyles from "@/components/cards/cards.module.css";
 import { ListStatus } from "@/components/cards/list-status";
 import { ListWishCounts } from "@/components/cards/list-wish-counts";
 import { ReservationAvailability } from "@/components/cards/reservation-availability";
+import { SuccessMessage } from "@/components/form/success-message";
 import styles from "@/components/shell.module.css";
+import { MyListsControls } from "@/features/wishlist/components/my-lists-controls";
 import { getMyLists } from "@/features/wishlist/queries/get-my-lists";
 import { Link } from "@/i18n/navigation";
 import { getText } from "@/i18n/server";
 import { listSettingsPath, sharingPath } from "@/paths";
-import { listPath, listsPath, newListPath, sharedListsPath } from "@/paths";
+import { listPath, listsPath } from "@/paths";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getText();
@@ -35,29 +37,19 @@ export default async function ListsPage({
 
   return (
     <section className={styles.page}>
-      <div className={styles["page-heading"]}>
-        <div>
-          <h1>{t("My lists")}</h1>
-          <p className={styles.muted}>{t("Your wishes, in one place.")}</p>
-        </div>
-        <Link href={newListPath} className={styles.button}>
-          {t("Create a list")}
-        </Link>
-      </div>
-
-      <Link href={sharedListsPath}>{t("Lists shared with you")}</Link>
+      <MyListsControls />
 
       {params.deleted === "1" && (
-        <p role="status" className={styles.notice}>
-          {t("List deleted.")}
-        </p>
+        <SuccessMessage>{t("List deleted.")}</SuccessMessage>
       )}
 
       {lists.length ? (
         <ul className={styles["list-grid"]}>
           {lists.map((list) => (
             <li key={list.id} className={styles["list-card"]}>
-              <ListPreview image={list.image} images={list.previewImages} />
+              <CardMediaLink path={listPath(list.id)} title={list.title}>
+                <ListPreview image={list.image} images={list.previewImages} />
+              </CardMediaLink>
               <h2>
                 <Link href={listPath(list.id)}>{list.title}</Link>
               </h2>

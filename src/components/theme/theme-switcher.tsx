@@ -17,12 +17,14 @@ export default function ThemeSwitcher() {
     () => false,
   );
   const dark = hydrated && resolvedTheme === "dark";
+  const label = t(dark ? "Switch to light mode" : "Switch to dark mode");
 
   return (
     <button
       type="button"
       className={styles["theme-toggle"]}
-      aria-label={t("Toggle theme")}
+      aria-label={label}
+      title={label}
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
     >
       {dark ? (

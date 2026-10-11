@@ -1,3 +1,4 @@
+import { ExternalLink } from "lucide-react";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
@@ -53,8 +54,10 @@ export default async function GuestWishPage({
           target="_blank"
           rel="noopener noreferrer"
           referrerPolicy="no-referrer"
+          className={styles["icon-label"]}
         >
           {t("View product (opens in a new tab)")}
+          <ExternalLink size={18} aria-hidden="true" />
         </a>
       )}
       <p>

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { CopyLink } from "@/components/cards/copy-link";
 import { ListStatus } from "@/components/cards/list-status";
 import { ActionForm } from "@/components/form/action-form";
+import { SuccessMessage } from "@/components/form/success-message";
 import { LocalTime } from "@/components/local-time";
 import styles from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
@@ -71,21 +72,19 @@ export default async function SharingPage({
         <p className={styles.description}>{list.title}</p>
       </header>
       {query.changed === "removed" && (
-        <p role="status" className={styles.notice}>
+        <SuccessMessage>
           {t(
             "Member removed. Access through a public list or a guest link is separate.",
           )}
-        </p>
+        </SuccessMessage>
       )}
       {query.changed === "revoked" && (
-        <p role="status" className={styles.notice}>
-          {t("Invitation canceled.")}
-        </p>
+        <SuccessMessage>{t("Invitation canceled.")}</SuccessMessage>
       )}
       {query.changed === "transferred" && (
-        <p role="status" className={styles.notice}>
+        <SuccessMessage>
           {t("Ownership transferred. You remain an admin.")}
-        </p>
+        </SuccessMessage>
       )}
 
       <section

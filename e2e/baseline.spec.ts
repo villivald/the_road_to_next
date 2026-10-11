@@ -45,7 +45,7 @@ test("keyboard navigation and narrow dark layout", async ({ page }, info) => {
   ).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page.getByRole("main")).toBeFocused();
-  await page.getByRole("button", { name: "Toggle theme" }).click();
+  await page.getByRole("button", { name: "Switch to dark mode" }).click();
   await expect(page.locator("html")).toHaveClass(/dark/);
   await page.goto("/en/sign-in");
   await expect(page.getByLabel("Email", { exact: true })).toBeVisible();

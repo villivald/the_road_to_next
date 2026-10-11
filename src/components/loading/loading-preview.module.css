@@ -5,6 +5,15 @@
   gap: 1.75rem;
 }
 
+.account-content {
+  gap: 1.5rem;
+}
+
+.control:disabled {
+  background: var(--muted);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
 .block {
   width: 100%;
   max-width: 100%;
@@ -53,18 +62,9 @@
   min-height: 44px;
 }
 
-.tabs {
-  width: min(100%, 20rem);
-  height: 56px;
-}
-
 .textarea,
 .toolbar {
   height: 7rem;
-}
-
-.account-details {
-  height: 11rem;
 }
 
 .avatar-editor {
@@ -92,17 +92,6 @@
   border-top: 1px solid var(--border);
 }
 
-.empty-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 1rem;
-}
-
-.block.skeleton-text {
-  width: auto;
-  color: transparent;
-}
-
 @keyframes pulse {
   50% {
     opacity: 0.55;
@@ -110,7 +99,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .block {
+  .block,
+  .control:disabled {
     animation: none;
   }
 }

@@ -6,6 +6,8 @@ import { NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import Footer from "@/app/_navigation/footer";
 import Header from "@/app/_navigation/header";
+import { NavigationProvider } from "@/app/_navigation/navigation-context";
+import { FeedbackProvider } from "@/components/form/feedback-provider";
 import styles from "@/components/shell.module.css";
 import ThemeProvider from "@/components/theme/theme-provider";
 import { isLocale } from "@/i18n/config";
@@ -45,14 +47,18 @@ export default async function RootLayout({
       <body className={`${manrope.variable} ${styles.body}`}>
         <NextIntlClientProvider locale={locale} messages={{}}>
           <ThemeProvider>
-            <a href="#main-content" className={styles["skip-link"]}>
-              {t("Skip to content")}
-            </a>
-            <Header />
-            <main id="main-content" tabIndex={-1} className={styles.main}>
-              {children}
-            </main>
-            <Footer />
+            <NavigationProvider>
+              <FeedbackProvider>
+                <a href="#main-content" className={styles["skip-link"]}>
+                  {t("Skip to content")}
+                </a>
+                <Header />
+                <main id="main-content" tabIndex={-1} className={styles.main}>
+                  {children}
+                </main>
+                <Footer />
+              </FeedbackProvider>
+            </NavigationProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

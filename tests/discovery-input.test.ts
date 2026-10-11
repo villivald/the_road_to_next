@@ -121,6 +121,9 @@ describe("authentication return paths", () => {
     "/lists/abc_123",
     "/lists/abc/wishes/def-123",
     "/invitations/abc_123",
+    "/account/plan",
+    "/en/account/plan",
+    "/fi/account/plan",
   ])("accepts a known local viewing path: %s", (path) => {
     expect(safeReturnTo(path)).toBe(path);
   });
@@ -139,6 +142,9 @@ describe("authentication return paths", () => {
     "/lists/a/../sign-out",
     "/lists/a?redirect=https://example.com",
     "/api/media",
+    "/account/delete",
+    "/account/checkout?id=abc",
+    "/account/plan?checkout=returned",
     `/lists/${"a".repeat(129)}`,
     "/invitations/%2f%2fevil",
     "/invitations/a?next=https://evil.test",

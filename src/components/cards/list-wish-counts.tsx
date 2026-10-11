@@ -1,4 +1,4 @@
-import { Gift, List } from "lucide-react";
+import { BookmarkCheck, List } from "lucide-react";
 import { useText } from "@/i18n/use-text";
 import styles from "./cards.module.css";
 
@@ -18,7 +18,7 @@ export function ListWishCounts({
         {t("{count} available", { count: availableWishCount })}
       </span>
       <span>
-        <Gift size={16} aria-hidden="true" />
+        <BookmarkCheck size={16} aria-hidden="true" />
         {t("{count} reserved", { count: reservedWishCount })}
       </span>
     </p>

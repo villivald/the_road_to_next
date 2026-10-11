@@ -20,6 +20,112 @@ test.beforeEach(async () => {
   }
 });
 
+for (const locale of ["en", "fi"]) {
+  test(`${locale}: top-bar loading previews keep content anchors in place`, async ({
+    page,
+    browser,
+  }) => {
+    await page.goto("/en/sign-in");
+    await page.getByLabel("Email", { exact: true }).fill(accounts.owner.email);
+    await page
+      .getByLabel("Password", { exact: true })
+      .fill(accounts.owner.password);
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
+    await expect(page).toHaveURL(/\/lists$/);
+    const context = await browser.newContext({
+      javaScriptEnabled: false,
+      storageState: await page.context().storageState(),
+      viewport: page.viewportSize(),
+    });
+    const frozen = await context.newPage();
+    try {
+      for (const route of [
+        {
+          path: "browse",
+          heading: locale === "fi" ? "Selaa toivelistoja" : "Browse wishlists",
+          tab: locale === "fi" ? "Selaa" : "Browse",
+          selectors: [
+            "main h1:visible",
+            '[class*="filter-panel"]:visible',
+            'main [class*="list-grid"]:visible',
+          ],
+        },
+        {
+          path: "lists",
+          heading: locale === "fi" ? "Omat listat" : "My lists",
+          tab: locale === "fi" ? "Omat listat" : "My lists",
+          selectors: ["main h1:visible", 'main [class*="list-grid"]:visible'],
+        },
+        {
+          path: "account/profile",
+          heading: locale === "fi" ? "Oma tili" : "Your account",
+          tab: locale === "fi" ? "Tili" : "Account",
+          selectors: [
+            "main h1:visible",
+            '[class*="account-details"]:visible',
+            '[class*="profile-guidance"]:visible',
+            "#profile-name:visible",
+            "#profile-description:visible",
+          ],
+        },
+      ]) {
+        await frozen.goto(new URL(`/${locale}/${route.path}`, page.url()).href);
+        await expect(
+          frozen.locator("[data-loading-preview]").first(),
+        ).toBeVisible();
+        await frozen.evaluate(() => document.fonts.ready);
+        const before = await Promise.all(
+          route.selectors.map(async (selector) => {
+            const anchor = frozen.locator(selector).first();
+            return (await anchor.count()) ? anchor.boundingBox() : null;
+          }),
+        );
+        await page.goto(`/${locale}/reservations`);
+        await page
+          .getByRole("navigation", {
+            name: locale === "fi" ? "Päänavigaatio" : "Main navigation",
+          })
+          .getByRole("link", { name: route.tab, exact: true })
+          .click();
+        await expect(page).toHaveURL(new RegExp(`/${locale}/${route.path}$`));
+        await expect(
+          page.getByRole("heading", { name: route.heading, exact: true }),
+        ).toBeVisible();
+        await expect(page.locator("[data-loading-preview]")).not.toBeVisible();
+        await page.evaluate(() => document.fonts.ready);
+        const after = await Promise.all(
+          route.selectors.map((selector) =>
+            page.locator(selector).first().boundingBox(),
+          ),
+        );
+
+        for (const [index, selector] of route.selectors.entries()) {
+          expect
+            .soft(before[index], `${route.path}: ${selector} loading anchor`)
+            .not.toBeNull();
+          expect
+            .soft(after[index], `${route.path}: ${selector} loaded anchor`)
+            .not.toBeNull();
+          if (before[index] && after[index]) {
+            for (const coordinate of ["x", "y", "width"] as const) {
+              expect
+                .soft(
+                  Math.abs(
+                    before[index]![coordinate] - after[index]![coordinate],
+                  ),
+                  `${route.path}: ${selector} ${coordinate}`,
+                )
+                .toBeLessThanOrEqual(1);
+            }
+          }
+        }
+      }
+    } finally {
+      await context.close();
+    }
+  });
+}
+
 test("Wishlist navigation keeps My lists in place without a homepage redirect", async ({
   page,
 }) => {
@@ -69,66 +175,213 @@ test("Wishlist navigation keeps My lists in place without a homepage redirect", 
   await expect(heading).toBeVisible();
 });
 
-test("reservations keep heading and empty-page geometry when loading finishes", async ({
-  page,
-  browser,
-}) => {
-  await page.goto("/en/sign-in");
-  await page.getByLabel("Email", { exact: true }).fill(accounts.owner.email);
-  await page
-    .getByLabel("Password", { exact: true })
-    .fill(accounts.owner.password);
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
-  await expect(page).toHaveURL(/\/lists$/);
-  const context = await browser.newContext({
-    javaScriptEnabled: false,
-    storageState: await page.context().storageState(),
-    viewport: page.viewportSize(),
-    reducedMotion: "reduce",
-  });
-  try {
-    const previewPage = await context.newPage();
-    await previewPage.goto(new URL("/en/reservations", page.url()).href);
-    await expect(previewPage.locator("[data-loading-preview]")).toBeVisible();
-    await previewPage.evaluate(() => document.fonts.ready);
-    const previewHeading = previewPage.getByRole("main").locator("h1");
-    const headingBounds = await previewHeading.boundingBox();
-    const descriptionBounds = await previewHeading
-      .locator("..")
-      .locator("p")
-      .boundingBox();
-    const footerBounds = await previewPage
-      .getByRole("contentinfo")
-      .boundingBox();
-
-    for (const path of ["/en/lists", "/en/browse", "/en/account/profile"]) {
-      await page.goto(path);
+for (const locale of ["en", "fi"]) {
+  for (const count of [0, 1, 4]) {
+    test(`${locale}: reservations with ${count} wishes replace Browse and My lists only when ready`, async ({
+      page,
+    }, info) => {
+      if (count) {
+        const prisma = testPrisma();
+        try {
+          await prisma.wish.createMany({
+            data: Array.from({ length: count }, (_unused, index) => ({
+              id: `e2e-reserved-${index}`,
+              wishlistId: "e2e-loading-list",
+              title:
+                index === 0
+                  ? "A little gift"
+                  : "A thoughtful gift with a longer title that wraps across several lines",
+            })),
+          });
+          await prisma.reservation.createMany({
+            data: Array.from({ length: count }, (_unused, index) => ({
+              userId: "e2e-owner",
+              wishId: `e2e-reserved-${index}`,
+            })),
+          });
+        } finally {
+          await prisma.$disconnect();
+        }
+      }
+      await page.goto("/en/sign-in");
       await page
-        .getByRole("link", { name: "My reservations", exact: true })
-        .click();
-      await expect(
-        page.getByRole("heading", {
-          name: "No active reservations",
+        .getByLabel("Email", { exact: true })
+        .fill(accounts.owner.email);
+      await page
+        .getByLabel("Password", { exact: true })
+        .fill(accounts.owner.password);
+      await page.getByRole("button", { name: "Sign in", exact: true }).click();
+      await expect(page).toHaveURL(/\/lists$/);
+      const heading = locale === "fi" ? "Omat varaukset" : "My reservations";
+      const target = `/${locale}/reservations`;
+
+      for (const source of ["browse", "lists"]) {
+        await page.goto(`/${locale}/${source}`);
+        await expect(page.locator("[data-loading-preview]")).not.toBeVisible();
+        await page.evaluate(() => document.fonts.ready);
+        const sourceHeading = page
+          .getByRole("main")
+          .getByRole("heading", { level: 1 });
+        const originalHeading = await sourceHeading.elementHandle();
+        const sourceBounds = await page.getByRole("main").boundingBox();
+        const footerBounds = await page.getByRole("contentinfo").boundingBox();
+        const navigation = page.getByRole("navigation", {
+          name: locale === "fi" ? "Päänavigaatio" : "Main navigation",
+        });
+        const link = navigation.getByRole("link", {
+          name: heading,
           exact: true,
-        }),
-      ).toBeVisible();
-      await page.evaluate(() => document.fonts.ready);
-      const heading = page.getByRole("heading", {
-        name: "My reservations",
-        exact: true,
-      });
-      expect(await heading.boundingBox()).toEqual(headingBounds);
-      expect(await heading.locator("..").locator("p").boundingBox()).toEqual(
-        descriptionBounds,
-      );
-      expect(await page.getByRole("contentinfo").boundingBox()).toEqual(
-        footerBounds,
-      );
-    }
-  } finally {
-    await context.close();
+        });
+        const linkBounds = await link.boundingBox();
+        // Hold the route response to inspect a real pending navigation, without timers.
+        let release!: () => void;
+        const held = new Promise<void>((resolve) => {
+          release = resolve;
+        });
+        const pattern = `**${target}?*`;
+        await page.route(pattern, async (route) => {
+          const response = await route.fetch();
+          await held;
+          await route.fulfill({ response });
+        });
+        try {
+          await page.evaluate((targetHeading) => {
+            const samples: {
+              headingY: number;
+              helpY: number;
+              footerY: number;
+            }[] = [];
+            const state = { samples, running: true };
+            Object.assign(window, { reservationNavigation: state });
+            const sample = () => {
+              const heading = document.querySelector("main h1");
+              if (heading?.textContent === targetHeading) {
+                const help = document.querySelector(
+                  "main > section > p:last-of-type",
+                );
+                const footer = document.querySelector("footer");
+                if (help && footer)
+                  samples.push({
+                    headingY: heading.getBoundingClientRect().y,
+                    helpY: help.getBoundingClientRect().y,
+                    footerY: footer.getBoundingClientRect().y,
+                  });
+              }
+              if (state.running) requestAnimationFrame(sample);
+            };
+            requestAnimationFrame(sample);
+          }, heading);
+          await link.click();
+          await expect(link.locator("[data-navigation-pending]")).toHaveCount(
+            1,
+          );
+          await expect
+            .poll(() =>
+              link
+                .locator("[data-navigation-pending]")
+                .evaluate((element) => getComputedStyle(element).opacity),
+            )
+            .toBe("1");
+          await expect(link.locator('[aria-live="polite"]')).toHaveText(
+            locale === "fi" ? "Ladataan" : "Loading",
+          );
+          expect(
+            await originalHeading!.evaluate((element) => element.isConnected),
+          ).toBe(true);
+          expect(await page.getByRole("main").boundingBox()).toEqual(
+            sourceBounds,
+          );
+          expect(await page.getByRole("contentinfo").boundingBox()).toEqual(
+            footerBounds,
+          );
+          expect(await link.boundingBox()).toEqual(linkBounds);
+          await expect(
+            page
+              .getByRole("main")
+              .getByRole("heading", { name: heading, exact: true }),
+          ).toHaveCount(0);
+          if (locale === "en" && count === 1 && source === "browse") {
+            await page.screenshot({
+              path: info.outputPath("reservations-pending.png"),
+            });
+          }
+          release();
+          await expect(page).toHaveURL(target);
+          await expect(
+            page
+              .getByRole("main")
+              .getByRole("heading", { name: heading, exact: true }),
+          ).toBeVisible();
+          await expect(link).toHaveAttribute("aria-current", "page");
+          await expect(
+            page.locator("[data-loading-preview]"),
+          ).not.toBeVisible();
+          await expect(link.locator("[data-navigation-pending]")).toHaveCount(
+            0,
+          );
+          await expect(
+            page.getByRole("button", {
+              name: locale === "fi" ? "Peru varaus" : "Cancel reservation",
+              exact: true,
+            }),
+          ).toHaveCount(count);
+          if (!count) {
+            await expect(
+              page.getByRole("heading", {
+                name:
+                  locale === "fi"
+                    ? "Ei aktiivisia varauksia"
+                    : "No active reservations",
+                exact: true,
+              }),
+            ).toBeVisible();
+          }
+          const samples = await page.evaluate(async () => {
+            await new Promise<void>((resolve) =>
+              requestAnimationFrame(() =>
+                requestAnimationFrame(() => resolve()),
+              ),
+            );
+            const state = (
+              window as typeof window & {
+                reservationNavigation: {
+                  samples: {
+                    headingY: number;
+                    helpY: number;
+                    footerY: number;
+                  }[];
+                  running: boolean;
+                };
+              }
+            ).reservationNavigation;
+            state.running = false;
+            return state.samples;
+          });
+          expect(samples.length).toBeGreaterThan(0);
+          for (const coordinate of ["headingY", "helpY", "footerY"] as const) {
+            const positions = samples.map((sample) => sample[coordinate]);
+            expect(
+              Math.max(...positions) - Math.min(...positions),
+              coordinate,
+            ).toBeLessThanOrEqual(1);
+          }
+          await page.goBack();
+          await expect(page).toHaveURL(`/${locale}/${source}`);
+          await page.goForward();
+          await expect(page).toHaveURL(target);
+          await expect(
+            page
+              .getByRole("main")
+              .getByRole("heading", { name: heading, exact: true }),
+          ).toBeVisible();
+        } finally {
+          release();
+          await page.unroute(pattern);
+        }
+      }
+    });
   }
-});
+}
 
 test("streamed loading previews reserve space, hide decorative content and respect reduced motion", async ({
   page,
@@ -154,7 +407,6 @@ test("streamed loading previews reserve space, hide decorative content and respe
       "/en/browse",
       "/en/lists",
       "/en/lists/shared",
-      "/en/reservations",
       "/en/account/profile",
       "/en/lists/e2e-loading-list",
       "/en/lists/e2e-loading-list/edit",
@@ -177,14 +429,20 @@ test("streamed loading previews reserve space, hide decorative content and respe
       if (expectedHeading) {
         const previewHeading = preview.locator("h1");
         // Without JavaScript, nested routes can remain on the parent fallback.
+        const previewTitle = (await previewHeading.count())
+          ? await previewHeading.textContent()
+          : null;
         const parentFallback =
-          (path.endsWith("/sharing") ||
+          ((path.endsWith("/sharing") ||
             path.endsWith("/guest-links") ||
             path.endsWith("/edit")) &&
-          (await previewHeading.count()) === 0;
+            (previewTitle === null || previewTitle === "My lists")) ||
+          (path.endsWith("/shared") && previewTitle === "My lists");
         if (parentFallback) {
           await expect(preview.getByRole("status")).toHaveText(
-            "Loading editor…",
+            previewTitle === "My lists"
+              ? "Loading my lists…"
+              : "Loading editor…",
           );
         } else {
           await expect(previewHeading).toHaveText(expectedHeading);
@@ -209,9 +467,13 @@ test("streamed loading previews reserve space, hide decorative content and respe
         });
       }
       await expect(preview.getByRole("status")).toContainText("Loading");
-      await expect(
-        preview.locator('[aria-hidden="true"][aria-busy="true"]'),
-      ).toHaveCount(1);
+      const decorativeContent = preview.locator(
+        '[aria-hidden="true"][aria-busy="true"]',
+      );
+      await expect(decorativeContent).toHaveCount(1);
+      if (path === "/en/browse" || path === "/en/account/profile") {
+        await expect(decorativeContent).toHaveAttribute("inert", "");
+      }
       expect((await preview.boundingBox())!.height).toBeGreaterThan(300);
       const animation = await preview
         .locator('[class*="block"]')

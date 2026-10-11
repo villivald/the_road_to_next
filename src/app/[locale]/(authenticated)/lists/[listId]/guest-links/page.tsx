@@ -2,6 +2,7 @@ import { ArrowLeft, Clock, Eye, Info, Link2 } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ActionForm } from "@/components/form/action-form";
+import { SuccessMessage } from "@/components/form/success-message";
 import { LocalTime } from "@/components/local-time";
 import styles from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
@@ -67,11 +68,11 @@ export default async function GuestLinksPage({
         </p>
       )}
       {query.revoked === "1" && (
-        <p role="status" className={styles.notice}>
+        <SuccessMessage>
           {t(
             "Guest link disabled. It no longer opens this list or its images.",
           )}
-        </p>
+        </SuccessMessage>
       )}
 
       <section

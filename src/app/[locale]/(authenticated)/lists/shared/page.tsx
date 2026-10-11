@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { navigationPath } from "@/app/_navigation/navigation-path";
 import { ListWishCounts } from "@/components/cards/list-wish-counts";
 import { ReservationAvailability } from "@/components/cards/reservation-availability";
 import { ActionForm } from "@/components/form/action-form";
+import { SuccessMessage } from "@/components/form/success-message";
 import styles from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import { deleteMembership } from "@/features/sharing/actions/manage-sharing";
@@ -53,19 +55,17 @@ export default async function SharedListsPage({
         </div>
       </div>
       {query.roleChanged === "1" && (
-        <p role="status" className={styles.notice}>
+        <SuccessMessage>
           {t("You are now a member. Admin controls are no longer available.")}
-        </p>
+        </SuccessMessage>
       )}
       {query.joined === "1" && (
-        <p role="status" className={styles.notice}>
+        <SuccessMessage>
           {t("Invitation accepted. You have joined the list.")}
-        </p>
+        </SuccessMessage>
       )}
       {query.left === "1" && (
-        <p role="status" className={styles.notice}>
-          {t("You have left the list.")}
-        </p>
+        <SuccessMessage>{t("You have left the list.")}</SuccessMessage>
       )}
       {lists.length ? (
         <ul className={styles["list-grid"]}>
@@ -73,7 +73,9 @@ export default async function SharedListsPage({
             <li key={list.id} className={styles["list-card"]}>
               <h2>
                 {list.title ? (
-                  <Link href={listPath(list.listId)}>{list.title}</Link>
+                  <Link href={navigationPath(listPath(list.listId), "lists")}>
+                    {list.title}
+                  </Link>
                 ) : (
                   t("Hidden list")
                 )}

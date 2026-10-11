@@ -76,7 +76,13 @@ export function MemberAccess({
                 label={admin ? t("Make member") : t("Make admin")}
                 secondary
                 pendingLabel={t("Updating…")}
-                icon={<Shield size={18} aria-hidden="true" />}
+                icon={
+                  admin ? (
+                    <UserRound size={18} aria-hidden="true" />
+                  ) : (
+                    <Shield size={18} aria-hidden="true" />
+                  )
+                }
               >
                 <input
                   type="hidden"

@@ -1,5 +1,6 @@
-import { ArrowUpRight, Heart, Mail } from "lucide-react";
+import { ArrowUpRight, Mail } from "lucide-react";
 import { headers } from "next/headers";
+import { Brand } from "@/components/brand/brand";
 import { getAuth } from "@/features/auth/actions/get-auth";
 import { getHomePath } from "@/features/auth/utils/home-path";
 import { Link } from "@/i18n/navigation";
@@ -12,7 +13,8 @@ export default async function Footer() {
   if ((await headers()).get("x-wishlist-view") === "guest") {
     return (
       <footer className={styles["guest-footer"]}>
-        {t("Wishlist · Shared with care")}
+        <Brand />
+        <span>{t("Shared with care")}</span>
       </footer>
     );
   }
@@ -24,8 +26,7 @@ export default async function Footer() {
       <div className={styles.inner}>
         <div className={styles.intro}>
           <Link href={getHomePath(user)} className={styles.brand}>
-            <Heart aria-hidden="true" />
-            Wishlist
+            <Brand variant="footer" />
           </Link>
           <p>{t("Good things are even better shared.")}</p>
           <a className={styles.contact} href="mailto:support@wishlist.fi">
@@ -42,6 +43,7 @@ export default async function Footer() {
         </nav>
         <nav aria-label={t("Footer information")} className={styles.links}>
           <h2>{t("Help and information")}</h2>
+          <Link href="/premium">{t("Free and Premium")}</Link>
           <Link href="/about">{t("About and credits")}</Link>
           <Link href="/accessibility">{t("Accessibility")}</Link>
           <Link href="/privacy">{t("Privacy")}</Link>

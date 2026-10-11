@@ -1,6 +1,10 @@
 import { Sparkles } from "lucide-react";
+import {
+  type DetailSection,
+  navigationPath,
+} from "@/app/_navigation/navigation-path";
 import { CardActions } from "@/components/cards/card-actions";
-import { CardMedia } from "@/components/cards/card-media";
+import { CardMedia, CardMediaLink } from "@/components/cards/card-media";
 import { WishStatus } from "@/components/cards/wish-status";
 import styles from "@/components/shell.module.css";
 import { localizedPath } from "@/i18n/config";
@@ -15,11 +19,15 @@ export async function WishCollection({
   listId,
   userId,
   canManage,
+  section,
+  reservationsEnabled,
   searchParams,
 }: {
   listId: string;
   userId: string | null;
   canManage: boolean;
+  section: DetailSection;
+  reservationsEnabled: boolean;
   searchParams: { sort?: string; view?: string; page?: string };
 }) {
   const t = await getText();
@@ -35,7 +43,10 @@ export async function WishCollection({
   );
 
   const pageUrl = (nextPage: number) =>
-    `${listPath(listId)}?${new URLSearchParams({ sort, view, page: String(nextPage) })}`;
+    navigationPath(
+      `${listPath(listId)}?${new URLSearchParams({ sort, view, page: String(nextPage) })}`,
+      section,
+    );
 
   return (
     <section className={styles.page} aria-labelledby="wishes-heading">
@@ -54,6 +65,7 @@ export async function WishCollection({
         action={localizedPath(listPath(listId), t.locale)}
         className={styles["wish-toolbar"]}
       >
+        <input type="hidden" name="from" value={section} />
         <div className={styles.field}>
           <label htmlFor="wish-sort">{t("Sort wishes")}</label>
           <select id="wish-sort" name="sort" defaultValue={sort}>
@@ -81,9 +93,16 @@ export async function WishCollection({
         <ul className={styles["list-grid"]}>
           {wishes.map((wish) => (
             <li key={wish.id} className={styles["list-card"]}>
-              <CardMedia image={wish.image} />
+              <CardMediaLink
+                path={navigationPath(wishPath(listId, wish.id), section)}
+                title={wish.title}
+              >
+                <CardMedia image={wish.image} />
+              </CardMediaLink>
               <h3 className={styles["wish-title"]}>
-                <Link href={wishPath(listId, wish.id)}>{wish.title}</Link>
+                <Link href={navigationPath(wishPath(listId, wish.id), section)}>
+                  {wish.title}
+                </Link>
               </h3>
               <p className={styles.price}>
                 {formatWishPrice(wish.priceMinor, wish.currency, t.locale)}
@@ -100,6 +119,14 @@ export async function WishCollection({
               <CardActions
                 path={wishPath(listId, wish.id)}
                 title={wish.title}
+                section={section}
+                productUrl={wish.externalUrl}
+                canReserve={
+                  reservationsEnabled &&
+                  !wish.hidden &&
+                  !wish.fulfilledAt &&
+                  !wish.isReserved
+                }
                 canManage={canManage}
               />
             </li>

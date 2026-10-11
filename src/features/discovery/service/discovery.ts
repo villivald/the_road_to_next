@@ -147,6 +147,7 @@ export const discoverWishes = async (
           id: true,
           title: true,
           description: true,
+          externalUrl: true,
           image: imageSelection,
           priceMinor: true,
           currency: true,

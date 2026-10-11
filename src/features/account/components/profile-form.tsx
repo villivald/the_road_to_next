@@ -3,14 +3,17 @@ import { Eye, LockKeyhole } from "lucide-react";
 import { useActionState } from "react";
 import { ActionFeedback } from "@/components/form/action-feedback";
 import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
+import loadingStyles from "@/components/loading/loading-preview.module.css";
 import styles from "@/components/shell.module.css";
 import { useText } from "@/i18n/use-text";
 import { saveProfile } from "../actions/manage-account";
 
 export function ProfileForm({
   profile,
+  loading = false,
 }: {
   profile: { name: string | null; description: string | null };
+  loading?: boolean;
 }) {
   const t = useText();
 
@@ -20,8 +23,12 @@ export function ProfileForm({
   });
 
   return (
-    <form action={action} className={styles.form} aria-busy={pending}>
-      <ActionFeedback state={state} />
+    <form
+      action={action}
+      className={styles.form}
+      aria-busy={pending || loading}
+      inert={loading || undefined}
+    >
       <div className={styles["profile-guidance"]}>
         <div>
           <Eye size={20} aria-hidden="true" />
@@ -39,13 +46,14 @@ export function ProfileForm({
           <p>{t("Your email stays private.")}</p>
         </div>
       </div>
-      <fieldset className={styles["form-fields"]} disabled={pending}>
+      <fieldset className={styles["form-fields"]} disabled={pending || loading}>
         <legend className={styles["visually-hidden"]}>
           {t("Profile details")}
         </legend>
         <div className={styles.field}>
           <label htmlFor="profile-name">{t("Display name")}</label>
           <input
+            className={loading ? loadingStyles.control : undefined}
             key={state.timestamp}
             id="profile-name"
             name="name"
@@ -75,6 +83,7 @@ export function ProfileForm({
         <div className={styles.field}>
           <label htmlFor="profile-description">{t("About you")}</label>
           <textarea
+            className={loading ? loadingStyles.control : undefined}
             key={state.timestamp}
             id="profile-description"
             name="description"
@@ -105,6 +114,7 @@ export function ProfileForm({
           {pending ? t("Saving…") : t("Save profile")}
         </button>
       </fieldset>
+      <ActionFeedback state={state} />
     </form>
   );
 }

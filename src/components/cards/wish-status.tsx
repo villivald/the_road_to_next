@@ -1,4 +1,4 @@
-import { Check, Eye, EyeOff, Gift } from "lucide-react";
+import { BookmarkCheck, CircleCheck, Eye, EyeOff } from "lucide-react";
 import { useText } from "@/i18n/use-text";
 import styles from "./cards.module.css";
 
@@ -31,12 +31,12 @@ export function WishStatus({
       )}
       {fulfilled && (
         <span className={styles.state}>
-          <Check size={16} aria-hidden="true" /> {t("Fulfilled")}
+          <CircleCheck size={16} aria-hidden="true" /> {t("Fulfilled")}
         </span>
       )}
       {reserved && (
         <span className={`${styles.state} ${styles.reserved}`}>
-          <Gift size={16} aria-hidden="true" />
+          <BookmarkCheck size={16} aria-hidden="true" />
           {reservedByYou ? t("Reserved by you") : t("Reserved")}
         </span>
       )}

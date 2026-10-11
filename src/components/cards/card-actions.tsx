@@ -1,10 +1,16 @@
 import {
-  ArrowUpRight,
+  ArrowRight,
+  ExternalLink,
+  Gift,
   Pencil,
   Settings,
   Share2,
   UserRound,
 } from "lucide-react";
+import {
+  type DetailSection,
+  navigationPath,
+} from "@/app/_navigation/navigation-path";
 import { Link } from "@/i18n/navigation";
 import { useText } from "@/i18n/use-text";
 import styles from "./cards.module.css";
@@ -34,6 +40,9 @@ export function CardActions({
   sharingPath,
   settingsPath,
   canCopy = false,
+  section,
+  productUrl,
+  canReserve = false,
 }: {
   path: string;
   title: string;
@@ -41,19 +50,46 @@ export function CardActions({
   sharingPath?: string;
   settingsPath?: string;
   canCopy?: boolean;
+  section?: DetailSection;
+  productUrl?: string | null;
+  canReserve?: boolean;
 }) {
   const t = useText();
 
   return (
     <div className={styles.actions}>
       <Link
-        href={path}
+        href={navigationPath(path, section)}
         className={styles["open-action"]}
         aria-label={t("View {value0}", { value0: title })}
       >
-        {t("View")} <ArrowUpRight size={18} aria-hidden="true" />
+        {t("View")} <ArrowRight size={18} aria-hidden="true" />
       </Link>
       <div className={styles.tools}>
+        {canReserve && (
+          <Link
+            href={`${navigationPath(path, section)}#reservation-heading`}
+            className={styles["icon-action"]}
+            aria-label={t("Reserve {value0}", { value0: title })}
+            title={t("Reserve wish")}
+          >
+            <Gift size={18} aria-hidden="true" />
+          </Link>
+        )}
+        {productUrl && (
+          <a
+            href={productUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles["icon-action"]}
+            aria-label={t("Product link for {value0} (opens in a new tab)", {
+              value0: title,
+            })}
+            title={t("View product (opens in a new tab)")}
+          >
+            <ExternalLink size={18} aria-hidden="true" />
+          </a>
+        )}
         {canCopy && <CopyLink path={path} title={title} />}
         {canManage && (
           <Link

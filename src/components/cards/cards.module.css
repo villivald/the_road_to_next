@@ -241,6 +241,9 @@
 
 .tools {
   display: flex;
+  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
   align-items: center;
   gap: 0.25rem;
 }
@@ -267,6 +270,11 @@
   border-color: var(--input);
 }
 
+.icon-action > svg,
+.open-action > svg {
+  flex-shrink: 0;
+}
+
 .copy-control {
   position: relative;
 }
@@ -283,4 +291,26 @@
   color: var(--background);
   border-radius: 0.5rem;
   font-size: 0.85rem;
+}
+
+.media-link {
+  display: block;
+  border-radius: 0.75rem;
+  text-decoration: none;
+}
+
+.media-link:hover {
+  outline: 2px solid var(--link);
+  outline-offset: 3px;
+}
+
+.compact-avatar,
+.compact-avatar img {
+  width: 32px;
+  height: 32px;
+}
+
+.compact-avatar svg {
+  width: 20px;
+  height: 20px;
 }

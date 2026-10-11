@@ -1,7 +1,9 @@
 import { List } from "lucide-react";
+import { navigationPath } from "@/app/_navigation/navigation-path";
 import { CardActions, OwnershipBadge } from "@/components/cards/card-actions";
 import {
   CardMedia,
+  CardMediaLink,
   ListPreview,
   UserAvatar,
 } from "@/components/cards/card-media";
@@ -46,10 +48,17 @@ export function DiscoveryResults({ result }: { result: Results }) {
               className={`${styles["list-card"]} ${cardStyles["browse-card"]}`}
               key={list.id}
             >
-              <ListPreview image={list.image} images={list.previewImages} />
+              <CardMediaLink
+                path={navigationPath(listPath(list.id), "browse")}
+                title={list.title}
+              >
+                <ListPreview image={list.image} images={list.previewImages} />
+              </CardMediaLink>
               {list.isOwner && <OwnershipBadge edge />}
               <h2>
-                <Link href={listPath(list.id)}>{list.title}</Link>
+                <Link href={navigationPath(listPath(list.id), "browse")}>
+                  {list.title}
+                </Link>
               </h2>
               {list.description && (
                 <p className={styles.description}>
@@ -69,6 +78,7 @@ export function DiscoveryResults({ result }: { result: Results }) {
                 <ReservationAvailability enabled={list.reservationsEnabled} />
                 <CardActions
                   path={listPath(list.id)}
+                  section="browse"
                   settingsPath={listSettingsPath(list.id)}
                   title={list.title}
                   canCopy
@@ -84,17 +94,35 @@ export function DiscoveryResults({ result }: { result: Results }) {
                 className={`${styles["list-card"]} ${cardStyles["browse-card"]}`}
                 key={wish.id}
               >
-                <CardMedia image={wish.image} />
+                <CardMediaLink
+                  path={navigationPath(
+                    wishPath(wish.wishlist.id, wish.id),
+                    "browse",
+                  )}
+                  title={wish.title}
+                >
+                  <CardMedia image={wish.image} />
+                </CardMediaLink>
                 {wish.wishlist.isOwner && <OwnershipBadge edge />}
                 <h2>
-                  <Link href={wishPath(wish.wishlist.id, wish.id)}>
+                  <Link
+                    href={navigationPath(
+                      wishPath(wish.wishlist.id, wish.id),
+                      "browse",
+                    )}
+                  >
                     {wish.title}
                   </Link>
                 </h2>
                 <div className={cardStyles["wish-summary"]}>
                   <p className={cardStyles["wish-list"]}>
                     <List size={16} aria-hidden="true" />
-                    <Link href={listPath(wish.wishlist.id)}>
+                    <Link
+                      href={navigationPath(
+                        listPath(wish.wishlist.id),
+                        "browse",
+                      )}
+                    >
                       {wish.wishlist.title}
                     </Link>
                   </p>
@@ -111,6 +139,9 @@ export function DiscoveryResults({ result }: { result: Results }) {
                 </div>
                 <CardActions
                   path={wishPath(wish.wishlist.id, wish.id)}
+                  section="browse"
+                  productUrl={wish.externalUrl}
+                  canReserve={wish.wishlist.reservationsEnabled}
                   title={wish.title}
                   canCopy
                   canManage={wish.wishlist.isOwner}
