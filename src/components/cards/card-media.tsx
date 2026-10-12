@@ -1,4 +1,4 @@
-import { Gift, Layers, UserRound } from "lucide-react";
+import { UserRound } from "lucide-react";
 import type { ReactNode } from "react";
 import { MediaImage } from "@/features/media/components/media-image";
 import type { MediaImage as ImageDetails } from "@/features/media/types";
@@ -31,10 +31,12 @@ export function CardMedia({
   image,
   kind = "wish",
   guestListId,
+  title,
 }: {
   image: ImageDetails | null;
   kind?: "wish" | "list";
   guestListId?: string;
+  title?: string;
 }) {
   const t = useText();
 
@@ -44,8 +46,11 @@ export function CardMedia({
         <MediaImage image={image} compact guestListId={guestListId} />
       ) : (
         <div className={styles.placeholder} aria-hidden="true">
-          {kind === "wish" ? <Gift /> : <Layers />}
-          <span>
+          <span className={styles["placeholder-title"]}>
+            {title ??
+              (kind === "wish" ? t("Wish") : t("A collection of wishes"))}
+          </span>
+          <span className={styles["placeholder-label"]}>
             {kind === "wish" ? t("A little wish") : t("A collection of wishes")}
           </span>
         </div>
@@ -57,13 +62,16 @@ export function CardMedia({
 export function ListPreview({
   image,
   images,
+  title,
 }: {
   image: ImageDetails | null;
   images: ImageDetails[];
+  title?: string;
 }) {
   const t = useText();
 
-  if (image || !images.length) return <CardMedia image={image} kind="list" />;
+  if (image || !images.length)
+    return <CardMedia image={image} kind="list" title={title} />;
 
   return (
     <div className={styles.stack} aria-label={t("Preview of available wishes")}>

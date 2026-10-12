@@ -11,6 +11,7 @@ import {
 import shell from "@/components/shell.module.css";
 import { useText } from "@/i18n/use-text";
 import { MAX_IMAGE_BYTES } from "../types";
+import { ImageUploadGuidance } from "./image-upload-guidance";
 import styles from "./media.module.css";
 
 export type SelectedImage = { file: File; alt: string };
@@ -95,11 +96,7 @@ export function ImagePicker({
           aria-invalid={!!error}
           aria-describedby={`${id}-help${error ? ` ${id}-error` : ""}`}
         />
-        <p id={`${id}-help`} className={shell["field-help"]}>
-          {t(
-            "One JPEG, PNG, or WebP, up to 3 MB and 20 megapixels. Saved with your wish and resized automatically.",
-          )}
-        </p>
+        <ImageUploadGuidance kind="wish" id={`${id}-help`} creating />
         {error && (
           <p id={`${id}-error`} role="alert" className={shell["error-text"]}>
             {t.message(error)}

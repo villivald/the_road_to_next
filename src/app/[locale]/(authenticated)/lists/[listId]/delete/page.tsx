@@ -42,6 +42,7 @@ export default async function DeleteListPage({
         )}
       </p>
       <ActionForm
+        requireConfirmation
         action={deleteList.bind(null, list.id)}
         label={t("Delete permanently")}
         pendingLabel={t("Deleting…")}

@@ -1,50 +1,55 @@
 :root {
   color-scheme: light;
 
-  /* Happy Hues palette 14: sunshine yellow, ink, and mint. */
-  --background: #fffdf5;
-  --foreground: #272343;
-  --surface: #fffffe;
-  --muted: #f2f1e9;
-  --muted-foreground: #5c5b66;
+  /* Personal catalogue: warm paper, ink, and the familiar yellow heart. */
+  --background: #faf8f0;
+  --foreground: #292731;
+  --surface: #fffdf8;
+  --muted: #eeebe1;
+  --muted-foreground: #625f66;
   --primary: #ffd803;
-  --primary-foreground: #272343;
-  --link: #3c475f;
-  --accent: #e3f6f5;
+  --primary-foreground: #292731;
+  --link: #36343e;
+  --accent: #e7efe5;
   --highlight: #ffd803;
-  --highlight-foreground: #272343;
-  --border: #dcded6;
-  --input: #85877c;
+  --highlight-foreground: #292731;
+  --border: #d0ccc1;
+  --input: #8b897f;
   --destructive: #a12b41;
   --error-background: #fff0f2;
-  --focus: #396a78;
-  --shadow: 0 1px 2px #27234308;
-  --illustration: #fff0a3;
-  --footer: #bae8e8;
+  --focus: #326458;
+  --shadow: 0 1px 2px #29273108;
+  --illustration: #eeebe1;
+  --footer: var(--background);
+  --positive: #345f44;
+  --radius: 0.3rem;
+  --content-width: 1200px;
+  --page-gutter: clamp(1rem, 4vw, 2.5rem);
 }
 
 .dark {
   color-scheme: dark;
 
-  --background: #171b24;
-  --foreground: #fffdf5;
-  --surface: #212733;
-  --muted: #2b3240;
-  --muted-foreground: #c0c4cc;
+  --background: #202321;
+  --foreground: #faf8f0;
+  --surface: #282b27;
+  --muted: #30352f;
+  --muted-foreground: #c7c9be;
   --primary: #ffd803;
-  --primary-foreground: #272343;
-  --link: #bae8e8;
-  --accent: #283f44;
+  --primary-foreground: #292731;
+  --link: #e0e4d8;
+  --accent: #293f35;
   --highlight: #ffd803;
-  --highlight-foreground: #272343;
-  --border: #46505e;
-  --input: #88939b;
+  --highlight-foreground: #292731;
+  --border: #565c51;
+  --input: #909788;
   --destructive: #ffb1bc;
   --error-background: #4e233d;
   --focus: #ffd803;
   --shadow: none;
-  --illustration: #393727;
-  --footer: #283f44;
+  --illustration: #30352f;
+  --footer: var(--background);
+  --positive: #c1dfc3;
 }
 
 *,

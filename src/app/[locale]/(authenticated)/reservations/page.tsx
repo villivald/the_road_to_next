@@ -56,7 +56,7 @@ export default async function ReservationsPage({
                 )}
                 title={wish.title}
               >
-                <CardMedia image={wish.image} />
+                <CardMedia image={wish.image} title={wish.title} />
               </CardMediaLink>
               <h2>
                 <Link

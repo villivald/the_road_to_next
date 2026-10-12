@@ -50,6 +50,11 @@ export function ListSettings({
             </dd>
           </div>
         </dl>
+        <p className={styles["field-help"]}>
+          {t(
+            "List admins are the owner and people given permission to manage the list.",
+          )}
+        </p>
         <details className={styles.disclosure}>
           <summary>{t("Change who can see this list")}</summary>
           <p className={styles.muted}>
@@ -57,8 +62,14 @@ export function ListSettings({
               "This sets the audience for a visible list. Hidden lists stay admin-only.",
             )}
           </p>
+          <h3>
+            {isPrivate
+              ? t("Make this list public")
+              : t("Share with invited people")}
+          </h3>
           {isPrivate || premium ? (
             <ActionForm
+              requireConfirmation
               action={changeVisibility.bind(null, list.id)}
               label={isPrivate ? t("Allow anyone") : t("Limit access")}
               secondary
@@ -122,6 +133,11 @@ export function ListSettings({
         aria-labelledby="list-sharing-heading"
       >
         <h2 id="list-sharing-heading">{t("Sharing and members")}</h2>
+        <p className={styles.muted}>
+          {t(
+            "Invite people to reserve wishes, or give them admin rights to add and edit wishes and manage the list together. Guest links are for viewing only. The owner needs Premium to send invitations.",
+          )}
+        </p>
         <div className={styles.actions}>
           <Link
             className={styles["secondary-button"]}

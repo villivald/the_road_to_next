@@ -52,6 +52,7 @@ export default async function InvitationPage({
           </p>
           {invitation.canAccept ? (
             <ActionForm
+              requireConfirmation
               action={joinList.bind(null, invitation.id)}
               label={t("Join list")}
               pendingLabel={t("Joining…")}

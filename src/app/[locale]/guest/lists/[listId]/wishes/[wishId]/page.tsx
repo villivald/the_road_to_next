@@ -2,6 +2,7 @@ import { ExternalLink } from "lucide-react";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import { CardMedia } from "@/components/cards/card-media";
 import styles from "@/components/shell.module.css";
 import { GUEST_COOKIE } from "@/features/guest/http";
 import { readGuestWish } from "@/features/guest/service/access";
@@ -41,25 +42,35 @@ export default async function GuestWishPage({
         {t("Back to shared list")}
       </a>
       <p className={styles.notice}>{t("Guest view · Read only")}</p>
-      <h1>{wish.title}</h1>
-      <p>{formatWishPrice(wish.priceMinor, wish.currency, t.locale)}</p>
-      <WishPriority priority={wish.priority} />
-      <MediaImage image={wish.image} guestListId={listId} />
-      {wish.description && (
-        <p className={styles.description}>{wish.description}</p>
-      )}
-      {wish.externalUrl && (
-        <a
-          href={wish.externalUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          referrerPolicy="no-referrer"
-          className={styles["icon-label"]}
-        >
-          {t("View product (opens in a new tab)")}
-          <ExternalLink size={18} aria-hidden="true" />
-        </a>
-      )}
+      <div className={styles["wish-detail"]}>
+        <div className={styles["detail-image"]}>
+          {wish.image ? (
+            <MediaImage image={wish.image} guestListId={listId} />
+          ) : (
+            <CardMedia image={null} title={wish.title} />
+          )}
+        </div>
+        <div className={styles["content-stack"]}>
+          <h1>{wish.title}</h1>
+          <p>{formatWishPrice(wish.priceMinor, wish.currency, t.locale)}</p>
+          <WishPriority priority={wish.priority} />
+          {wish.description && (
+            <p className={styles.description}>{wish.description}</p>
+          )}
+          {wish.externalUrl && (
+            <a
+              href={wish.externalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              referrerPolicy="no-referrer"
+              className={styles["icon-label"]}
+            >
+              {t("View product (opens in a new tab)")}
+              <ExternalLink size={18} aria-hidden="true" />
+            </a>
+          )}
+        </div>
+      </div>
       <p>
         {t(
           "This link does not allow editing, joining, or reserving. Any independent access you have through your account remains available in the normal app.",

@@ -89,7 +89,11 @@ export function WishForm({
   };
 
   return (
-    <form action={action} className={styles.form} aria-busy={pending}>
+    <form
+      action={action}
+      className={`${styles.form} ${!wish ? styles["new-wish-form"] : ""}`}
+      aria-busy={pending}
+    >
       <ActionFeedback state={state} />
 
       <fieldset

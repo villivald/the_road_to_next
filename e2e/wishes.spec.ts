@@ -125,9 +125,13 @@ test("title-only wishes can be hidden, fulfilled, reopened, and deleted", async 
       page.getByRole("heading", { name: "A beautiful notebook", exact: true }),
     ).toBeVisible();
     await page.getByRole("link", { name: "Delete wish", exact: true }).click();
-    await page.getByRole("button", { name: "Delete permanently" }).click();
-    await expect(page.getByRole("checkbox")).toBeFocused();
+    await expect(
+      page.getByRole("button", { name: "Delete permanently" }),
+    ).toBeDisabled();
     await page.getByLabel("I understand this cannot be undone").check();
+    await expect(
+      page.getByRole("button", { name: "Delete permanently" }),
+    ).toBeEnabled();
     await page.getByRole("button", { name: "Delete permanently" }).click();
     await expect(page.getByRole("status")).toContainText("Wish deleted");
     await visitor.goto(wishUrl);

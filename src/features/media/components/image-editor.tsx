@@ -12,6 +12,7 @@ import {
   type MediaImage as ImageDetails,
   type MediaTarget,
 } from "../types";
+import { ImageUploadGuidance } from "./image-upload-guidance";
 import styles from "./media.module.css";
 import { MediaImage } from "./media-image";
 
@@ -101,14 +102,14 @@ export function ImageEditor({
   };
 
   return (
-    <section className={styles.editor} aria-labelledby={`${id}-heading`}>
+    <section
+      className={styles.editor}
+      aria-labelledby={`${id}-heading`}
+      data-target={target.kind}
+    >
       <h2 id={`${id}-heading`}>{t.message(label)}</h2>
       <MediaImage image={image} compact />
-      <p className={shell.muted} id={`${id}-help`}>
-        {t(
-          "One JPEG, PNG, or WebP, up to 3 MB and 20 megapixels. Images are resized automatically.",
-        )}
-      </p>
+      <ImageUploadGuidance kind={target.kind} id={`${id}-help`} />
       {feedback && (
         <p
           ref={feedbackRef}

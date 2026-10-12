@@ -70,6 +70,12 @@ export function GuestLinkForm({ listId }: { listId: string }) {
   );
   const id = useId();
   const url = (state.data as { url?: string } | undefined)?.url;
+  const [confirmation, setConfirmation] = useState<{
+    timestamp: number;
+    checked: boolean;
+  }>({ timestamp: 0, checked: false });
+  const confirmed =
+    confirmation.timestamp === state.timestamp && confirmation.checked;
   const form = (
     <form action={action} aria-busy={pending} className={styles.form}>
       <fieldset
@@ -113,12 +119,27 @@ export function GuestLinkForm({ listId }: { listId: string }) {
           </div>
         </div>
         <label className={styles["checkbox-label"]}>
-          <input type="checkbox" name="confirm" value="yes" required />
+          <input
+            type="checkbox"
+            name="confirm"
+            value="yes"
+            required
+            checked={confirmed}
+            onChange={(event) =>
+              setConfirmation({
+                timestamp: state.timestamp,
+                checked: event.target.checked,
+              })
+            }
+          />
           {t(
             "Anyone with this link can view available wishes while the list is visible, until the link expires or is disabled.",
           )}
         </label>
-        <button type="submit" className={styles.button}>
+        <p className={styles["field-help"]}>
+          {t("Check the box above to continue.")}
+        </p>
+        <button type="submit" className={styles.button} disabled={!confirmed}>
           <Link2 size={18} aria-hidden="true" />
           {pending ? t("Creating…") : t("Create guest link")}
         </button>

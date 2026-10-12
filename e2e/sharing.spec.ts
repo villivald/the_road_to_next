@@ -79,7 +79,9 @@ const confirmAction = async (scope: Locator, button: string) => {
       .click();
   }
   const form = scope.locator("form").filter({ has: actionName });
+  await expect(action).toBeDisabled();
   await form.getByRole("checkbox").check();
+  await expect(action).toBeEnabled();
   await form.getByRole("button", { name: button, exact: true }).click();
 };
 

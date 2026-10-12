@@ -1,3 +1,4 @@
+import { Share2, Users } from "lucide-react";
 import type { Metadata } from "next";
 import { navigationPath } from "@/app/_navigation/navigation-path";
 import { ListWishCounts } from "@/components/cards/list-wish-counts";
@@ -7,6 +8,7 @@ import { SuccessMessage } from "@/components/form/success-message";
 import styles from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import { deleteMembership } from "@/features/sharing/actions/manage-sharing";
+import sharingStyles from "@/features/sharing/components/sharing.module.css";
 import { readSharedLists } from "@/features/sharing/service/queries";
 import { Link } from "@/i18n/navigation";
 import { getText } from "@/i18n/server";
@@ -103,6 +105,7 @@ export default async function SharedListsPage({
                 </Link>
               )}
               <ActionForm
+                requireConfirmation
                 action={deleteMembership.bind(null, list.listId, list.id)}
                 label={t("Leave list")}
                 pendingLabel={t("Leaving…")}
@@ -119,11 +122,17 @@ export default async function SharedListsPage({
           ))}
         </ul>
       ) : (
-        <p>
-          {t(
-            "No shared lists on this page. Accept an email invitation to join a list.",
-          )}
-        </p>
+        <div className={styles["empty-state"]}>
+          <Users aria-hidden="true" />
+          <h2>{page === 1 ? t("No shared lists yet") : t("No more lists")}</h2>
+          <p className={styles.muted}>
+            {page === 1
+              ? t(
+                  "Accept an email invitation to see the list here. You can join with a Free account.",
+                )
+              : t("Return to an earlier page to find your lists.")}
+          </p>
+        </div>
       )}
       {(page > 1 || hasNextPage) && (
         <nav className={styles.actions} aria-label={t("Shared list pages")}>
@@ -142,6 +151,24 @@ export default async function SharedListsPage({
           )}
         </nav>
       )}
+      <aside
+        className={sharingStyles["share-prompt"]}
+        aria-labelledby="share-own-list-heading"
+      >
+        <div>
+          <h2 id="share-own-list-heading">
+            <Share2 size={20} aria-hidden="true" /> {t("Share your own list")}
+          </h2>
+          <p className={styles.muted}>
+            {t(
+              "Open a list’s settings and choose Sharing and members to invite people. Sending invitations requires Premium.",
+            )}
+          </p>
+        </div>
+        <Link href={listsPath} className={styles["secondary-button"]}>
+          {t("Go to my lists")}
+        </Link>
+      </aside>
     </section>
   );
 }

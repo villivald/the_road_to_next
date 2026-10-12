@@ -72,6 +72,7 @@ export function MemberAccess({
           <div className={sharingStyles.controls}>
             {(admin || premium) && (
               <ActionForm
+                requireConfirmation
                 action={updateMemberRole.bind(null, listId, member.id)}
                 label={admin ? t("Make member") : t("Make admin")}
                 secondary
@@ -104,6 +105,7 @@ export function MemberAccess({
               </ActionForm>
             )}
             <ActionForm
+              requireConfirmation
               action={deleteMembership.bind(null, listId, member.id)}
               label={self ? t("Leave list") : t("Remove member")}
               pendingLabel={t("Removing…")}
@@ -126,6 +128,7 @@ export function MemberAccess({
               <details className={sharingStyles.transfer}>
                 <summary>{t("Transfer ownership")}</summary>
                 <ActionForm
+                  requireConfirmation
                   action={transferList.bind(null, listId, member.id)}
                   label={t("Transfer ownership")}
                   pendingLabel={t("Transferring…")}

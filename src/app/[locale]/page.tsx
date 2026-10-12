@@ -40,48 +40,13 @@ export default async function HomePage() {
       </div>
       <div className={styles["hero-art"]} aria-hidden="true">
         <Image
-          src="/illustrations/openmoji/gift.svg"
-          width={88}
-          height={88}
+          src="/illustrations/archive/hortus-malabaricus.jpg"
+          width={480}
+          height={395}
+          sizes="(max-width: 760px) 320px, 400px"
           alt=""
+          preload
         />
-        <p className={styles.eyebrow}>{t("A few little wishes")}</p>
-        <div className={styles["hero-sample"]}>
-          <Image
-            src="/illustrations/openmoji/coffee.svg"
-            width={48}
-            height={48}
-            alt=""
-          />
-          <div>
-            {t("A favorite morning mug")}
-            <span>{t("For slow starts")}</span>
-          </div>
-        </div>
-        <div className={styles["hero-sample"]}>
-          <Image
-            src="/illustrations/openmoji/book.svg"
-            width={48}
-            height={48}
-            alt=""
-          />
-          <div>
-            {t("The next great read")}
-            <span>{t("For a quiet afternoon")}</span>
-          </div>
-        </div>
-        <div className={styles["hero-sample"]}>
-          <Image
-            src="/illustrations/openmoji/heart.svg"
-            width={48}
-            height={48}
-            alt=""
-          />
-          <div>
-            {t("Something thoughtful")}
-            <span>{t("For someone you love")}</span>
-          </div>
-        </div>
       </div>
     </section>
   );

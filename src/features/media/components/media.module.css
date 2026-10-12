@@ -26,7 +26,7 @@
   display: block;
   width: 100%;
   height: auto;
-  border-radius: 0.85rem;
+  border-radius: var(--radius);
   object-fit: contain;
   background: var(--muted);
 }
@@ -40,4 +40,11 @@
   aspect-ratio: 4 / 3;
   height: auto;
   max-height: 18rem;
+}
+
+.editor[data-target="avatar"] > .thumbnail {
+  width: 7rem;
+  height: 7rem;
+  border-radius: 50%;
+  object-fit: cover;
 }

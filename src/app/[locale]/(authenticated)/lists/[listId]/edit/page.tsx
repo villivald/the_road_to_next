@@ -47,17 +47,19 @@ export default async function ListSettingsPage({
         <h1>{t("List settings")}</h1>
         <p className={styles.description}>{list.title}</p>
       </header>
-      <section
-        className={settingsStyles.settings}
-        aria-labelledby="list-details-heading"
-      >
-        <h2 id="list-details-heading">{t("Details and reservations")}</h2>
-        <ListForm list={list} />
-      </section>
-      <div
-        className={`${settingsStyles.settings} ${settingsStyles["image-panel"]}`}
-      >
-        <ImageEditor target={{ kind: "list", listId }} image={list.image} />
+      <div className={styles["content-columns"]}>
+        <section
+          className={settingsStyles.settings}
+          aria-labelledby="list-details-heading"
+        >
+          <h2 id="list-details-heading">{t("Details and reservations")}</h2>
+          <ListForm list={list} />
+        </section>
+        <div
+          className={`${settingsStyles.settings} ${settingsStyles["image-panel"]}`}
+        >
+          <ImageEditor target={{ kind: "list", listId }} image={list.image} />
+        </div>
       </div>
       <ListSettings list={list} premium={access.plan === "PREMIUM"} />
     </div>

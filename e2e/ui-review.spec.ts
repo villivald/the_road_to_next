@@ -219,7 +219,7 @@ for (const locale of ["en", "fi"] as const) {
     await expect(
       page
         .getByRole("main")
-        .getByText(fi ? "Toteutettu" : "Fulfilled", { exact: true }),
+        .getByText(fi ? "Toteutunut" : "Fulfilled", { exact: true }),
     ).toBeVisible();
     await lightMode.click();
     await expect(page.locator("html")).toHaveClass(/light/);

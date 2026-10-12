@@ -182,6 +182,7 @@ export async function BillingPanel({
                   {t("All Premium features. Cancel renewal at any time.")}
                 </p>
                 <ActionForm
+                  requireConfirmation
                   action={subscribe.bind(null, interval)}
                   label={t("Choose {value0}", {
                     value0: t(plans[interval].label).toLowerCase(),

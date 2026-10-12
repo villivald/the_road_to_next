@@ -49,6 +49,7 @@ export function InvitationForm({ listId }: { listId: string }) {
           <select
             id={`${id}-role`}
             name="role"
+            aria-describedby={`${id}-role-help`}
             defaultValue={String(state.payload?.get("role") ?? "MEMBER")}
           >
             <option value="MEMBER">{t("Member — view and reserve")}</option>
@@ -56,6 +57,11 @@ export function InvitationForm({ listId }: { listId: string }) {
               {t("Admin — edit and manage sharing")}
             </option>
           </select>
+          <p id={`${id}-role-help`} className={styles["field-help"]}>
+            {t(
+              "Members can view and reserve wishes. Admins can also add and edit wishes and manage the list with you.",
+            )}
+          </p>
         </div>
         <button className={styles.button} type="submit">
           <Mail size={18} aria-hidden="true" />

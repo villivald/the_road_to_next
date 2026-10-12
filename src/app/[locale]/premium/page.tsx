@@ -1,5 +1,6 @@
 import { FlaskConical, Heart, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
+import Image from "next/image";
 import styles from "@/components/shell.module.css";
 import { getAuth } from "@/features/auth/actions/get-auth";
 import { authReturnPath } from "@/features/auth/utils/return-to";
@@ -19,13 +20,25 @@ export default async function PremiumPage() {
   const { user } = await getAuth();
   return (
     <section className={styles.page}>
-      <div>
-        <h1>{t("Free and Premium")}</h1>
-        <p className={styles.description}>
-          {t(
-            "Everything you need for a public wishlist is free. Premium gives you more ways to share privately.",
-          )}
-        </p>
+      <div className={styles.hero}>
+        <div className={styles["hero-copy"]}>
+          <p className={styles.eyebrow}>Wishlist · Premium</p>
+          <h1>{t("Free and Premium")}</h1>
+          <p className={styles.description}>
+            {t(
+              "Everything you need for a public wishlist is free. Premium gives you more ways to share privately.",
+            )}
+          </p>
+        </div>
+        <div className={styles["hero-art"]} aria-hidden="true">
+          <Image
+            src="/illustrations/archive/hortus-malabaricus.jpg"
+            width={480}
+            height={395}
+            sizes="(max-width: 760px) 320px, 400px"
+            alt=""
+          />
+        </div>
       </div>
       <div className={styles["plan-comparison"]}>
         <section

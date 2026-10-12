@@ -24,7 +24,17 @@ const signIn = async (page: Page, account = accounts.owner) => {
 const createLink = async (page: Page, label = "Family guests") => {
   await page.goto(managementUrl);
   await page.getByLabel("Link label", { exact: true }).fill(label);
-  await page.getByRole("checkbox", { name: /Anyone with this link/ }).check();
+  const submit = page.getByRole("button", {
+    name: "Create guest link",
+    exact: true,
+  });
+  const consent = page.getByRole("checkbox", { name: /Anyone with this link/ });
+  await expect(submit).toBeDisabled();
+  await consent.check();
+  await expect(submit).toBeEnabled();
+  await consent.uncheck();
+  await expect(submit).toBeDisabled();
+  await consent.check();
   await page
     .getByRole("button", { name: "Create guest link", exact: true })
     .click();

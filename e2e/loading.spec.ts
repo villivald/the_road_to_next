@@ -413,6 +413,8 @@ test("streamed loading previews reserve space, hide decorative content and respe
       "/en/lists/e2e-loading-list/sharing",
       "/en/lists/e2e-loading-list/guest-links",
       "/en/lists/e2e-loading-list/wishes/e2e-loading-wish",
+      "/en/lists/e2e-loading-list/wishes/new",
+      "/en/lists/e2e-loading-list/wishes/e2e-loading-wish/edit",
     ]) {
       await previewPage.goto(new URL(path, page.url()).href);
       const preview = previewPage.locator("[data-loading-preview]").first();
@@ -420,12 +422,16 @@ test("streamed loading previews reserve space, hide decorative content and respe
       const expectedHeading = path.endsWith("/shared")
         ? "Lists you’ve joined"
         : path.endsWith("/edit")
-          ? "List settings"
-          : path.endsWith("/sharing")
-            ? "Sharing and members"
-            : path.endsWith("/guest-links")
-              ? "Guest links"
-              : null;
+          ? path.includes("/wishes/")
+            ? "Edit wish"
+            : "List settings"
+          : path.endsWith("/new")
+            ? "Add a wish"
+            : path.endsWith("/sharing")
+              ? "Sharing and members"
+              : path.endsWith("/guest-links")
+                ? "Guest links"
+                : null;
       if (expectedHeading) {
         const previewHeading = preview.locator("h1");
         // Without JavaScript, nested routes can remain on the parent fallback.
@@ -435,7 +441,8 @@ test("streamed loading previews reserve space, hide decorative content and respe
         const parentFallback =
           ((path.endsWith("/sharing") ||
             path.endsWith("/guest-links") ||
-            path.endsWith("/edit")) &&
+            path.endsWith("/edit") ||
+            path.endsWith("/new")) &&
             (previewTitle === null || previewTitle === "My lists")) ||
           (path.endsWith("/shared") && previewTitle === "My lists");
         if (parentFallback) {
@@ -485,7 +492,11 @@ test("streamed loading previews reserve space, hide decorative content and respe
           () => document.documentElement.scrollWidth <= innerWidth,
         ),
       ).toBe(true);
-      if (path === "/en/lists") {
+      if (
+        path === "/en/lists" ||
+        path.endsWith("/new") ||
+        path.endsWith("/edit")
+      ) {
         const viewport = previewPage.viewportSize()!;
         await previewPage.setViewportSize({ width: 320, height: 727 });
         await previewPage.evaluate(() => {

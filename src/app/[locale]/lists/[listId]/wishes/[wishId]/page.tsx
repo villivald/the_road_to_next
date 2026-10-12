@@ -13,6 +13,7 @@ import {
   detailSection,
   navigationPath,
 } from "@/app/_navigation/navigation-path";
+import { CardMedia } from "@/components/cards/card-media";
 import { WishStatus } from "@/components/cards/wish-status";
 import { ActionForm } from "@/components/form/action-form";
 import { SuccessMessage } from "@/components/form/success-message";
@@ -72,52 +73,61 @@ export default async function WishPage({
         </SuccessMessage>
       )}
 
-      <div className={styles["page-heading"]}>
-        <div>
-          <h1>{wish.title}</h1>
-          <p className={styles.price}>
-            {formatWishPrice(wish.priceMinor, wish.currency, t.locale)}
-          </p>
-          <WishPriority priority={wish.priority} />
+      <div className={styles["wish-detail"]}>
+        <div className={styles["detail-image"]}>
+          {wish.image ? (
+            <MediaImage image={wish.image} />
+          ) : (
+            <CardMedia image={null} title={wish.title} />
+          )}
         </div>
-        {wish.canManage && (
-          <Link
-            className={styles.button}
-            href={`${wishPath(listId, wishId)}/edit`}
-          >
-            {t("Edit wish")}
-          </Link>
-        )}
+        <div className={styles["content-stack"]}>
+          <div className={styles["page-heading"]}>
+            <div>
+              <h1>{wish.title}</h1>
+              <p className={styles.price}>
+                {formatWishPrice(wish.priceMinor, wish.currency, t.locale)}
+              </p>
+              <WishPriority priority={wish.priority} />
+            </div>
+            {wish.canManage && (
+              <Link
+                className={styles.button}
+                href={`${wishPath(listId, wishId)}/edit`}
+              >
+                {t("Edit wish")}
+              </Link>
+            )}
+          </div>
+
+          {(wish.hidden || wish.fulfilledAt || wish.isReserved) && (
+            <WishStatus
+              hidden={wish.hidden}
+              fulfilled={!!wish.fulfilledAt}
+              reserved={wish.isReserved}
+              reservedByYou={wish.isReservedByYou}
+            />
+          )}
+
+          {wish.description && (
+            <p className={styles.description}>{wish.description}</p>
+          )}
+
+          {wish.externalUrl && (
+            <a
+              href={wish.externalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles["icon-label"]}
+            >
+              {t("View product (opens in a new tab)")}
+              <ExternalLink size={18} aria-hidden="true" />
+            </a>
+          )}
+
+          <ReservationControls wish={wish} user={user} />
+        </div>
       </div>
-
-      {(wish.hidden || wish.fulfilledAt || wish.isReserved) && (
-        <WishStatus
-          hidden={wish.hidden}
-          fulfilled={!!wish.fulfilledAt}
-          reserved={wish.isReserved}
-          reservedByYou={wish.isReservedByYou}
-        />
-      )}
-
-      <MediaImage image={wish.image} />
-
-      {wish.description && (
-        <p className={styles.description}>{wish.description}</p>
-      )}
-
-      {wish.externalUrl && (
-        <a
-          href={wish.externalUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={styles["icon-label"]}
-        >
-          {t("View product (opens in a new tab)")}
-          <ExternalLink size={18} aria-hidden="true" />
-        </a>
-      )}
-
-      <ReservationControls wish={wish} user={user} />
 
       {wish.canManage && (
         <section

@@ -30,13 +30,17 @@ export default async function NewWishPage({
   }
 
   return (
-    <section className={styles.editor}>
-      <h1>{t("Add a wish")}</h1>
-      <p className={styles.description}>
-        {t("For “")}
-        {list.title}
-        {t("”. Start with a title and add any details you like.")}
-      </p>
+    <section className={`${styles.page} ${styles["profile-page"]}`}>
+      <header className={styles["page-heading"]}>
+        <div>
+          <h1>{t("Add a wish")}</h1>
+          <p className={styles.description}>
+            {t("For “")}
+            {list.title}
+            {t("”. Start with a title and add any details you like.")}
+          </p>
+        </div>
+      </header>
       <WishForm listId={list.id} />
     </section>
   );

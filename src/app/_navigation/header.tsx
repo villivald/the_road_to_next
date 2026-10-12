@@ -37,7 +37,10 @@ export default async function Header() {
               {t("Guest view")}
             </span>
           </div>
-          <nav aria-label={t("Guest navigation")} className={styles.navigation}>
+          <nav
+            aria-label={t("Guest navigation")}
+            className={`${styles.navigation} ${styles["guest-navigation"]}`}
+          >
             <form action={localizedPath("/", t.locale)} method="get">
               <button type="submit" className={styles["text-button"]}>
                 {t("Open Wishlist")}
@@ -97,13 +100,13 @@ export default async function Header() {
             </>
           )}
         </nav>
+        {user && access?.plan !== "PREMIUM" && (
+          <Link href="/premium" className={styles["premium-link"]}>
+            <Sparkles size={16} aria-hidden="true" />
+            Premium
+          </Link>
+        )}
         <div className={styles["header-tools"]}>
-          {user && access?.plan !== "PREMIUM" && (
-            <Link href="/premium" className={styles["premium-link"]}>
-              <Sparkles size={16} aria-hidden="true" />
-              Premium
-            </Link>
-          )}
           {user && (
             <Link
               href={

@@ -48,7 +48,11 @@ export default async function ListsPage({
           {lists.map((list) => (
             <li key={list.id} className={styles["list-card"]}>
               <CardMediaLink path={listPath(list.id)} title={list.title}>
-                <ListPreview image={list.image} images={list.previewImages} />
+                <ListPreview
+                  image={list.image}
+                  images={list.previewImages}
+                  title={list.title}
+                />
               </CardMediaLink>
               <h2>
                 <Link href={listPath(list.id)}>{list.title}</Link>

@@ -97,7 +97,7 @@ export async function WishCollection({
                 path={navigationPath(wishPath(listId, wish.id), section)}
                 title={wish.title}
               >
-                <CardMedia image={wish.image} />
+                <CardMedia image={wish.image} title={wish.title} />
               </CardMediaLink>
               <h3 className={styles["wish-title"]}>
                 <Link href={navigationPath(wishPath(listId, wish.id), section)}>

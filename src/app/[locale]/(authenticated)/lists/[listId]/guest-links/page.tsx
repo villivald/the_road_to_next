@@ -95,6 +95,12 @@ export default async function GuestLinksPage({
             "View only: guests cannot reserve gifts, edit wishes, or join the list.",
           )}
         </p>
+        <p className={styles.muted}>
+          {t(
+            "To let someone reserve wishes, send an email invitation instead. They can create a Free account and verify their email. To let them edit the list too, invite them as an admin.",
+          )}{" "}
+          <Link href={sharingPath(listId)}>{t("Invite someone")}</Link>
+        </p>
         {access.plan === "PREMIUM" ? (
           <GuestLinkForm
             key={list.guestLinks

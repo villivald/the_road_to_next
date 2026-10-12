@@ -67,7 +67,11 @@ export default async function GuestListPage({
                   value0: wish.title,
                 })}
               >
-                <CardMedia image={wish.image} guestListId={listId} />
+                <CardMedia
+                  image={wish.image}
+                  title={wish.title}
+                  guestListId={listId}
+                />
               </a>
               <h3>
                 <a

@@ -20,18 +20,25 @@ export function ListSettingsSkeleton() {
           <h1>{t("List settings")}</h1>
           <div className={`${loading.block} ${loading.line}`} />
         </div>
-        <div className={styles.settings}>
-          <h2>{t("Details and reservations")}</h2>
-          <div className={`${loading.block} ${loading.label}`} />
-          <div className={`${loading.block} ${loading.input}`} />
-          <div className={`${loading.block} ${loading.line}`} />
-          <div className={`${loading.block} ${loading.label}`} />
-          <div className={`${loading.block} ${loading.textarea}`} />
-          <div className={`${loading.block} ${loading.line}`} />
-          <div className={`${loading.block} ${loading.toolbar}`} />
-          <div className={`${loading.block} ${loading.button}`} />
+        <div className={shell["content-columns"]}>
+          <div className={styles.settings}>
+            <h2>{t("Details and reservations")}</h2>
+            <div className={`${loading.block} ${loading.label}`} />
+            <div className={`${loading.block} ${loading.input}`} />
+            <div className={`${loading.block} ${loading.line}`} />
+            <div className={`${loading.block} ${loading.label}`} />
+            <div className={`${loading.block} ${loading.textarea}`} />
+            <div className={`${loading.block} ${loading.line}`} />
+            <div className={`${loading.block} ${loading.toolbar}`} />
+            <div className={`${loading.block} ${loading.button}`} />
+          </div>
+          <div className={styles.settings}>
+            <div className={`${loading.block} ${loading.title}`} />
+            <div className={`${loading.block} ${loading.media}`} />
+            <div className={`${loading.block} ${loading.input}`} />
+          </div>
         </div>
-        {[0, 1, 2].map((index) => (
+        {[0, 1].map((index) => (
           <div key={index} className={styles.settings}>
             <div className={`${loading.block} ${loading.title}`} />
             <div className={`${loading.block} ${loading.toolbar}`} />

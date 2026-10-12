@@ -52,7 +52,11 @@ export function DiscoveryResults({ result }: { result: Results }) {
                 path={navigationPath(listPath(list.id), "browse")}
                 title={list.title}
               >
-                <ListPreview image={list.image} images={list.previewImages} />
+                <ListPreview
+                  image={list.image}
+                  images={list.previewImages}
+                  title={list.title}
+                />
               </CardMediaLink>
               {list.isOwner && <OwnershipBadge edge />}
               <h2>
@@ -101,7 +105,7 @@ export function DiscoveryResults({ result }: { result: Results }) {
                   )}
                   title={wish.title}
                 >
-                  <CardMedia image={wish.image} />
+                  <CardMedia image={wish.image} title={wish.title} />
                 </CardMediaLink>
                 {wish.wishlist.isOwner && <OwnershipBadge edge />}
                 <h2>

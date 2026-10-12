@@ -1,3 +1,4 @@
+import { Search } from "lucide-react";
 import styles from "@/components/shell.module.css";
 import { currencies } from "@/features/wish/utils/money";
 import { localizedPath } from "@/i18n/config";
@@ -22,7 +23,7 @@ export function DiscoveryFilters({ filters }: { filters: Filters }) {
       {filters.owner && (
         <input type="hidden" name="owner" value={filters.owner} />
       )}
-      <div className={styles["form-row"]}>
+      <div className={styles["search-row"]}>
         <div className={styles.field}>
           <label htmlFor="browse-search">
             {users
@@ -55,6 +56,10 @@ export function DiscoveryFilters({ filters }: { filters: Filters }) {
             )}
           </select>
         </div>
+        <button type="submit" className={styles.button}>
+          <Search size={18} aria-hidden="true" />
+          {t("Search")}
+        </button>
       </div>
       {wishes && (
         <details
@@ -132,27 +137,24 @@ export function DiscoveryFilters({ filters }: { filters: Filters }) {
           </p>
         </details>
       )}
-      {!users && (
-        <label className={styles["checkbox-label"]}>
-          <input
-            type="checkbox"
-            name="reservable"
-            defaultChecked={filters.reservable}
-          />
-          {t("Reservations enabled")}
-        </label>
-      )}
-      {users && (
-        <p className={styles.muted}>
-          {t(
-            "Find people by display name or username. Only people with a list visible to anyone appear here.",
-          )}
-        </p>
-      )}
-      <div className={styles.actions}>
-        <button type="submit" className={styles.button}>
-          {t("Search")}
-        </button>
+      <div className={styles["filter-options"]}>
+        {!users && (
+          <label className={styles["checkbox-label"]}>
+            <input
+              type="checkbox"
+              name="reservable"
+              defaultChecked={filters.reservable}
+            />
+            {t("Reservations enabled")}
+          </label>
+        )}
+        {users && (
+          <p className={styles.muted}>
+            {t(
+              "Find people by display name or username. Only people with a list visible to anyone appear here.",
+            )}
+          </p>
+        )}
         <Link href={`${browsePath}?view=${filters.view}`}>
           {t("Clear filters")}
         </Link>

@@ -21,6 +21,15 @@ const manrope = localFont({
   display: "swap",
 });
 
+const fraunces = localFont({
+  src: "../../assets/fonts/Fraunces-Variable.ttf",
+  variable: "--font-fraunces",
+  weight: "100 900",
+  style: "normal",
+  display: "swap",
+  fallback: ["Georgia"],
+});
+
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getText();
   return {
@@ -44,7 +53,9 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className={`${manrope.variable} ${styles.body}`}>
+      <body
+        className={`${manrope.variable} ${fraunces.variable} ${styles.body}`}
+      >
         <NextIntlClientProvider locale={locale} messages={{}}>
           <ThemeProvider>
             <NavigationProvider>

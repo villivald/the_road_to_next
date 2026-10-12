@@ -1,7 +1,7 @@
 .footer {
   position: relative;
   margin-top: 2rem;
-  border-radius: 3rem 3rem 0 0;
+  border-radius: 0;
   background: var(--footer);
   color: var(--foreground);
 }
@@ -9,10 +9,12 @@
 .inner {
   display: grid;
   grid-template-columns: 1.5fr 1fr 1fr;
-  gap: 3rem;
-  max-width: 1200px;
+  gap: 2rem 3rem;
+  max-width: calc(var(--content-width) - 2 * var(--page-gutter));
+  width: calc(100% - 2 * var(--page-gutter));
   margin-inline: auto;
-  padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 4vw, 2.5rem) 1.5rem;
+  padding: 1.75rem 0 1.5rem;
+  border-top: 3px solid var(--foreground);
 }
 
 .intro {
@@ -46,7 +48,7 @@
 
 .links h2 {
   margin-bottom: 1rem;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -59,6 +61,7 @@
 
 .links a {
   text-decoration: none;
+  font-size: 0.9rem;
 }
 
 .bottom {
@@ -68,7 +71,7 @@
   justify-content: space-between;
   gap: 1rem;
   padding-top: 1.5rem;
-  border-top: 1px solid var(--input);
+  border-top: 1px solid var(--border);
   font-size: 0.8rem;
 }
 
@@ -89,7 +92,7 @@
   padding: 1.5rem;
   text-align: center;
   color: var(--muted-foreground);
-  font-size: 0.85rem;
+  font-size: 0.75rem;
 }
 
 @media (width <= 700px) {

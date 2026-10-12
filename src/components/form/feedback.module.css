@@ -8,10 +8,11 @@
 
 .success {
   padding: 1rem;
-  border: 2px solid var(--link);
-  border-radius: 0.65rem;
+  border: 1px solid var(--positive);
+  border-inline-start-width: 4px;
+  border-radius: var(--radius);
   background: var(--accent);
-  color: var(--foreground);
+  color: var(--positive);
   font-weight: 650;
 }
 
@@ -31,8 +32,9 @@
   gap: 0.65rem;
   width: min(28rem, calc(100% - 2rem));
   padding: 1rem;
-  border: 2px solid var(--link);
-  border-radius: 0.85rem;
+  border: 1px solid var(--positive);
+  border-inline-start-width: 4px;
+  border-radius: var(--radius);
   background: var(--surface);
   color: var(--foreground);
   box-shadow: 0 0.25rem 1.5rem rgb(0 0 0 / 18%);
@@ -55,7 +57,7 @@
   margin: -0.5rem;
   margin-inline-start: 0;
   border: 0;
-  border-radius: 0.5rem;
+  border-radius: var(--radius);
   background: transparent;
   color: inherit;
   cursor: pointer;

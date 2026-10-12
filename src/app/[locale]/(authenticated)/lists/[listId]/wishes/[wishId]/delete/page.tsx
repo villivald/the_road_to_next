@@ -42,6 +42,7 @@ export default async function DeleteWishPage({
         )}
       </p>
       <ActionForm
+        requireConfirmation
         action={removeWish.bind(null, listId, wishId)}
         label={t("Delete permanently")}
         pendingLabel={t("Deleting…")}

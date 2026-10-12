@@ -109,10 +109,14 @@ test("create, validate, edit, publish, unpublish, and confirm deletion", async (
     ).toBeVisible();
 
     await page.getByRole("link", { name: "Delete list", exact: true }).click();
-    await page.getByRole("button", { name: "Delete permanently" }).click();
+    await expect(
+      page.getByRole("button", { name: "Delete permanently" }),
+    ).toBeDisabled();
     await expect(page).toHaveURL(/\/delete$/);
-    await expect(page.getByRole("checkbox")).toBeFocused();
     await page.getByLabel("I understand this cannot be undone").check();
+    await expect(
+      page.getByRole("button", { name: "Delete permanently" }),
+    ).toBeEnabled();
     await page.getByRole("button", { name: "Delete permanently" }).click();
     await expect(page).toHaveURL(/\/lists\?deleted=1$/);
     await expect(page.getByRole("status")).toContainText("List deleted");

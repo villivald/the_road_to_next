@@ -4,6 +4,7 @@ import {
   AccountDetails,
   type AccountIdentity,
 } from "@/features/account/components/account-details";
+import { AccountLayout } from "@/features/account/components/account-layout";
 import { ProfileForm } from "@/features/account/components/profile-form";
 import { BrowseControls } from "@/features/discovery/components/discovery-controls";
 import { parseDiscoveryQuery } from "@/features/discovery/service/query";
@@ -131,23 +132,27 @@ export function DetailSkeleton({ kind = "list" }: { kind?: "list" | "wish" }) {
       })}
     >
       <div className={`${styles.block} ${styles["back-link"]}`} />
-      <div className={`${styles.block} ${styles.heading}`} />
-      <div className={`${styles.block} ${styles.line}`} />
       {kind === "list" ? (
         <>
+          <div className={`${styles.block} ${styles.heading}`} />
+          <div className={`${styles.block} ${styles.line}`} />
           <div className={`${styles.block} ${styles.toolbar}`} />
           <SkeletonCards />
         </>
       ) : (
-        <>
+        <div className={shell["wish-detail"]}>
           <div className={`${styles.block} ${styles["detail-media"]}`} />
-          <div className={`${styles.block} ${styles.line}`} />
-          <div className={shell["list-settings"]}>
-            <div className={`${styles.block} ${styles.title}`} />
+          <div className={shell["content-stack"]}>
+            <div className={`${styles.block} ${styles.heading}`} />
             <div className={`${styles.block} ${styles.line}`} />
-            <div className={`${styles.block} ${styles.button}`} />
+            <div className={`${styles.block} ${styles.title}`} />
+            <div className={shell["list-settings"]}>
+              <div className={`${styles.block} ${styles.title}`} />
+              <div className={`${styles.block} ${styles.line}`} />
+              <div className={`${styles.block} ${styles.button}`} />
+            </div>
           </div>
-        </>
+        </div>
       )}
     </LoadingFrame>
   );
@@ -162,40 +167,68 @@ export function EditorSkeleton({
 }) {
   const t = useText();
 
+  if (profile) {
+    return (
+      <LoadingFrame
+        label={t("Loading your profile…")}
+        className={`${shell.page} ${shell["profile-page"]}`}
+      >
+        <AccountLayout
+          identity={user && <AccountDetails user={user} />}
+          profile={
+            <ProfileForm profile={{ name: null, description: null }} loading />
+          }
+          plan={
+            <div className={shell["plan-summary"]}>
+              <div className={`${styles.block} ${styles.label}`} />
+              <div className={`${styles.block} ${styles.title}`} />
+              <div className={`${styles.block} ${styles.line}`} />
+              <div className={`${styles.block} ${styles.button}`} />
+            </div>
+          }
+          avatar={
+            <div className={shell["content-stack"]}>
+              <div className={`${styles.block} ${styles.title}`} />
+              <div className={`${styles.block} ${styles.line}`} />
+              <SkeletonFields />
+            </div>
+          }
+          security={<div className={`${styles.block} ${styles.button}`} />}
+        />
+      </LoadingFrame>
+    );
+  }
+  return (
+    <LoadingFrame label={t("Loading editor…")} className={shell.editor}>
+      <div className={`${styles.block} ${styles.heading}`} />
+      <SkeletonFields count={5} />
+    </LoadingFrame>
+  );
+}
+
+export function WishEditorSkeleton({ editing = false }: { editing?: boolean }) {
+  const t = useText();
   return (
     <LoadingFrame
-      label={profile ? t("Loading your profile…") : t("Loading editor…")}
-      className={profile ? shell["account-panel"] : shell.editor}
-      contentClassName={profile ? styles["account-content"] : undefined}
+      label={t("Loading editor…")}
+      className={`${shell.page} ${shell["profile-page"]}`}
     >
-      {profile ? (
-        <h1>{t("Your account")}</h1>
-      ) : (
-        <div className={`${styles.block} ${styles.heading}`} />
-      )}
-      {profile && user && <AccountDetails user={user} />}
-      {profile ? (
-        <ProfileForm profile={{ name: null, description: null }} loading />
-      ) : (
-        <SkeletonFields count={5} />
-      )}
-      {profile && (
-        <>
-          <div className={shell["plan-summary"]}>
-            <div className={`${styles.block} ${styles.label}`} />
-            <div className={`${styles.block} ${styles.title}`} />
-            <div className={`${styles.block} ${styles.line}`} />
-            <div className={`${styles.block} ${styles.button}`} />
-          </div>
-          <div className={styles["avatar-editor"]}>
-            <div className={`${styles.block} ${styles.title}`} />
-            <div className={`${styles.block} ${styles.line}`} />
-            <SkeletonFields />
-          </div>
-          <div className={`${styles.block} ${styles["back-link"]}`} />
-          <div className={`${styles.block} ${styles["back-link"]}`} />
-        </>
-      )}
+      <header className={shell["page-heading"]}>
+        <div>
+          <h1>{editing ? t("Edit wish") : t("Add a wish")}</h1>
+          <div className={`${styles.block} ${styles.line}`} />
+        </div>
+      </header>
+      <div className={shell["content-columns"]}>
+        <div className={shell["content-panel"]}>
+          <SkeletonFields count={5} />
+        </div>
+        <div className={shell["content-panel"]}>
+          <div className={`${styles.block} ${styles.title}`} />
+          <div className={`${styles.block} ${styles.media}`} />
+          <div className={`${styles.block} ${styles.input}`} />
+        </div>
+      </div>
     </LoadingFrame>
   );
 }

@@ -156,7 +156,7 @@ test("Finnish registration, validation, verification email and list/wish creatio
   await page.getByRole("link", { name: "Lisää toive", exact: true }).click();
   await page.getByLabel("Nimi", { exact: true }).fill("Morning mug");
   await expect(
-    page.getByText("Täydellinen linkki, joka alkaa https:// tai http://.", {
+    page.getByText("Liitä linkki, jonka alussa on https:// tai http://.", {
       exact: true,
     }),
   ).toBeVisible();

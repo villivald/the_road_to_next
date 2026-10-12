@@ -31,19 +31,29 @@ export default async function EditWishPage({
   }
 
   return (
-    <section className={styles.editor}>
-      <h1>{t("Edit wish")}</h1>
-      <p className={styles.description}>
-        {t("In “")}
-        {wish.wishlist.title}
-        {t("”. Only the title is required.")}
-      </p>
-      <WishForm listId={listId} wish={wish} />
-      <ImageEditor
-        target={{ kind: "wish", listId, wishId }}
-        image={wish.image}
-        fallbackAlt={wish.title}
-      />
+    <section className={`${styles.page} ${styles["profile-page"]}`}>
+      <header className={styles["page-heading"]}>
+        <div>
+          <h1>{t("Edit wish")}</h1>
+          <p className={styles.description}>
+            {t("In “{title}”. Update the wish details and image.", {
+              title: wish.wishlist.title,
+            })}
+          </p>
+        </div>
+      </header>
+      <div className={styles["content-columns"]}>
+        <div className={styles["content-panel"]}>
+          <WishForm listId={listId} wish={wish} />
+        </div>
+        <div className={styles["content-panel"]}>
+          <ImageEditor
+            target={{ kind: "wish", listId, wishId }}
+            image={wish.image}
+            fallbackAlt={wish.title}
+          />
+        </div>
+      </div>
     </section>
   );
 }
