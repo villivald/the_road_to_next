@@ -30,6 +30,10 @@ on mobile, and controls wrap for longer Finnish text or enlarged text. Do not hi
 Sign out to make the header fit. Preserve the existing Browse/My lists/My
 reservations context on detail pages.
 
+On mobile, stretch navigation tabs to the same row height and align icons and
+labels from the top so wrapped labels keep their active underline aligned. Keep
+avatar/sign-out and language/theme controls together when the toolbar wraps.
+
 Wish details use image and information columns. Editors and Account use adjacent
 panels when space allows and stack on smaller screens. Avoid nesting independent
 forms. Keep labels, field help, confirmations, and destructive consequences visible.

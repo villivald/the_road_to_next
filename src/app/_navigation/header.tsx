@@ -108,30 +108,34 @@ export default async function Header() {
         )}
         <div className={styles["header-tools"]}>
           {user && (
-            <Link
-              href={
-                user.emailVerified ? accountProfilePath : emailVerificationPath
-              }
-              className={styles["account-avatar"]}
-              aria-label={t("Your account: {value0}", {
-                value0: user.username,
-              })}
-              title={user.username}
-            >
-              <span aria-hidden="true">
-                <UserAvatar image={avatar} compact />
-              </span>
-            </Link>
+            <div className={styles["header-session"]}>
+              <Link
+                href={
+                  user.emailVerified
+                    ? accountProfilePath
+                    : emailVerificationPath
+                }
+                className={styles["account-avatar"]}
+                aria-label={t("Your account: {value0}", {
+                  value0: user.username,
+                })}
+                title={user.username}
+              >
+                <span aria-hidden="true">
+                  <UserAvatar image={avatar} compact />
+                </span>
+              </Link>
+              <form action={signOut}>
+                <button type="submit" className={styles["text-button"]}>
+                  {t("Sign out")}
+                </button>
+              </form>
+            </div>
           )}
-          {user && (
-            <form action={signOut}>
-              <button type="submit" className={styles["text-button"]}>
-                {t("Sign out")}
-              </button>
-            </form>
-          )}
-          <LanguageSwitcher />
-          <ThemeSwitcher />
+          <div className={styles["header-preferences"]}>
+            <LanguageSwitcher />
+            <ThemeSwitcher />
+          </div>
         </div>
       </div>
     </header>

@@ -234,6 +234,8 @@ test("narrow navigation, expanded filters, text resizing and reduced motion", as
     "/en/account/profile",
   ]) {
     await page.goto(path);
+    await expect(page.locator("[data-loading-preview]")).toHaveCount(0);
+    await page.evaluate(() => document.fonts.ready);
     await page.evaluate(() => {
       document.documentElement.style.fontSize = "200%";
     });
