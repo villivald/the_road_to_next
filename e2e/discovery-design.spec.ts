@@ -2,6 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
 import sharp from "sharp";
 import { testOrigin } from "./environment";
+import { expectImageLoaded } from "./image-assertions";
 import { accounts, resetFixtures, testPrisma } from "./seed";
 
 const listId = "e2e-design-discovery";
@@ -138,7 +139,7 @@ test("image previews, placeholders, ownership and card actions work", async ({
     height: element.getBoundingClientRect().height,
   }));
   releaseImages();
-  await expect(image).toHaveJSProperty("naturalWidth", 600);
+  await expectImageLoaded(image);
   const afterImageLoad = await image.evaluate((element) => ({
     width: element.getBoundingClientRect().width,
     height: element.getBoundingClientRect().height,
@@ -309,9 +310,10 @@ test("people search shows public names and avatars and filters their public list
   await page.goto("/en/browse?view=users");
   await page.getByLabel("Search people").fill("MÜLLER");
   await page.getByRole("button", { name: "Search", exact: true }).click();
+  await expect(page).toHaveURL((url) => url.searchParams.get("q") === "MÜLLER");
   await expect(page.getByRole("heading", { name: "Ada Müller" })).toBeVisible();
   const avatar = page.getByRole("img", { name: "Ada’s avatar" });
-  await expect(avatar).toHaveJSProperty("naturalWidth", 512);
+  await expectImageLoaded(avatar);
   const src = (await avatar.getAttribute("src"))!;
   await expect(page.getByRole("main")).not.toContainText(accounts.owner.email);
   await expect(page.getByRole("main")).toContainText("Books, gardens");
@@ -321,6 +323,10 @@ test("people search shows public names and avatars and filters their public list
     fullPage: true,
   });
   await page
+    .getByRole("listitem")
+    .filter({
+      has: page.getByRole("heading", { name: "Ada Müller", exact: true }),
+    })
     .getByRole("link", { name: "View public lists", exact: true })
     .click();
   await expect(page).toHaveURL(/owner=e2e-owner/);

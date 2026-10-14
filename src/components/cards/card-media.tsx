@@ -2,6 +2,7 @@ import { UserRound } from "lucide-react";
 import type { ReactNode } from "react";
 import { MediaImage } from "@/features/media/components/media-image";
 import type { MediaImage as ImageDetails } from "@/features/media/types";
+import { CARD_IMAGE_SIZES, STACK_IMAGE_SIZES } from "@/features/media/variants";
 import { Link } from "@/i18n/navigation";
 import { useText } from "@/i18n/use-text";
 import styles from "./cards.module.css";
@@ -43,7 +44,12 @@ export function CardMedia({
   return (
     <div className={styles.media}>
       {image ? (
-        <MediaImage image={image} compact guestListId={guestListId} />
+        <MediaImage
+          image={image}
+          compact
+          guestListId={guestListId}
+          sizes={CARD_IMAGE_SIZES}
+        />
       ) : (
         <div className={styles.placeholder} aria-hidden="true">
           <span className={styles["placeholder-title"]}>
@@ -77,7 +83,7 @@ export function ListPreview({
     <div className={styles.stack} aria-label={t("Preview of available wishes")}>
       {images.map((preview) => (
         <div key={preview.id} className={styles["stack-image"]}>
-          <MediaImage image={preview} compact />
+          <MediaImage image={preview} compact sizes={STACK_IMAGE_SIZES} />
         </div>
       ))}
     </div>
@@ -96,7 +102,7 @@ export function UserAvatar({
       className={`${styles.avatar} ${compact ? styles["compact-avatar"] : ""}`}
     >
       {image ? (
-        <MediaImage image={image} compact />
+        <MediaImage image={image} compact sizes={compact ? "32px" : "64px"} />
       ) : (
         <UserRound aria-hidden="true" />
       )}

@@ -8,10 +8,17 @@ export type MediaImage = {
   alt: string;
   width: number;
   height: number;
+  variantWidths: number[];
 };
 
 export const imageSelection = {
-  select: { id: true, alt: true, width: true, height: true },
+  select: {
+    id: true,
+    alt: true,
+    width: true,
+    height: true,
+    variantWidths: true,
+  },
 } as const;
 
 export const MAX_IMAGE_BYTES = 3 * 1024 * 1024;

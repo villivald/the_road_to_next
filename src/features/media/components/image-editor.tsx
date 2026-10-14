@@ -108,7 +108,11 @@ export function ImageEditor({
       data-target={target.kind}
     >
       <h2 id={`${id}-heading`}>{t.message(label)}</h2>
-      <MediaImage image={image} compact />
+      <MediaImage
+        image={image}
+        compact
+        sizes={target.kind === "avatar" ? "112px" : undefined}
+      />
       <ImageUploadGuidance kind={target.kind} id={`${id}-help`} />
       {feedback && (
         <p

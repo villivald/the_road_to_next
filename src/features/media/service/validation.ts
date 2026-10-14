@@ -2,6 +2,7 @@ import sharp from "sharp";
 import { z } from "zod";
 import { wishlistIdSchema } from "@/features/wishlist/service/schemas";
 import { MAX_IMAGE_BYTES, MediaError } from "../types";
+import { AVATAR_VARIANT_WIDTHS, IMAGE_VARIANT_WIDTHS } from "../variants";
 
 export const mediaTargetSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("list"), listId: wishlistIdSchema }),
@@ -52,6 +53,37 @@ export const prepareImage = async (input: Buffer, avatar: boolean) => {
       "Choose a valid, still JPEG, PNG, or WebP image up to 20 megapixels and 8192 pixels per side.",
     );
   }
+};
+
+export const prepareImageVariants = async (
+  input: Buffer,
+  dimensions: { width: number; height: number },
+  avatar: boolean,
+) => {
+  const widths = avatar ? AVATAR_VARIANT_WIDTHS : IMAGE_VARIANT_WIDTHS;
+  const maximum = avatar
+    ? Math.min(dimensions.width, dimensions.height)
+    : dimensions.width;
+  return Promise.all(
+    widths
+      .filter((width) => width < maximum)
+      .map(async (width) => {
+        const { data, info } = await sharp(input, {
+          limitInputPixels: 20_000_000,
+          failOn: "warning",
+        })
+          .resize({
+            width,
+            height: avatar ? width : undefined,
+            fit: avatar ? "cover" : "inside",
+            withoutEnlargement: true,
+          })
+          .webp({ quality: 80 })
+          .timeout({ seconds: 10 })
+          .toBuffer({ resolveWithObject: true });
+        return { data, width: info.width };
+      }),
+  );
 };
 
 // Read incrementally: Content-Length and the browser's MIME type are untrusted.

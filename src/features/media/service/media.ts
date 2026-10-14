@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import { consumeRateLimit, lockUser } from "@/features/auth/service/security";
 import { publicOwners } from "@/features/discovery/service/access";
 import { readableWishes } from "@/features/wish/service/access";
@@ -7,12 +6,14 @@ import { lockManagedWishlist } from "@/features/wishlist/service/lists";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { imageSelection, MediaError, type MediaTarget } from "../types";
-import { mediaStorage, storageProvider } from "./storage";
+import { storageProvider } from "./storage";
 import {
   imageDescriptionSchema,
   mediaTargetSchema,
   prepareImage,
+  prepareImageVariants,
 } from "./validation";
+import { storePreparedImage } from "./variants";
 
 const targetFields = (target: MediaTarget, userId: string) =>
   target.kind === "avatar"
@@ -72,18 +73,18 @@ export const stageImage = async (
     bytes,
     target.kind === "avatar",
   );
-  const pending = await prisma.media.create({
-    data: {
-      pathname: `images/${randomUUID()}.webp`,
-      provider: storageProvider(),
-      alt,
-      ...dimensions,
-      // Persist before the external write so timeouts/crashes still leave cleanup work.
-      cleanupAfter: new Date(Date.now() + 60 * 60 * 1000),
-    },
+  const variants = await prepareImageVariants(
+    data,
+    dimensions,
+    target.kind === "avatar",
+  );
+  const pending = await storePreparedImage({
+    data,
+    variants,
+    alt,
+    ...dimensions,
+    provider: storageProvider(),
   });
-
-  await mediaStorage.put(pending.provider, pending.pathname, data);
   return pending.id;
 };
 
@@ -168,7 +169,7 @@ export const readableImage = (id: string, userId: string | null) =>
         ...(userId ? [{ userId, user: { emailVerified: true } }] : []),
       ],
     },
-    select: { id: true, pathname: true, provider: true },
+    select: { id: true, pathname: true, provider: true, variantWidths: true },
   });
 
 export const readAvatar = (userId: string) =>

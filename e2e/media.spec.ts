@@ -1,6 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
 import { randomBytes } from "node:crypto";
 import sharp from "sharp";
+import { expectImageLoaded } from "./image-assertions";
 import { accounts, resetFixtures, testPrisma } from "./seed";
 
 const listUrl = "/en/lists/e2e-media-list";
@@ -36,7 +37,7 @@ const upload = async (page: Page, description: string, replacement = false) => {
   );
   const image = page.getByRole("img", { name: description, exact: true });
   await expect(image).toBeVisible();
-  await expect(image).toHaveJSProperty("naturalWidth", 900);
+  await expectImageLoaded(image);
   return (await image.getAttribute("src"))!;
 };
 
@@ -137,7 +138,7 @@ test("wish creation previews an image, keeps it after validation and saves it wi
   await expect(page).toHaveURL(/\/wishes\/[^/]+\?created=1$/);
   const image = page.getByRole("img", { name: "A blue camera for trips" });
   await expect(image).toBeVisible();
-  await expect(image).toHaveJSProperty("naturalWidth", 900);
+  await expectImageLoaded(image);
   expect((await request.get((await image.getAttribute("src"))!)).status()).toBe(
     200,
   );
@@ -265,9 +266,9 @@ test("list image upload, replacement, removal and revocation work through the UI
     });
   }
   await page.goto(listUrl);
-  await expect(
+  await expectImageLoaded(
     page.getByRole("img", { name: "A second blue landscape" }),
-  ).toHaveJSProperty("naturalWidth", 900);
+  );
   await page.getByRole("link", { name: "List settings", exact: true }).click();
   await page.getByRole("button", { name: "Hide list", exact: true }).click();
   await expect(
@@ -357,8 +358,10 @@ test("avatars are public only for public list owners, resized and removable", as
     .getByLabel("Image description", { exact: true })
     .fill("My portrait");
   await page.getByRole("button", { name: "Upload image", exact: true }).click();
-  const avatar = page.getByRole("img", { name: "My portrait" });
-  await expect(avatar).toHaveJSProperty("naturalWidth", 512);
+  const avatar = page
+    .getByRole("main")
+    .getByRole("img", { name: "My portrait" });
+  await expectImageLoaded(avatar);
   const src = (await avatar.getAttribute("src"))!;
   expect((await request.get(src)).status()).toBe(200);
   const prisma = testPrisma();
@@ -376,4 +379,42 @@ test("avatars are public only for public list owners, resized and removable", as
     page.getByRole("button", { name: "Upload image", exact: true }),
   ).toBeVisible();
   await expect(avatar).toHaveCount(0);
+});
+
+test("card previews choose private variants and revoke them after hiding", async ({
+  page,
+  request,
+}) => {
+  await signIn(page);
+  await page.goto(`${wishUrl}/edit`);
+  const src = await upload(page, "Responsive camera");
+  const original = await request.get(src);
+  expect(await sharp(await original.body()).metadata()).toMatchObject({
+    width: 900,
+  });
+  await page.goto("/en/lists");
+  const preview = page
+    .getByRole("main")
+    .getByRole("img", { name: "Responsive camera" });
+  await expectImageLoaded(preview);
+  const selected = await preview.evaluate(
+    (element: HTMLImageElement) => element.currentSrc,
+  );
+  const width = Number(new URL(selected).searchParams.get("w"));
+  expect([200, 400, 800]).toContain(width);
+  const response = await request.get(selected);
+  expect(response.status()).toBe(200);
+  expect(response.headers()["cache-control"]).toContain("no-store");
+  expect(await sharp(await response.body()).metadata()).toMatchObject({
+    width,
+  });
+  await page.goto(wishUrl);
+  await page.getByRole("button", { name: "Hide wish", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Show wish", exact: true }),
+  ).toBeVisible();
+  expect((await request.get(selected)).status()).toBe(404);
+  expect(
+    await page.evaluate(async (url) => (await fetch(url)).status, selected),
+  ).toBe(200);
 });

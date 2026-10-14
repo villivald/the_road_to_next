@@ -1,6 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
 import sharp from "sharp";
 import { testOrigin } from "./environment";
+import { expectImageLoaded } from "./image-assertions";
 import { accounts, resetFixtures, testPrisma } from "./seed";
 
 const listUrl = "/en/lists/e2e-reservation-list";
@@ -37,7 +38,7 @@ const image = async (page: Page) => {
     .fill("A notebook cover");
   await page.getByRole("button", { name: "Upload image", exact: true }).click();
   const uploaded = page.getByRole("img", { name: "A notebook cover" });
-  await expect(uploaded).toHaveJSProperty("naturalWidth", 600);
+  await expectImageLoaded(uploaded);
   return (await uploaded.getAttribute("src"))!;
 };
 
@@ -96,9 +97,9 @@ test("reserve, view, cancel and admin revoke preserve identity and image privacy
     await expect(
       page.getByRole("link", { name: "A beautiful notebook", exact: true }),
     ).toBeVisible();
-    await expect(
+    await expectImageLoaded(
       page.getByRole("img", { name: "A notebook cover" }),
-    ).toHaveJSProperty("naturalWidth", 600);
+    );
     await page.screenshot({
       path: info.outputPath("my-reservations.png"),
       fullPage: true,

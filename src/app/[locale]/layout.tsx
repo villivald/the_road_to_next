@@ -14,7 +14,7 @@ import { isLocale } from "@/i18n/config";
 import { getText } from "@/i18n/server";
 
 const manrope = localFont({
-  src: "../../assets/fonts/Manrope-Variable.ttf",
+  src: "../../assets/fonts/Manrope-Variable.woff2",
   variable: "--font-manrope",
   weight: "200 800",
   style: "normal",
@@ -22,9 +22,9 @@ const manrope = localFont({
 });
 
 const fraunces = localFont({
-  src: "../../assets/fonts/Fraunces-Variable.ttf",
+  src: "../../assets/fonts/Fraunces-500-Optical.woff2",
   variable: "--font-fraunces",
-  weight: "100 900",
+  weight: "500",
   style: "normal",
   display: "swap",
   fallback: ["Georgia"],

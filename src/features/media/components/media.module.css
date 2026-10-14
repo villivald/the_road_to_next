@@ -21,6 +21,10 @@
   font-size: 0.85rem;
 }
 
+.picture {
+  display: contents;
+}
+
 .image,
 .thumbnail {
   display: block;
@@ -42,7 +46,7 @@
   max-height: 18rem;
 }
 
-.editor[data-target="avatar"] > .thumbnail {
+.editor[data-target="avatar"] > picture > .thumbnail {
   width: 7rem;
   height: 7rem;
   border-radius: 50%;

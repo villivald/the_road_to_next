@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { imageStoragePaths } from "../variants";
 import { mediaStorage } from "./storage";
 
 export const cleanupMedia = async () => {
@@ -29,7 +30,10 @@ export const cleanupMedia = async () => {
     }
 
     try {
-      await mediaStorage.delete(media.provider, media.pathname);
+      // Each path remains in the durable row until every deletion succeeds.
+      for (const pathname of imageStoragePaths(media)) {
+        await mediaStorage.delete(media.provider, pathname);
+      }
       await prisma.media.deleteMany({ where: { id, state: "DELETING" } });
       deleted++;
     } catch {

@@ -13,6 +13,11 @@ npm run dev
 
 Skip the copy if `.env.local` already exists. It takes precedence over `.env`. Keep both private. Migrations target the database configured by `DIRECT_URL` (or `DATABASE_URL`); use a separate wishlist database.
 
+After pulling changes that include database migrations, run `npm run db:migrate`
+again before starting the app. Running Docker containers starts PostgreSQL but
+does not apply schema changes. A missing-column error such as
+`Media.variantWidths` means the configured database needs its pending migration.
+
 ## Services
 
 | Service                | Start                   | Access                                  |

@@ -21,7 +21,12 @@ export const storageProvider = (): MediaProvider => {
 };
 
 const localPath = (pathname: string) => {
-  if (process.env.VERCEL || !/^images\/[a-f0-9-]{36}\.webp$/.test(pathname)) {
+  if (
+    process.env.VERCEL ||
+    !/^images\/[a-f0-9-]{36}(?:-(?:64|128|200|256|400|800|1200))?\.webp$/.test(
+      pathname,
+    )
+  ) {
     throw new Error("Invalid local media path");
   }
 

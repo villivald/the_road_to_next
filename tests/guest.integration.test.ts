@@ -50,9 +50,11 @@ const create = (days = 7) =>
     label: "Family",
     days,
   });
-const imageRequest = (id: string) =>
+const imageRequest = (id: string, width?: number) =>
   guestImage(
-    new Request(`http://localhost/guest/lists/${listId}/media/${id}`),
+    new Request(
+      `http://localhost/guest/lists/${listId}/media/${id}${width ? `?w=${width}` : ""}`,
+    ),
     { params: Promise.resolve({ listId, id }) },
   );
 
@@ -306,7 +308,7 @@ describe("guest access", () => {
 
   it("protects images before and after storage reads, never exposing avatars or other lists", async () => {
     const bytes = await sharp({
-      create: { width: 20, height: 20, channels: 3, background: "green" },
+      create: { width: 900, height: 450, channels: 3, background: "green" },
     })
       .png()
       .toBuffer();
@@ -326,17 +328,19 @@ describe("guest access", () => {
     request.token = link.token;
     expect(await readGuestImage(listId, avatar.id, link.token)).toBeNull();
     expect(await readableImage(image.id, null)).toBeNull();
-    const response = await imageRequest(image.id);
+    const response = await imageRequest(image.id, 400);
     expect(response.status).toBe(200);
     expect(response.headers.get("Cache-Control")).toContain("no-store");
-    await response.arrayBuffer();
+    expect(
+      await sharp(Buffer.from(await response.arrayBuffer())).metadata(),
+    ).toMatchObject({ width: 400, height: 200 });
     const get = mediaStorage.get;
     vi.spyOn(mediaStorage, "get").mockImplementationOnce(async (...args) => {
       const body = await get(...args);
       await revokeGuestLink(owner.user.id, owner.session.id, listId, link.id);
       return body;
     });
-    expect((await imageRequest(image.id)).status).toBe(404);
+    expect((await imageRequest(image.id, 400)).status).toBe(404);
     expect(await readGuestImage(listId, image.id, link.token)).toBeNull();
   });
 

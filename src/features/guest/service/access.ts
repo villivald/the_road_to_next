@@ -93,5 +93,5 @@ export const readGuestImage = (listId: string, id: string, token: unknown) =>
         { wish: guestWishAccess(listId, token) },
       ],
     },
-    select: { id: true, pathname: true, provider: true },
+    select: { id: true, pathname: true, provider: true, variantWidths: true },
   });

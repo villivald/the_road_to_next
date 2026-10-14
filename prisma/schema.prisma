@@ -203,22 +203,24 @@ enum Currency {
 
 // Detached rows are the durable cleanup queue, including interrupted uploads.
 model Media {
-  id           String        @id @default(cuid())
-  pathname     String        @unique
-  provider     MediaProvider
-  state        MediaState    @default(PENDING)
-  alt          String        @db.VarChar(300)
-  width        Int
-  height       Int
-  bytes        Int
-  cleanupAfter DateTime
-  attempts     Int           @default(0)
-  wishlistId   String?       @unique
-  wishId       String?       @unique
-  userId       String?       @unique
-  wishlist     Wishlist?     @relation(fields: [wishlistId], references: [id], onDelete: SetNull)
-  wish         Wish?         @relation(fields: [wishId], references: [id], onDelete: SetNull)
-  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  id             String        @id @default(cuid())
+  pathname       String        @unique
+  provider       MediaProvider
+  state          MediaState    @default(PENDING)
+  alt            String        @db.VarChar(300)
+  width          Int
+  height         Int
+  bytes          Int
+  variantWidths  Int[]         @default([])
+  variantVersion Int           @default(0)
+  cleanupAfter   DateTime
+  attempts       Int           @default(0)
+  wishlistId     String?       @unique
+  wishId         String?       @unique
+  userId         String?       @unique
+  wishlist       Wishlist?     @relation(fields: [wishlistId], references: [id], onDelete: SetNull)
+  wish           Wish?         @relation(fields: [wishId], references: [id], onDelete: SetNull)
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([cleanupAfter])
 }

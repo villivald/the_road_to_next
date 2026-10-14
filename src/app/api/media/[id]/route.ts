@@ -1,13 +1,14 @@
 import { getAuth } from "@/features/auth/actions/get-auth";
 import { readableImage } from "@/features/media/service/media";
-import { mediaStorage } from "@/features/media/service/storage";
+import { readImageVariant } from "@/features/media/service/variants";
+import { requestedImageWidth } from "@/features/media/variants";
 import { wishlistIdSchema } from "@/features/wishlist/service/schemas";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const headers = {
@@ -19,8 +20,9 @@ export async function GET(
     Vary: "Cookie",
   };
   const { id } = await params;
+  const width = requestedImageWidth(request);
 
-  if (!wishlistIdSchema.safeParse(id).success) {
+  if (!wishlistIdSchema.safeParse(id).success || width === undefined) {
     return new Response(null, { status: 404, headers });
   }
 
@@ -32,7 +34,7 @@ export async function GET(
   }
 
   try {
-    const body = await mediaStorage.get(media.provider, media.pathname);
+    const body = await readImageVariant(media, width);
 
     // Storage I/O may outlive a permission change. Recheck before delivering bytes.
     if (!body || !(await readableImage(id, user?.id ?? null))) {
