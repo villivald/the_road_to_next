@@ -116,7 +116,35 @@ describe("Paddle subscriptions", () => {
       portalLink("e2e-member", session.id, "sub_forged"),
     ).rejects.toThrow();
     expect(await prisma.premiumGrant.count()).toBe(0);
+    expect(await prisma.accountEmail.count()).toBe(0);
   });
+  it.each(["month", "year"])(
+    "queues a %s Premium guide only after a confirmed first payment",
+    async (interval) => {
+      await prisma.user.update({
+        where: { id: "e2e-owner" },
+        data: { locale: "fi" },
+      });
+      const { checkout, user } = await begin(interval);
+      expect(await prisma.accountEmail.count()).toBe(0);
+      completePayment(state, checkout.transactionId!);
+      await syncBillingAccount(checkout.accountId);
+      await syncBillingAccount(checkout.accountId);
+      const emails = await prisma.accountEmail.findMany({
+        where: { userId: user.id },
+      });
+      expect(emails).toHaveLength(1);
+      expect(emails[0]).toMatchObject({
+        recipient: accounts.owner.email,
+        subject: "Tervetuloa Premiumin käyttäjäksi",
+        sentAt: null,
+      });
+      expect(emails[0].text).toContain(
+        interval === "year" ? "Vuositilaus" : "Kuukausitilaus",
+      );
+      expect(emails[0].html).toContain('lang="fi"');
+    },
+  );
   it("serializes concurrent checkout requests and resumes the same transaction", async () => {
     const { user, session } = await login();
     const results = await Promise.allSettled(
@@ -327,6 +355,11 @@ describe("Paddle subscriptions", () => {
     await syncBillingAccount(checkout.accountId);
     expect((await readPremiumAccess(user.id)).expiresAt).toEqual(end);
     expect(await prisma.premiumGrant.count()).toBe(2);
+    expect(await prisma.accountEmail.count()).toBe(1);
+    expect(await prisma.accountEmail.findFirstOrThrow()).toMatchObject({
+      key: `premium-subscription/${state.subscriptions[0].id}`,
+      subject: "Welcome to Premium",
+    });
   });
   it("deletes the account during a provider outage and durably retries cancellation", async () => {
     const { user, session, checkout } = await paid();

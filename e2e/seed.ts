@@ -38,7 +38,14 @@ export const resetFixtures = async () => {
                 in: Object.keys(accounts).map((role) => `e2e-${role}`),
               },
             },
-            { owner: { email: newAccount.email } },
+            {
+              owner: {
+                OR: [
+                  { email: newAccount.email },
+                  { username: newAccount.username },
+                ],
+              },
+            },
           ],
         },
       });
@@ -48,7 +55,11 @@ export const resetFixtures = async () => {
       await tx.billingEvent.deleteMany();
       await tx.user.deleteMany({
         where: {
-          OR: [{ id: { startsWith: "e2e-" } }, { email: newAccount.email }],
+          OR: [
+            { id: { startsWith: "e2e-" } },
+            { email: newAccount.email },
+            { username: newAccount.username },
+          ],
         },
       });
       await tx.promoCode.deleteMany({

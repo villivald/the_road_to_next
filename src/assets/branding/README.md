@@ -5,3 +5,8 @@ The letter shapes in `wishlist-wordmark.ts` come from the unmodified [Alfa Slab 
 The glyphs for “Wishlist” were converted into SVG outlines, with spacing reduced by 18 font units between letters. Coordinates use a 100-unit capital height, a downward vertical axis, and two decimal places. The component uses flat ink lettering in the header and a yellow face with ink depth in the footer. The shapes are bundled with the app; the font is not downloaded at runtime.
 
 The yellow heart remains the existing Lucide Heart. Interface text remains Manrope. The logo's accessible name is ordinary text, with decorative SVGs hidden from assistive technology.
+
+Email templates use the same flat wordmark and yellow heart, rasterized in
+`public/email-brand.png` for clients without SVG support. Regenerate it with
+`node --import tsx scripts/prepare-email-brand.ts`. The heart is covered by the
+[Lucide ISC license](LUCIDE-LICENSE.txt).

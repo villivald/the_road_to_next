@@ -29,6 +29,7 @@
     "media:backfill": "tsx scripts/backfill-media.ts",
     "promo": "tsx scripts/promo.ts",
     "invitations:deliver": "tsx scripts/deliver-invitations.ts",
+    "emails:deliver": "tsx scripts/deliver-account-emails.ts",
     "billing:sync": "tsx scripts/reconcile-billing.ts"
   },
   "dependencies": {

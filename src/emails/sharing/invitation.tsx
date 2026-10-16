@@ -1,5 +1,10 @@
-import { Body, Container, Head, Html, Link, Text } from "react-email";
 import { createText } from "@/i18n/text";
+import {
+  EmailAction,
+  EmailLayout,
+  EmailLink,
+  EmailParagraph,
+} from "../components/layout";
 
 export default function InvitationEmail({
   url,
@@ -10,23 +15,29 @@ export default function InvitationEmail({
 }) {
   const t = createText(locale);
   return (
-    <Html lang={locale}>
-      <Head />
-      <Body style={{ fontFamily: "Arial, sans-serif", padding: "24px" }}>
-        <Container>
-          <Text>{t("You have been invited to a list on Wishlist.")}</Text>
-          <Text>
-            {t(
-              "Sign in or create an account with this email address and verify it. Then review the invitation and choose whether to join. The invitation expires after seven days.",
-            )}
-          </Text>
-          <Link href={url}>{t("Review invitation")}</Link>
-          <Text>
-            {t("If you were not expecting this invitation, you can ignore it.")}
-          </Text>
-        </Container>
-      </Body>
-    </Html>
+    <EmailLayout
+      locale={locale}
+      title={t("Your Wishlist invitation")}
+      preview={t("You have been invited to a list on Wishlist.")}
+    >
+      <EmailParagraph>
+        {t("You have been invited to a list on Wishlist.")}
+      </EmailParagraph>
+      <EmailParagraph>
+        {t(
+          "Sign in or create an account with this email address and verify it. Then review the invitation and choose whether to join. The invitation expires after seven days.",
+        )}
+      </EmailParagraph>
+      <EmailAction href={url}>{t("Review invitation")}</EmailAction>
+      <EmailParagraph>
+        {t("If the button does not work, open this link:")}
+        <br />
+        <EmailLink href={url}>{url}</EmailLink>
+      </EmailParagraph>
+      <EmailParagraph>
+        {t("If you were not expecting this invitation, you can ignore it.")}
+      </EmailParagraph>
+    </EmailLayout>
   );
 }
 

@@ -1,5 +1,6 @@
-import { Body, Container, Head, Html, Section, Text } from "react-email";
+import { Text } from "react-email";
 import { createText } from "@/i18n/text";
+import { EmailLayout, EmailNote, EmailParagraph } from "../components/layout";
 
 type EmailVerificationProps = {
   toName: string;
@@ -14,38 +15,43 @@ const EmailVerification = ({
 }: EmailVerificationProps) => {
   const t = createText(locale);
   return (
-    <Html lang={locale}>
-      <Head />
-      <Body
+    <EmailLayout
+      locale={locale}
+      title={t("Verify your email")}
+      preview={t(
+        "Enter this code in Wishlist to finish creating your account.",
+      )}
+    >
+      <EmailParagraph>
+        {t("Hi {name}, enter this code in Wishlist to verify your email:", {
+          name: toName,
+        })}
+      </EmailParagraph>
+      <Text
         style={{
-          margin: "32px",
+          fontFamily: "'Courier New', monospace",
+          fontSize: "30px",
+          fontWeight: 700,
+          letterSpacing: "3px",
           textAlign: "center",
-          fontFamily: "Arial, sans-serif",
+          padding: "18px 8px",
+          backgroundColor: "#eeebe1",
+          color: "#292731",
+          borderRadius: "4px",
+          margin: "20px 0",
         }}
       >
-        <Container>
-          <Section>
-            <Text>
-              {t(
-                "Hi {name}, enter this code in Wishlist to verify your email:",
-                { name: toName },
-              )}
-            </Text>
-          </Section>
-          <Section>
-            <Text>{code}</Text>
-            <Text>
-              {t("This code expires in 30 minutes. Use only your latest code.")}
-            </Text>
-            <Text>
-              {t(
-                "If you did not create a Wishlist account, you can ignore this email.",
-              )}
-            </Text>
-          </Section>
-        </Container>
-      </Body>
-    </Html>
+        {code}
+      </Text>
+      <EmailNote>
+        {t("This code expires in 30 minutes. Use only your latest code.")}
+      </EmailNote>
+      <EmailParagraph>
+        {t(
+          "If you did not create a Wishlist account, you can ignore this email.",
+        )}
+      </EmailParagraph>
+    </EmailLayout>
   );
 };
 

@@ -29,6 +29,32 @@ model User {
   promoRedemptions        PromoRedemption[]
   sentInvitations         Invitation[]
   billingAccount          BillingAccount?
+  accountEmails           AccountEmail[]
+}
+
+// Transactional guides, retained for deduplication and removed with the account.
+model AccountEmail {
+  id               String    @id @default(cuid())
+  key              String    @unique
+  createdAt        DateTime  @default(now())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  grantId          String?
+  recipient        String    @db.VarChar(254)
+  sender           String
+  subject          String
+  html             String
+  text             String
+  sentAt           DateTime?
+  canceledAt       DateTime?
+  firstAttemptAt   DateTime?
+  nextAttemptAt    DateTime  @default(now())
+  deliveryAttempts Int       @default(0)
+  deliveryFailedAt DateTime?
+  claimId          String?
+
+  @@index([sentAt, canceledAt, deliveryFailedAt, nextAttemptAt])
+  @@index([userId])
 }
 
 model Session {

@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
+import { queueAccountEmail } from "@/features/notifications/service/queue";
 import { prisma } from "@/lib/prisma";
 import { queueBilling, withBillingAccount } from "./accounts";
 import { billingConfig, billingEnabled, BillingError } from "./config";
@@ -249,6 +250,9 @@ export const syncBillingAccount = async (id: string) => {
           if (expiresAt <= startsAt)
             throw new BillingError("Invalid payment period.");
           const refunded = fullyRefunded(transaction);
+          const previousPayments = await tx.billingPayment.count({
+            where: { subscriptionId: subscription.id },
+          });
           await tx.billingPayment.upsert({
             where: { id: transaction.id },
             create: {
@@ -260,7 +264,7 @@ export const syncBillingAccount = async (id: string) => {
             },
             update: { startsAt, expiresAt, refunded },
           });
-          await tx.premiumGrant.upsert({
+          const grant = await tx.premiumGrant.upsert({
             where: { billingPaymentId: transaction.id },
             create: {
               billingPaymentId: transaction.id,
@@ -275,6 +279,23 @@ export const syncBillingAccount = async (id: string) => {
               revokedAt: refunded ? new Date() : null,
             },
           });
+          if (!previousPayments && !refunded && expiresAt > new Date()) {
+            const user = await tx.user.findUniqueOrThrow({
+              where: { id: current.userId },
+            });
+            await queueAccountEmail(tx, user, {
+              key: `premium-subscription/${subscription.id}`,
+              premium: {
+                source:
+                  intervalFor(transaction.items[0].price.id) === "year"
+                    ? "year"
+                    : "month",
+                startsAt: startsAt.toISOString(),
+                expiresAt: expiresAt.toISOString(),
+                grantId: grant.id,
+              },
+            });
+          }
         }
       }
       await tx.billingAccount.update({

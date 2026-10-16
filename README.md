@@ -31,6 +31,8 @@ does not apply schema changes. A missing-column error such as
 
 Register in the app, then open the local inbox for verification codes and reset links. Local email is captured by Mailpit; it is not delivered to recipients. For real delivery, unset `MAILPIT_URL` and configure `RESEND_API_KEY` and `EMAIL_FROM`. Hosted Inngest needs its event/signing keys with `INNGEST_DEV` unset.
 
+After email verification, users receive a welcome guide. A confirmed new paid subscription or successful promo redemption queues a Premium guide. Inngest’s `deliver-account-emails` job sends these every five minutes; run `npm run emails:deliver` for one due batch locally. All email templates share the app’s branding in English and Finnish. See [account email delivery and deployment](docs/account-emails.md).
+
 Choose **English / Suomi** in the header. Both versions are also available directly at `/en` and `/fi`; your choice is saved for future visits.
 
 Images use private files in `.local/media` locally (no extra service). To use cloud storage, create a **private** Vercel Blob store, set `MEDIA_STORAGE=vercel` and its `BLOB_READ_WRITE_TOKEN` in `.env.local`, then restart. Use separate stores for development/preview and production. Add images when creating a wish, or upload them from List settings, Edit wish, or Your account.

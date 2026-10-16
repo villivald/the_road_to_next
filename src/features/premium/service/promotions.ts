@@ -3,6 +3,7 @@ import {
   consumeRateLimit,
   lockUser,
 } from "@/features/auth/service/security";
+import { queueAccountEmail } from "@/features/notifications/service/queue";
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { generateRandomToken, hashToken } from "@/utils/crypto";
@@ -97,7 +98,13 @@ export const redeemPromo = async (
         emailVerified: true,
         sessions: { some: { id: sessionId, expiresAt: { gt: new Date() } } },
       },
-      select: { id: true },
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        email: true,
+        locale: true,
+      },
     });
     if (!user) {
       throw new AuthError("Your session expired. Please sign in again.");
@@ -141,13 +148,22 @@ export const redeemPromo = async (
       data: { redemptionCount: { increment: 1 } },
       select: { id: true },
     });
-    await tx.promoRedemption.create({
+    const redemption = await tx.promoRedemption.create({
       data: {
         userId,
         promoCodeId: promo.id,
         grant: { create: { userId, startsAt, expiresAt } },
       },
-      select: { id: true },
+      select: { id: true, grant: { select: { id: true } } },
+    });
+    await queueAccountEmail(tx, user, {
+      key: `premium-promo/${redemption.id}`,
+      premium: {
+        source: "promo",
+        startsAt: startsAt.toISOString(),
+        expiresAt: expiresAt.toISOString(),
+        grantId: redemption.grant!.id,
+      },
     });
 
     return { expiresAt };

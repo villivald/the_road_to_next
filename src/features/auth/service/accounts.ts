@@ -1,3 +1,4 @@
+import { queueAccountEmail } from "@/features/notifications/service/queue";
 import {
   hashPassword,
   verifyPasswordHash,
@@ -93,6 +94,9 @@ export const verifyEmail = async (
       where: { id: userId },
       data: { emailVerified: true },
     });
+    if (!user.emailVerified) {
+      await queueAccountEmail(tx, user, { key: `welcome/${user.id}` });
+    }
     await tx.session.deleteMany({ where: { userId } });
 
     return createSession(token, userId, tx);

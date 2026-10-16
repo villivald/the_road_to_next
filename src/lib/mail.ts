@@ -8,6 +8,24 @@ export const deliverEmail = async (
   react: ReactElement,
   idempotencyKey?: string,
 ) => {
+  const html = await render(react);
+  const text = await render(react, { plainText: true });
+  return deliverRenderedEmail({ to, subject, html, text }, idempotencyKey);
+};
+
+export const emailSender = () =>
+  process.env.EMAIL_FROM ?? "Wishlist <onboarding@resend.dev>";
+
+export const deliverRenderedEmail = async (
+  message: {
+    to: string;
+    subject: string;
+    html: string;
+    text: string;
+    from?: string;
+  },
+  idempotencyKey?: string,
+) => {
   const localInbox = process.env.MAILPIT_URL;
   const localInboxUrl = localInbox ? new URL(localInbox) : null;
 
@@ -20,19 +38,16 @@ export const deliverEmail = async (
     }
   }
 
-  const html = await render(react);
-  const text = await render(react, { plainText: true });
-
   if (localInboxUrl) {
     const response = await fetch(new URL("/api/v1/send", localInboxUrl), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         From: { Email: "noreply@example.test", Name: "Wishlist" },
-        To: [{ Email: to }],
-        Subject: subject,
-        HTML: html,
-        Text: text,
+        To: [{ Email: message.to }],
+        Subject: message.subject,
+        HTML: message.html,
+        Text: message.text,
       }),
       signal: AbortSignal.timeout(10_000),
     });
@@ -45,11 +60,11 @@ export const deliverEmail = async (
 
   const result = await resend.emails.send(
     {
-      from: process.env.EMAIL_FROM ?? "Wishlist <onboarding@resend.dev>",
-      to,
-      subject,
-      html,
-      text,
+      from: message.from ?? emailSender(),
+      to: message.to,
+      subject: message.subject,
+      html: message.html,
+      text: message.text,
     },
     idempotencyKey ? { idempotencyKey } : undefined,
   );
