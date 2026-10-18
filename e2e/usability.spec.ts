@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
 import { testOrigin } from "./environment";
+import { openMainNavigation } from "./navigation";
 import { accounts, resetFixtures, testPrisma } from "./seed";
 
 const listUrl = "/en/lists/e2e-design";
@@ -183,13 +184,17 @@ test("narrow navigation, expanded filters, text resizing and reduced motion", as
   await page.setViewportSize({ width: 320, height: 800 });
   await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
   await signIn(page);
-  const navigation = page.getByRole("navigation", { name: "Main navigation" });
+  const navigation = await openMainNavigation(page);
   await expect(
     navigation.getByRole("link", { name: "My lists", exact: true }),
   ).toHaveAttribute("aria-current", "page");
   await navigation.getByRole("link", { name: "Browse", exact: true }).click();
   await expect(
-    navigation.getByRole("link", { name: "Browse", exact: true }),
+    navigation.getByRole("link", {
+      name: "Browse",
+      exact: true,
+      includeHidden: true,
+    }),
   ).toHaveAttribute("aria-current", "page");
   await page.getByRole("link", { name: "Wishes", exact: true }).click();
   await expect(page.getByLabel("Minimum price")).toBeHidden();

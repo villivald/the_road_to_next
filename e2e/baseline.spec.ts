@@ -1,5 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 import { testEnvironment } from "./environment";
+import { openMainNavigation } from "./navigation";
 import { accounts, newAccount, resetFixtures, testPrisma } from "./seed";
 
 const signIn = async (
@@ -133,6 +134,7 @@ test("register, verify from captured email, reach empty lists, and sign out", as
     secure: true,
     sameSite: "Lax",
   });
+  await openMainNavigation(page);
   await page.getByRole("link", { name: "Account", exact: true }).click();
   await expect(page.getByRole("main")).toContainText(newAccount.email);
   await page.getByRole("button", { name: "Sign out", exact: true }).click();

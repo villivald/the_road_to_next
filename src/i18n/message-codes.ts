@@ -2,6 +2,11 @@ import type { TextKey } from "./text";
 
 // Codes remain stable when presentation copy changes.
 export const messageCodes = {
+  "message.favorite_added": "Added to favorites.",
+  "message.favorite_removed": "Removed from favorites.",
+  "message.favorite_verify_email": "Verify your email to manage favorites.",
+  "message.favorite_unavailable":
+    "This item is unavailable or you no longer have access.",
   "message.a_new_code_has_been_sent_check_your_inbox":
     "A new code has been sent. Check your inbox.",
   "message.active_premium_access_is_required_for_this_action":

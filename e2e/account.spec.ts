@@ -1,6 +1,8 @@
 import { expect, type Page, test } from "@playwright/test";
 import sharp from "sharp";
 import { testEnvironment, testOrigin } from "./environment";
+import { expectImageLoaded } from "./image-assertions";
+import { openMainNavigation } from "./navigation";
 import { accounts, newAccount, resetFixtures, testPrisma } from "./seed";
 
 const signIn = async (page: Page, account = accounts.owner) => {
@@ -61,6 +63,7 @@ test("profile details validate, preserve invalid input, save, clear, and stay un
   request,
 }, info) => {
   await signIn(page);
+  await openMainNavigation(page);
   await page.getByRole("link", { name: "Account", exact: true }).click();
   await page.getByLabel("Display name").fill("Ada Müller");
   await page
@@ -187,6 +190,7 @@ test("register, publish, reserve, cancel, fulfill and delete without a successor
     await expect(
       page.getByRole("button", { name: "Reopen wish" }),
     ).toBeVisible();
+    await openMainNavigation(page);
     await page.getByRole("link", { name: "Account", exact: true }).click();
     const buffer = await sharp({
       create: { width: 80, height: 80, channels: 3, background: "green" },
@@ -203,7 +207,7 @@ test("register, publish, reserve, cancel, fulfill and delete without a successor
       .getByRole("button", { name: "Upload image", exact: true })
       .click();
     const image = page.getByRole("img", { name: "Private account avatar" });
-    await expect(image).toHaveJSProperty("naturalWidth", 80);
+    await expectImageLoaded(image);
     const mediaUrl = (await image.getAttribute("src"))!;
     await page
       .getByRole("link", { name: "Delete account", exact: true })

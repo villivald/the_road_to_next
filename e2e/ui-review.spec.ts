@@ -1,6 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
 import sharp from "sharp";
+import { openMainNavigation } from "./navigation";
 import { accounts, resetFixtures, testPrisma } from "./seed";
 
 const listId = "e2e-ui-public";
@@ -16,7 +17,7 @@ const signIn = async (page: Page) => {
 };
 const active = (page: Page) =>
   page
-    .getByRole("navigation", { name: "Main navigation" })
+    .getByRole("navigation", { name: "Main navigation", includeHidden: true })
     .locator('[aria-current="page"]');
 
 test.beforeEach(async () => {
@@ -75,7 +76,9 @@ test("browse previews, reservation shortcuts and reservation navigation retain t
       },
     ),
   ).toBeVisible();
-  await page
+  await (
+    await openMainNavigation(page)
+  )
     .getByRole("link", { name: "My reservations", exact: true })
     .click();
   await page.getByRole("link", { name: "Open A book from preview" }).click();

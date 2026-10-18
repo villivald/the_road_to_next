@@ -25,14 +25,37 @@ metadata/actions. Contain product images; rotate only decorative list-stack imag
 Missing images use the actual wish/list title as a decorative cover, while the
 normal linked title remains accessible.
 
-The header separates account tools from primary navigation. Labels remain visible
-on mobile, and controls wrap for longer Finnish text or enlarged text. Do not hide
-Sign out to make the header fit. Preserve the existing Browse/My lists/My
-reservations context on detail pages.
+The header separates account tools from primary navigation. Verified accounts have
+four visible mobile shortcuts: Browse, Lists, Reservations, and Favorites. All use
+their full localized accessible names, existing icons, and the current-section
+underline. Short captions appear when all four fit; a ResizeObserver checks actual
+label/target widths, including font loading, locale, resizing, and text enlargement.
+When captions no longer fit, icons remain directly usable and a permanently labeled
+Menu button exposes all five full navigation labels. Account remains available
+through the avatar; Menu carries the current-section marker on account pages.
 
-On mobile, stretch navigation tabs to the same row height and align icons and
-labels from the top so wrapped labels keep their active underline aligned. Keep
-avatar/sign-out and language/theme controls together when the toolbar wraps.
+The full menu closes on route changes, Escape, or focus leaving the navigation;
+Escape restores focus to its button. Its dropdown scrolls for enlarged text without
+moving page content. Mobile targets stay at least 44px; desktop keeps the full
+navigation. Keep avatar/sign-out and language/theme controls together when the
+toolbar wraps; Sign out stays visible. Preserve Browse/My lists/My
+reservations/Favorites context on detail pages.
+
+The choice combines visible navigation with a full labeled fallback. Hidden-only
+navigation adds a step for every destination; icon-only navigation makes unfamiliar
+symbols harder to interpret. A bottom tab bar is another established pattern, but
+this revision keeps navigation in the existing header rather than introducing a
+second persistent bar. These are design judgments for Wishlist, informed by
+[NN/g's hidden-navigation research](https://www.nngroup.com/articles/hamburger-menus/),
+[icon-label guidance](https://www.nngroup.com/articles/icon-usability/), and
+[Apple's tab-bar guidance](https://developer.apple.com/design/human-interface-guidelines/tab-bars).
+
+Browse and Favorites share list, wish, and people card components, including counts,
+priority stars, and permission-aware actions. Public lists omit redundant visibility
+labels; private/draft favorites retain them to clarify who can open a copied link.
+The one-click heart has an accessible pressed state and uses ink on yellow in both
+themes. Favorites persist independently of reservations; My reservations shows
+priority and cancellation, without a favorite control.
 
 Wish details use image and information columns. Editors and Account use adjacent
 panels when space allows and stack on smaller screens. Avoid nesting independent

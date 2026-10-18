@@ -8,6 +8,8 @@ import { ListStatus } from "@/components/cards/list-status";
 import { SuccessMessage } from "@/components/form/success-message";
 import styles from "@/components/shell.module.css";
 import { getAuth } from "@/features/auth/actions/get-auth";
+import { FavoriteButton } from "@/features/favorites/components/favorite-button";
+import { readFavoriteIds } from "@/features/favorites/service/favorites";
 import { MediaImage } from "@/features/media/components/media-image";
 import { WishCollection } from "@/features/wish/components/wish-collection";
 import { readWishlist } from "@/features/wishlist/service/lists";
@@ -15,6 +17,7 @@ import { Link } from "@/i18n/navigation";
 import { getText } from "@/i18n/server";
 import {
   browsePath,
+  favoritesPath,
   listPath,
   listSettingsPath,
   listsPath,
@@ -57,24 +60,33 @@ export default async function ListPage({
   const { created, saved, wishDeleted } = query;
   const section = detailSection(query.from, list.canManage);
   const published = list.publication === "PUBLISHED";
+  const favoriteIds = await readFavoriteIds(
+    user?.emailVerified ? user.id : null,
+    "list",
+    [list.id],
+  );
 
   return (
     <section className={styles.page}>
       <DetailNavigation section={section} />
       <Link
         href={
-          section === "lists"
-            ? listsPath
-            : section === "reservations"
-              ? reservationsPath
-              : browsePath
+          section === "favorites"
+            ? favoritesPath
+            : section === "lists"
+              ? listsPath
+              : section === "reservations"
+                ? reservationsPath
+                : browsePath
         }
       >
-        {section === "lists"
-          ? t("Back to my lists")
-          : section === "reservations"
-            ? t("View my reservations")
-            : t("Back to browse")}
+        {section === "favorites"
+          ? t("Back to favorites")
+          : section === "lists"
+            ? t("Back to my lists")
+            : section === "reservations"
+              ? t("View my reservations")
+              : t("Back to browse")}
       </Link>
 
       {list.canManage && (created === "1" || saved === "1") && (
@@ -102,6 +114,14 @@ export default async function ListPage({
           <h1>{list.title}</h1>
         </div>
         <div className={styles.actions}>
+          {user?.emailVerified && (
+            <FavoriteButton
+              kind="list"
+              targetId={list.id}
+              saved={favoriteIds.includes(list.id)}
+              title={list.title}
+            />
+          )}
           {published && list.visibility === "PUBLIC" && (
             <CopyLink path={listPath(list.id)} title={list.title} />
           )}
@@ -125,7 +145,7 @@ export default async function ListPage({
 
       <WishCollection
         listId={list.id}
-        userId={user?.id ?? null}
+        userId={user?.emailVerified ? user.id : null}
         canManage={list.canManage}
         section={section}
         reservationsEnabled={published && list.reservationsEnabled}

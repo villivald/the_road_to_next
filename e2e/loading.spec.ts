@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { openMainNavigation } from "./navigation";
 import { accounts, resetFixtures, testPrisma } from "./seed";
 
 test.beforeEach(async () => {
@@ -81,10 +82,9 @@ for (const locale of ["en", "fi"]) {
           }),
         );
         await page.goto(`/${locale}/reservations`);
-        await page
-          .getByRole("navigation", {
-            name: locale === "fi" ? "Päänavigaatio" : "Main navigation",
-          })
+        await (
+          await openMainNavigation(page, locale)
+        )
           .getByRole("link", { name: route.tab, exact: true })
           .click();
         await expect(page).toHaveURL(new RegExp(`/${locale}/${route.path}$`));
@@ -163,7 +163,11 @@ test("Wishlist navigation keeps My lists in place without a homepage redirect", 
   expect(await heading.boundingBox()).toEqual(position);
   await expect(page.locator("[data-loading-preview]")).not.toBeVisible();
 
-  await page.getByRole("link", { name: "Browse", exact: true }).click();
+  await (
+    await openMainNavigation(page)
+  )
+    .getByRole("link", { name: "Browse", exact: true })
+    .click();
   await expect(page).toHaveURL(/\/browse$/);
   await brand.click();
   await expect(page).toHaveURL(/\/lists$/);
@@ -219,6 +223,7 @@ for (const locale of ["en", "fi"]) {
         await page.goto(`/${locale}/${source}`);
         await expect(page.locator("[data-loading-preview]")).not.toBeVisible();
         await page.evaluate(() => document.fonts.ready);
+        await openMainNavigation(page, locale);
         const sourceHeading = page
           .getByRole("main")
           .getByRole("heading", { level: 1 });
@@ -227,10 +232,12 @@ for (const locale of ["en", "fi"]) {
         const footerBounds = await page.getByRole("contentinfo").boundingBox();
         const navigation = page.getByRole("navigation", {
           name: locale === "fi" ? "Päänavigaatio" : "Main navigation",
+          includeHidden: true,
         });
         const link = navigation.getByRole("link", {
           name: heading,
           exact: true,
+          includeHidden: true,
         });
         const linkBounds = await link.boundingBox();
         // Hold the route response to inspect a real pending navigation, without timers.

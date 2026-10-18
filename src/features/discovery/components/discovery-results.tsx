@@ -1,21 +1,10 @@
-import { List } from "lucide-react";
-import { navigationPath } from "@/app/_navigation/navigation-path";
-import { CardActions, OwnershipBadge } from "@/components/cards/card-actions";
 import {
-  CardMedia,
-  CardMediaLink,
-  ListPreview,
-  UserAvatar,
-} from "@/components/cards/card-media";
-import cardStyles from "@/components/cards/cards.module.css";
-import { ProfileBio } from "@/components/cards/profile-bio";
-import { ReservationAvailability } from "@/components/cards/reservation-availability";
+  CatalogueListCard,
+  CataloguePersonCard,
+  CatalogueWishCard,
+} from "@/components/cards/catalogue-cards";
 import styles from "@/components/shell.module.css";
-import { WishPriority } from "@/features/wish/components/wish-priority";
-import { formatWishPrice } from "@/features/wish/utils/money";
-import { Link } from "@/i18n/navigation";
 import { useText } from "@/i18n/use-text";
-import { listPath, listSettingsPath, sharingPath, wishPath } from "@/paths";
 import type {
   discoverLists,
   discoverUsers,
@@ -28,7 +17,15 @@ type Results = Awaited<
   >
 >;
 
-export function DiscoveryResults({ result }: { result: Results }) {
+export function DiscoveryResults({
+  result,
+  canFavorite = false,
+  favoriteIds = [],
+}: {
+  result: Results;
+  canFavorite?: boolean;
+  favoriteIds?: string[];
+}) {
   const t = useText();
 
   return (
@@ -44,144 +41,50 @@ export function DiscoveryResults({ result }: { result: Results }) {
     >
       {"lists" in result
         ? result.lists.map((list) => (
-            <li
-              className={`${styles["list-card"]} ${cardStyles["browse-card"]}`}
+            <CatalogueListCard
               key={list.id}
-            >
-              <CardMediaLink
-                path={navigationPath(listPath(list.id), "browse")}
-                title={list.title}
-              >
-                <ListPreview
-                  image={list.image}
-                  images={list.previewImages}
-                  title={list.title}
-                />
-              </CardMediaLink>
-              {list.isOwner && <OwnershipBadge edge />}
-              <h2>
-                <Link href={navigationPath(listPath(list.id), "browse")}>
-                  {list.title}
-                </Link>
-              </h2>
-              {list.description && (
-                <p className={styles.description}>
-                  {list.description.slice(0, 180)}
-                  {list.description.length > 180 ? "…" : ""}
-                </p>
-              )}
-              <div className={cardStyles["list-footer"]}>
-                <p className={styles["icon-label"]}>
-                  <List size={18} aria-hidden="true" />
-                  {t.plural(
-                    "{count} available wish",
-                    "{count} available wishes",
-                    list.availableWishCount,
-                  )}
-                </p>
-                <ReservationAvailability enabled={list.reservationsEnabled} />
-                <CardActions
-                  path={listPath(list.id)}
-                  section="browse"
-                  settingsPath={listSettingsPath(list.id)}
-                  title={list.title}
-                  canCopy
-                  canManage={list.isOwner}
-                  sharingPath={list.isOwner ? sharingPath(list.id) : undefined}
-                />
-              </div>
-            </li>
+              list={list}
+              favorite={
+                canFavorite
+                  ? {
+                      kind: "list",
+                      targetId: list.id,
+                      saved: favoriteIds.includes(list.id),
+                    }
+                  : undefined
+              }
+            />
           ))
         : "wishes" in result
           ? result.wishes.map((wish) => (
-              <li
-                className={`${styles["list-card"]} ${cardStyles["browse-card"]}`}
+              <CatalogueWishCard
                 key={wish.id}
-              >
-                <CardMediaLink
-                  path={navigationPath(
-                    wishPath(wish.wishlist.id, wish.id),
-                    "browse",
-                  )}
-                  title={wish.title}
-                >
-                  <CardMedia image={wish.image} title={wish.title} />
-                </CardMediaLink>
-                {wish.wishlist.isOwner && <OwnershipBadge edge />}
-                <h2>
-                  <Link
-                    href={navigationPath(
-                      wishPath(wish.wishlist.id, wish.id),
-                      "browse",
-                    )}
-                  >
-                    {wish.title}
-                  </Link>
-                </h2>
-                <div className={cardStyles["wish-summary"]}>
-                  <p className={cardStyles["wish-list"]}>
-                    <List size={16} aria-hidden="true" />
-                    <Link
-                      href={navigationPath(
-                        listPath(wish.wishlist.id),
-                        "browse",
-                      )}
-                    >
-                      {wish.wishlist.title}
-                    </Link>
-                  </p>
-                  <div className={cardStyles["wish-facts"]}>
-                    <p className={styles.price}>
-                      {formatWishPrice(
-                        wish.priceMinor,
-                        wish.currency,
-                        t.locale,
-                      )}
-                    </p>
-                    <WishPriority priority={wish.priority} />
-                  </div>
-                </div>
-                <CardActions
-                  path={wishPath(wish.wishlist.id, wish.id)}
-                  section="browse"
-                  productUrl={wish.externalUrl}
-                  canReserve={wish.wishlist.reservationsEnabled}
-                  title={wish.title}
-                  canCopy
-                  canManage={wish.wishlist.isOwner}
-                />
-              </li>
+                wish={wish}
+                favorite={
+                  canFavorite
+                    ? {
+                        kind: "wish",
+                        targetId: wish.id,
+                        saved: favoriteIds.includes(wish.id),
+                      }
+                    : undefined
+                }
+              />
             ))
           : result.users.map((user) => (
-              <li
-                className={`${styles["list-card"]} ${cardStyles["user-card"]}`}
+              <CataloguePersonCard
                 key={user.username}
-              >
-                <div className={cardStyles["user-heading"]}>
-                  <UserAvatar image={user.image} />
-                  {user.isViewer && <OwnershipBadge user />}
-                </div>
-                <h2>{user.name ?? user.username}</h2>
-                <p>
-                  {t.plural(
-                    "{count} public list",
-                    "{count} public lists",
-                    user.publicListCount,
-                  )}
-                </p>
-                {user.description && (
-                  <ProfileBio
-                    text={user.description}
-                    name={user.name ?? user.username}
-                  />
-                )}
-                <Link
-                  className={styles["secondary-button"]}
-                  href={`/browse?${new URLSearchParams({ view: "lists", owner: user.username })}`}
-                >
-                  {t("View public lists")}
-                </Link>
-              </li>
+                user={user}
+                favorite={
+                  canFavorite
+                    ? {
+                        kind: "person",
+                        targetId: user.username,
+                        saved: favoriteIds.includes(user.username),
+                      }
+                    : undefined
+                }
+              />
             ))}
     </ul>
   );

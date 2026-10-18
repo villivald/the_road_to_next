@@ -1,5 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 import { generateRandomToken, hashToken } from "../src/utils/crypto";
+import { openMainNavigation } from "./navigation";
 import { accounts, resetFixtures, testPrisma } from "./seed";
 
 const signIn = async (page: Page, account = accounts.owner) => {
@@ -43,6 +44,7 @@ test("account navigation, invalid input, redemption, replay and extension", asyn
   const first = await createPromo();
   const second = await createPromo();
   await signIn(page);
+  await openMainNavigation(page);
   await page.getByRole("link", { name: "Account", exact: true }).click();
   await page.getByRole("link", { name: "Your plan and promo codes" }).click();
   await expect(

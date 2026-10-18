@@ -2,6 +2,7 @@ import { withoutLocale } from "@/i18n/config";
 import {
   accountPlanPath,
   browsePath,
+  favoritesPath,
   listsPath,
   reservationsPath,
 } from "@/paths";
@@ -14,9 +15,13 @@ export const safeReturnTo = (value: unknown) => {
   }
 
   const path = withoutLocale(value);
-  return [browsePath, listsPath, reservationsPath, accountPlanPath].includes(
-    path,
-  ) ||
+  return [
+    browsePath,
+    listsPath,
+    reservationsPath,
+    accountPlanPath,
+    favoritesPath,
+  ].includes(path) ||
     /^\/invitations\/[a-zA-Z0-9_-]{1,128}$/.test(path) ||
     /^\/lists\/[a-zA-Z0-9_-]{1,128}(?:\/wishes\/[a-zA-Z0-9_-]{1,128})?$/.test(
       path,

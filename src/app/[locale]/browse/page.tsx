@@ -14,6 +14,7 @@ import {
   discoveryUrl,
   parseDiscoveryQuery,
 } from "@/features/discovery/service/query";
+import { readFavoriteIds } from "@/features/favorites/service/favorites";
 import { Link } from "@/i18n/navigation";
 import { getText } from "@/i18n/server";
 
@@ -43,6 +44,15 @@ export default async function BrowsePage({
         ? await discoverWishes(query, user?.id)
         : await discoverLists(query, user?.id);
   const { filters, hasNextPage } = result;
+  const favoriteIds = await readFavoriteIds(
+    user?.emailVerified ? user.id : null,
+    "lists" in result ? "list" : "wishes" in result ? "wish" : "person",
+    "lists" in result
+      ? result.lists.map(({ id }) => id)
+      : "wishes" in result
+        ? result.wishes.map(({ id }) => id)
+        : result.users.map(({ username }) => username),
+  );
   const empty =
     "lists" in result
       ? !result.lists.length
@@ -77,7 +87,11 @@ export default async function BrowsePage({
           </p>
         </div>
       ) : (
-        <DiscoveryResults result={result} />
+        <DiscoveryResults
+          result={result}
+          canFavorite={!!user?.emailVerified}
+          favoriteIds={favoriteIds}
+        />
       )}
       {!filters.error && (filters.page > 1 || hasNextPage) && (
         <nav className={styles.actions} aria-label={t("Browse pages")}>

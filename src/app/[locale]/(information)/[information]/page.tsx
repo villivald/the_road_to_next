@@ -269,6 +269,9 @@ const information = (
             <Link href="/reservations">{t("Your reservations")}</Link>
           </li>
           <li>
+            <Link href="/favorites">{t("Favorites")}</Link>
+          </li>
+          <li>
             <Link href="/account/profile">{t("Profile and settings")}</Link>
           </li>
           <li>

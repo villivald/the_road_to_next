@@ -11,6 +11,8 @@ import {
   type DetailSection,
   navigationPath,
 } from "@/app/_navigation/navigation-path";
+import { FavoriteButton } from "@/features/favorites/components/favorite-button";
+import type { FavoriteTarget } from "@/features/favorites/types";
 import { Link } from "@/i18n/navigation";
 import { useText } from "@/i18n/use-text";
 import styles from "./cards.module.css";
@@ -43,6 +45,7 @@ export function CardActions({
   section,
   productUrl,
   canReserve = false,
+  favorite,
 }: {
   path: string;
   title: string;
@@ -53,6 +56,7 @@ export function CardActions({
   section?: DetailSection;
   productUrl?: string | null;
   canReserve?: boolean;
+  favorite?: FavoriteTarget;
 }) {
   const t = useText();
 
@@ -66,6 +70,7 @@ export function CardActions({
         {t("View")} <ArrowRight size={18} aria-hidden="true" />
       </Link>
       <div className={styles.tools}>
+        {favorite && <FavoriteButton {...favorite} title={title} />}
         {canReserve && (
           <Link
             href={`${navigationPath(path, section)}#reservation-heading`}

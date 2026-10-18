@@ -6,6 +6,20 @@
   display: contents;
 }
 
+.shortcut-caption {
+  display: block;
+  width: max-content;
+  max-width: none;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+.shortcut-caption[data-visible="false"] {
+  position: absolute;
+  visibility: hidden;
+}
+
 .progress {
   position: absolute;
   inset-inline: 0.75rem;

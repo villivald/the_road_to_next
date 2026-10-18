@@ -8,6 +8,8 @@ import { ListWishCounts } from "@/components/cards/list-wish-counts";
 import { ReservationAvailability } from "@/components/cards/reservation-availability";
 import { SuccessMessage } from "@/components/form/success-message";
 import styles from "@/components/shell.module.css";
+import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
+import { readFavoriteIds } from "@/features/favorites/service/favorites";
 import { MyListsControls } from "@/features/wishlist/components/my-lists-controls";
 import { getMyLists } from "@/features/wishlist/queries/get-my-lists";
 import { Link } from "@/i18n/navigation";
@@ -33,6 +35,12 @@ export default async function ListsPage({
   const params = await searchParams;
   const { lists, page, hasNextPage } = await getMyLists(
     Number(params.page ?? 1),
+  );
+  const { user } = await getAuthOrRedirect();
+  const favoriteIds = await readFavoriteIds(
+    user.id,
+    "list",
+    lists.map(({ id }) => id),
   );
 
   return (
@@ -72,6 +80,11 @@ export default async function ListsPage({
                   settingsPath={listSettingsPath(list.id)}
                   title={list.title}
                   canManage
+                  favorite={{
+                    kind: "list",
+                    targetId: list.id,
+                    saved: favoriteIds.includes(list.id),
+                  }}
                   sharingPath={sharingPath(list.id)}
                   canCopy={
                     list.publication === "PUBLISHED" &&

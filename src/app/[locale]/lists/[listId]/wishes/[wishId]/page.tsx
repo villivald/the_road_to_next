@@ -19,6 +19,8 @@ import { ActionForm } from "@/components/form/action-form";
 import { SuccessMessage } from "@/components/form/success-message";
 import styles from "@/components/shell.module.css";
 import { getAuth } from "@/features/auth/actions/get-auth";
+import { FavoriteButton } from "@/features/favorites/components/favorite-button";
+import { readFavoriteIds } from "@/features/favorites/service/favorites";
 import { MediaImage } from "@/features/media/components/media-image";
 import { ReservationControls } from "@/features/reservation/components/reservation-controls";
 import { changeWishState } from "@/features/wish/actions/manage-wish";
@@ -56,6 +58,11 @@ export default async function WishPage({
 
   const { created, saved, from } = await searchParams;
   const section = detailSection(from, wish.canManage);
+  const favoriteIds = await readFavoriteIds(
+    user?.emailVerified ? user.id : null,
+    "wish",
+    [wish.id],
+  );
 
   return (
     <section className={styles.page}>
@@ -106,6 +113,14 @@ export default async function WishPage({
               fulfilled={!!wish.fulfilledAt}
               reserved={wish.isReserved}
               reservedByYou={wish.isReservedByYou}
+            />
+          )}
+          {user?.emailVerified && (
+            <FavoriteButton
+              kind="wish"
+              targetId={wish.id}
+              saved={favoriteIds.includes(wish.id)}
+              title={wish.title}
             />
           )}
 

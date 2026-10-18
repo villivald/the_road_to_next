@@ -7,6 +7,7 @@ import { CardActions } from "@/components/cards/card-actions";
 import { CardMedia, CardMediaLink } from "@/components/cards/card-media";
 import { WishStatus } from "@/components/cards/wish-status";
 import styles from "@/components/shell.module.css";
+import { readFavoriteIds } from "@/features/favorites/service/favorites";
 import { localizedPath } from "@/i18n/config";
 import { Link } from "@/i18n/navigation";
 import { getText } from "@/i18n/server";
@@ -47,6 +48,11 @@ export async function WishCollection({
       `${listPath(listId)}?${new URLSearchParams({ sort, view, page: String(nextPage) })}`,
       section,
     );
+  const favoriteIds = await readFavoriteIds(
+    userId,
+    "wish",
+    wishes.map(({ id }) => id),
+  );
 
   return (
     <section className={styles.page} aria-labelledby="wishes-heading">
@@ -120,6 +126,15 @@ export async function WishCollection({
                 path={wishPath(listId, wish.id)}
                 title={wish.title}
                 section={section}
+                favorite={
+                  userId
+                    ? {
+                        kind: "wish",
+                        targetId: wish.id,
+                        saved: favoriteIds.includes(wish.id),
+                      }
+                    : undefined
+                }
                 productUrl={wish.externalUrl}
                 canReserve={
                   reservationsEnabled &&

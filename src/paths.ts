@@ -14,6 +14,7 @@ export const guestWishPath = (listId: string, wishId: string) =>
   `${guestListPath(listId)}/wishes/${encodeURIComponent(wishId)}`;
 
 export const reservationsPath = "/reservations";
+export const favoritesPath = "/favorites";
 
 export const newListPath = `${listsPath}/new`;
 

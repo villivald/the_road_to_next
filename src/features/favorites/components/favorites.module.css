@@ -1,0 +1,67 @@
+.control {
+  position: relative;
+  display: inline-flex;
+}
+
+.button[aria-pressed="true"] {
+  color: var(--highlight-foreground);
+  background: var(--highlight);
+}
+
+.button:disabled {
+  cursor: wait;
+}
+
+.error:not(:empty) {
+  position: absolute;
+  z-index: 2;
+  inset-inline-end: 0;
+  inset-block-end: calc(100% + 0.5rem);
+  width: max-content;
+  max-width: min(15rem, 75vw);
+  padding: 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--foreground);
+  background: var(--surface);
+  font-size: 0.85rem;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tabs a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.5rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-decoration: none;
+}
+
+.tabs a[aria-current] {
+  color: var(--highlight-foreground);
+  background: var(--highlight);
+  border-color: var(--foreground);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}

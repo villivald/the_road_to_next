@@ -1,4 +1,23 @@
 {
+  "Add {title} to favorites": "Lisää {title} suosikkeihin",
+  "Added to favorites.": "Lisätty suosikkeihin.",
+  "Back to favorites": "Takaisin suosikkeihin",
+  "Favorite categories": "Suosikkien luokat",
+  "Favorite pages": "Suosikkien sivut",
+  "Favorites": "Suosikit",
+  "Keep lists, wishes, and people close at hand.": "Tallenna listat, toiveet ja ihmiset helposti löydettäviksi.",
+  "Menu": "Valikko",
+  "No favorites yet": "Ei vielä suosikkeja",
+  "No more favorites": "Ei enempää suosikkeja",
+  "Remove {title} from favorites": "Poista {title} suosikeista",
+  "Removed from favorites.": "Poistettu suosikeista.",
+  "Saved favorites": "Tallennetut suosikit",
+  "This item is unavailable or you no longer have access.": "Kohde ei ole saatavilla tai sinulla ei ole enää käyttöoikeutta siihen.",
+  "Use the heart on a list, wish, or person to save it here.": "Tallenna lista, toive tai henkilö tänne painamalla sydäntä.",
+  "Verify your email to manage favorites.": "Vahvista sähköpostiosoitteesi, jotta voit hallita suosikkeja.",
+  "Your favorites are private. Only items you can currently view appear here.": "Suosikkisi ovat yksityisiä. Näet täällä vain kohteet, joihin sinulla on tällä hetkellä käyttöoikeus.",
+  "{count} favorite on this page": "{count} suosikki tällä sivulla",
+  "{count} favorites on this page": "{count} suosikkia tällä sivulla",
   ", including applicable tax. Renews automatically until canceled.": ", sisältäen sovellettavat verot. Tilaus uusiutuu automaattisesti, kunnes peruutat sen.",
   ", licensed under": ", lisenssinä",
   ". Hidden lists are visible only to admins. Reservations must be enabled by the list admins.": ". Piilotetut listat näkyvät vain ylläpitäjille. Ylläpitäjät päättävät, voiko toiveita varata.",
@@ -945,5 +964,7 @@
   "Only the list owner needs Premium. New lists start hidden; choose Show list when ready. Guests cannot reserve or edit wishes.": "Vain listan omistaja tarvitsee Premiumin. Uusi lista on aluksi piilotettu. Valitse Näytä lista, kun olet valmis. Vieraat eivät voi varata tai muokata toiveita.",
   "Use Manage guest links for view-only access without an account. Anyone with the link can view a shown list until the link expires or you disable it.": "Luo katselulinkki kohdassa Hallitse vieraslinkkejä. Tiliä ei tarvita. Kuka tahansa linkin saanut voi katsella näkyvää listaa, kunnes linkki vanhenee tai poistat sen käytöstä.",
   "Promo codes never create charges or cancel a paid subscription.": "Etukoodista ei veloiteta, eikä se peru maksullista tilausta.",
-  "When Premium ends, your lists, members, and active guest links stay. New private sharing and admin assignments require Premium.": "Premiumin päättyessä listasi, jäsenyydet ja voimassa olevat vieraslinkit säilyvät. Uusi yksityinen jakaminen ja ylläpitäjäroolien antaminen edellyttävät Premiumia."
+  "When Premium ends, your lists, members, and active guest links stay. New private sharing and admin assignments require Premium.": "Premiumin päättyessä listasi, jäsenyydet ja voimassa olevat vieraslinkit säilyvät. Uusi yksityinen jakaminen ja ylläpitäjäroolien antaminen edellyttävät Premiumia.",
+  "Reservations": "Varaukset",
+  "Quick navigation": "Pikanavigaatio"
 }

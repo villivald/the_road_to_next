@@ -7,6 +7,8 @@ import { ActionForm } from "@/components/form/action-form";
 import { SuccessMessage } from "@/components/form/success-message";
 import styles from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
+import { FavoriteButton } from "@/features/favorites/components/favorite-button";
+import { readFavoriteIds } from "@/features/favorites/service/favorites";
 import { deleteMembership } from "@/features/sharing/actions/manage-sharing";
 import sharingStyles from "@/features/sharing/components/sharing.module.css";
 import { readSharedLists } from "@/features/sharing/service/queries";
@@ -44,6 +46,11 @@ export default async function SharedListsPage({
   const { lists, page, hasNextPage } = await readSharedLists(
     user.id,
     query.page,
+  );
+  const favoriteIds = await readFavoriteIds(
+    user.id,
+    "list",
+    lists.filter(({ title }) => !!title).map(({ listId }) => listId),
   );
   return (
     <section className={styles.page}>
@@ -103,6 +110,14 @@ export default async function SharedListsPage({
                 <Link href={listSettingsPath(list.listId)}>
                   {t("List settings")}
                 </Link>
+              )}
+              {list.title && (
+                <FavoriteButton
+                  kind="list"
+                  targetId={list.listId}
+                  saved={favoriteIds.includes(list.listId)}
+                  title={list.title}
+                />
               )}
               <ActionForm
                 requireConfirmation

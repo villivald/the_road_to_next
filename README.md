@@ -35,6 +35,13 @@ After email verification, users receive a welcome guide. A confirmed new paid su
 
 Choose **English / Suomi** in the header. Both versions are also available directly at `/en` and `/fi`; your choice is saved for future visits.
 
+Use the heart on lists, wishes, and people to add/remove private favorites in one
+click. **Favorites** in the navigation keeps them under Lists, Wishes, and People.
+Only items you can currently access appear there; saving never grants access.
+Favorites work on Free and Premium. Reserving or canceling a wish preserves its
+favorite; My reservations shows priority and cancellation controls. See
+[favorites and rollout](docs/favorites.md).
+
 Images use private files in `.local/media` locally (no extra service). To use cloud storage, create a **private** Vercel Blob store, set `MEDIA_STORAGE=vercel` and its `BLOB_READ_WRITE_TOKEN` in `.env.local`, then restart. Use separate stores for development/preview and production. Add images when creating a wish, or upload them from List settings, Edit wish, or Your account.
 
 Inngest retries media cleanup every five minutes; run `npm run media:cleanup` to process one batch manually. Keep Inngest running for automatic cleanup.

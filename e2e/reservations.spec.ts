@@ -2,6 +2,7 @@ import { expect, type Page, test } from "@playwright/test";
 import sharp from "sharp";
 import { testOrigin } from "./environment";
 import { expectImageLoaded } from "./image-assertions";
+import { openMainNavigation } from "./navigation";
 import { accounts, resetFixtures, testPrisma } from "./seed";
 
 const listUrl = "/en/lists/e2e-reservation-list";
@@ -88,7 +89,9 @@ test("reserve, view, cancel and admin revoke preserve identity and image privacy
     expect((await request.get(mediaUrl)).status()).toBe(200);
     await signIn(page);
     await reserve(page);
-    await page
+    await (
+      await openMainNavigation(page)
+    )
       .getByRole("link", { name: "My reservations", exact: true })
       .click();
     await expect(
@@ -347,7 +350,9 @@ test("owner self-reservation supports keyboard use and a 320px dark layout", asy
   await expect(
     page.getByRole("button", { name: "Cancel reservation", exact: true }),
   ).toBeVisible();
-  await page
+  await (
+    await openMainNavigation(page)
+  )
     .getByRole("link", { name: "My reservations", exact: true })
     .click();
   await expect(

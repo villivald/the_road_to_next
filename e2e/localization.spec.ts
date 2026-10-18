@@ -3,6 +3,7 @@ import { expect, type Page, test } from "@playwright/test";
 import { writeFile } from "node:fs/promises";
 import { hashToken } from "../src/utils/crypto";
 import { testEnvironment, testOrigin } from "./environment";
+import { openMainNavigation } from "./navigation";
 import { emptyPaddleState } from "./paddle-fixture";
 import { accounts, newAccount, resetFixtures, testPrisma } from "./seed";
 
@@ -142,7 +143,7 @@ test("Finnish registration, validation, verification email and list/wish creatio
   expect(mail.Subject).toBe("Vahvista Wishlist-sähköpostisi");
   expect(mail.HTML).toContain('lang="fi"');
   expect(mail.Text).toContain("30 minuutissa");
-  const code = mail.Text.match(/\b[A-Z]{8}\b/)?.[0];
+  const code = mail.Text.match(/^\s*([A-Z]{8})\s*$/m)?.[1];
   expect(code).toBeTruthy();
   await page.getByLabel("Vahvistuskoodi", { exact: true }).fill(code!);
   await page
@@ -274,7 +275,11 @@ test("Finnish reservation and recovery journeys keep user content and saved lang
   await page.goto("/fi/lists/e2e-private-list/wishes/e2e-wish");
   await page.getByRole("button", { name: "Varaa toive", exact: true }).click();
   await expect(page.getByRole("status")).toContainText("Olet varannut toiveen");
-  await page.getByRole("link", { name: "Omat varaukset", exact: true }).click();
+  await (
+    await openMainNavigation(page, "fi")
+  )
+    .getByRole("link", { name: "Omat varaukset", exact: true })
+    .click();
   await expect(
     page.getByRole("heading", { name: "Omat varaukset", exact: true }),
   ).toBeVisible();

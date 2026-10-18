@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { navigationPath } from "@/app/_navigation/navigation-path";
 import { CardMedia, CardMediaLink } from "@/components/cards/card-media";
+import cardStyles from "@/components/cards/cards.module.css";
 import { WishStatus } from "@/components/cards/wish-status";
 import { ActionForm } from "@/components/form/action-form";
 import { SuccessMessage } from "@/components/form/success-message";
@@ -13,6 +14,7 @@ import {
   ReservationsFrame,
 } from "@/features/reservation/components/reservations-frame";
 import { readMyReservations } from "@/features/reservation/service/reservations";
+import { WishPriority } from "@/features/wish/components/wish-priority";
 import { formatWishPrice } from "@/features/wish/utils/money";
 import { Link } from "@/i18n/navigation";
 import { getText } from "@/i18n/server";
@@ -79,9 +81,12 @@ export default async function ReservationsPage({
                   {wish.wishlist.title}
                 </Link>
               </p>
-              <p className={styles.price}>
-                {formatWishPrice(wish.priceMinor, wish.currency, t.locale)}
-              </p>
+              <div className={cardStyles["wish-facts"]}>
+                <p className={styles.price}>
+                  {formatWishPrice(wish.priceMinor, wish.currency, t.locale)}
+                </p>
+                <WishPriority priority={wish.priority} />
+              </div>
               <WishStatus reserved reservedByYou />
               <ActionForm
                 action={cancel.bind(null, wish.wishlist.id, wish.id, id)}

@@ -1,6 +1,7 @@
 import { type Browser, expect, type Page, test } from "@playwright/test";
 import sharp from "sharp";
 import { testOrigin } from "./environment";
+import { openMainNavigation } from "./navigation";
 import { accounts, resetFixtures, testPrisma } from "./seed";
 
 const listId = "e2e-guest-browser";
@@ -307,6 +308,8 @@ test("signed-in owners get the same guest restrictions and cannot replay a write
   await page
     .getByRole("button", { name: "Open Wishlist", exact: true })
     .click();
+  await expect(page).toHaveURL(/\/en\/lists$/);
+  await openMainNavigation(page);
   await expect(
     page.getByRole("link", { name: "Account", exact: true }),
   ).toBeVisible();

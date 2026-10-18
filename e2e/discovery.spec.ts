@@ -1,5 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 import { testEnvironment } from "./environment";
+import { openMainNavigation } from "./navigation";
 import { accounts, newAccount, resetFixtures, testPrisma } from "./seed";
 
 const listId = "e2e-discovery-list";
@@ -80,7 +81,11 @@ test("browse another user's list, sign in, reserve and remove it from discovery"
   await expect(
     page.getByRole("button", { name: "Cancel reservation", exact: true }),
   ).toBeVisible();
-  await page.getByRole("link", { name: "Browse", exact: true }).click();
+  await (
+    await openMainNavigation(page)
+  )
+    .getByRole("link", { name: "Browse", exact: true })
+    .click();
   await expect(page.getByRole("main")).toContainText("0 available wishes");
   await page.getByRole("link", { name: "Wishes", exact: true }).click();
   await expect(
@@ -89,7 +94,9 @@ test("browse another user's list, sign in, reserve and remove it from discovery"
   const response = await request.get("/en/browse?view=wishes");
   expect(await response.text()).not.toContain("A garden book");
   expect(response.headers()["cache-control"]).toContain("no-store");
-  await page
+  await (
+    await openMainNavigation(page)
+  )
     .getByRole("link", { name: "My reservations", exact: true })
     .click();
   await expect(

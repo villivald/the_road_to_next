@@ -12,6 +12,7 @@ import { WishlistError } from "@/features/wishlist/service/lists";
 import { redirect, revalidatePath } from "@/i18n/server-navigation";
 import {
   browsePath,
+  favoritesPath,
   listPath,
   listsPath,
   reservationsPath,
@@ -42,6 +43,7 @@ const refreshReservation = (listId: string, wishId: string) => {
   revalidatePath(sharedListsPath);
   revalidatePath(browsePath);
   revalidatePath(reservationsPath);
+  revalidatePath(favoritesPath);
   revalidatePath(listPath(listId));
   revalidatePath(wishPath(listId, wishId));
 };

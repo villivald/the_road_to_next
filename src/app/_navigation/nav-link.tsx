@@ -34,10 +34,16 @@ export function NavLink({
   href,
   match = href,
   children,
+  icon,
+  shortcutLabel,
+  shortcutLabelVisible = true,
 }: {
   href: string;
   match?: string;
   children: ReactNode;
+  icon?: ReactNode;
+  shortcutLabel?: string;
+  shortcutLabelVisible?: boolean;
 }) {
   const pathname = usePathname();
   const labelId = useId();
@@ -56,10 +62,27 @@ export function NavLink({
       className={styles.link}
       aria-labelledby={labelId}
       aria-current={active ? "page" : undefined}
+      title={
+        shortcutLabel && typeof children === "string" ? children : undefined
+      }
     >
-      <span id={labelId} className={styles.label}>
+      {icon}
+      <span
+        id={labelId}
+        className={shortcutLabel ? shell["visually-hidden"] : styles.label}
+      >
         {children}
       </span>
+      {shortcutLabel && (
+        <span
+          data-shortcut-label
+          data-visible={shortcutLabelVisible}
+          aria-hidden="true"
+          className={styles["shortcut-caption"]}
+        >
+          {shortcutLabel}
+        </span>
+      )}
       <NavigationProgress />
     </Link>
   );

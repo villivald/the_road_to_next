@@ -39,6 +39,9 @@ export default async function Footer() {
           <Link href="/browse">{t("Explore wishlists")}</Link>
           <Link href="/browse?view=users">{t("Find people")}</Link>
           <Link href="/lists">{t("Your wishlists")}</Link>
+          {user?.emailVerified && (
+            <Link href="/favorites">{t("Favorites")}</Link>
+          )}
           <Link href="/site-map">{t("Site map")}</Link>
         </nav>
         <nav aria-label={t("Footer information")} className={styles.links}>

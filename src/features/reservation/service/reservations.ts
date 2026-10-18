@@ -169,6 +169,7 @@ export const readMyReservations = async (userId: string, requestedPage = 1) => {
           title: true,
           priceMinor: true,
           currency: true,
+          priority: true,
           image: imageSelection,
           wishlist: { select: { id: true, title: true } },
         },

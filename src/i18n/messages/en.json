@@ -1,4 +1,23 @@
 {
+  "Add {title} to favorites": "Add {title} to favorites",
+  "Added to favorites.": "Added to favorites.",
+  "Back to favorites": "Back to favorites",
+  "Favorite categories": "Favorite categories",
+  "Favorite pages": "Favorite pages",
+  "Favorites": "Favorites",
+  "Keep lists, wishes, and people close at hand.": "Keep lists, wishes, and people close at hand.",
+  "Menu": "Menu",
+  "No favorites yet": "No favorites yet",
+  "No more favorites": "No more favorites",
+  "Remove {title} from favorites": "Remove {title} from favorites",
+  "Removed from favorites.": "Removed from favorites.",
+  "Saved favorites": "Saved favorites",
+  "This item is unavailable or you no longer have access.": "This item is unavailable or you no longer have access.",
+  "Use the heart on a list, wish, or person to save it here.": "Use the heart on a list, wish, or person to save it here.",
+  "Verify your email to manage favorites.": "Verify your email to manage favorites.",
+  "Your favorites are private. Only items you can currently view appear here.": "Your favorites are private. Only items you can currently view appear here.",
+  "{count} favorite on this page": "{count} favorite on this page",
+  "{count} favorites on this page": "{count} favorites on this page",
   ", including applicable tax. Renews automatically until canceled.": ", including applicable tax. Renews automatically until canceled.",
   ", licensed under": ", licensed under",
   ". Hidden lists are visible only to admins. Reservations must be enabled by the list admins.": ". Hidden lists are visible only to admins. Reservations must be enabled by the list admins.",
@@ -945,5 +964,7 @@
   "Only the list owner needs Premium. New lists start hidden; choose Show list when ready. Guests cannot reserve or edit wishes.": "Only the list owner needs Premium. New lists start hidden; choose Show list when ready. Guests cannot reserve or edit wishes.",
   "Use Manage guest links for view-only access without an account. Anyone with the link can view a shown list until the link expires or you disable it.": "Use Manage guest links for view-only access without an account. Anyone with the link can view a shown list until the link expires or you disable it.",
   "Promo codes never create charges or cancel a paid subscription.": "Promo codes never create charges or cancel a paid subscription.",
-  "When Premium ends, your lists, members, and active guest links stay. New private sharing and admin assignments require Premium.": "When Premium ends, your lists, members, and active guest links stay. New private sharing and admin assignments require Premium."
+  "When Premium ends, your lists, members, and active guest links stay. New private sharing and admin assignments require Premium.": "When Premium ends, your lists, members, and active guest links stay. New private sharing and admin assignments require Premium.",
+  "Reservations": "Reservations",
+  "Quick navigation": "Quick navigation"
 }

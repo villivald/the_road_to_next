@@ -1,4 +1,4 @@
-import { Compass, Gift, List, Sparkles, UserRound } from "lucide-react";
+import { Compass, Gift, Heart, List, Sparkles, UserRound } from "lucide-react";
 import { headers } from "next/headers";
 import { Brand } from "@/components/brand/brand";
 import { UserAvatar } from "@/components/cards/card-media";
@@ -17,12 +17,13 @@ import {
   accountProfilePath,
   browsePath,
   emailVerificationPath,
+  favoritesPath,
   listsPath,
   reservationsPath,
   signInPath,
   signUpPath,
 } from "@/paths";
-import { NavLink } from "./nav-link";
+import { MainNavigation, type NavigationItem } from "./main-navigation";
 
 export default async function Header() {
   const t = await getText();
@@ -58,48 +59,57 @@ export default async function Header() {
     ? await Promise.all([readAvatar(user.id), readPremiumAccess(user.id)])
     : [null, null];
 
+  const items: NavigationItem[] = [
+    {
+      href: browsePath,
+      label: t("Browse"),
+      icon: <Compass size={18} aria-hidden="true" />,
+      shortcutLabel: t("Browse"),
+    },
+    ...(user
+      ? [
+          {
+            href: user.emailVerified ? listsPath : emailVerificationPath,
+            label: user.emailVerified ? t("My lists") : t("Verify email"),
+            icon: <List size={18} aria-hidden="true" />,
+            shortcutLabel: t("Lists"),
+          },
+          ...(user.emailVerified
+            ? [
+                {
+                  href: reservationsPath,
+                  label: t("My reservations"),
+                  icon: <Gift size={18} aria-hidden="true" />,
+                  shortcutLabel: t("Reservations"),
+                },
+                {
+                  href: favoritesPath,
+                  label: t("Favorites"),
+                  icon: <Heart size={18} aria-hidden="true" />,
+                  shortcutLabel: t("Favorites"),
+                },
+                {
+                  href: accountProfilePath,
+                  match: "/account",
+                  label: t("Account"),
+                  icon: <UserRound size={18} aria-hidden="true" />,
+                },
+              ]
+            : []),
+        ]
+      : [
+          { href: signInPath, label: t("Sign in") },
+          { href: signUpPath, label: t("Create account") },
+        ]),
+  ];
+
   return (
     <header className={styles.header}>
       <div className={styles["header-inner"]}>
         <Link href={getHomePath(user)} className={styles.brand}>
           <Brand />
         </Link>
-        <nav
-          aria-label={t("Main navigation")}
-          className={`${styles.navigation} ${user?.emailVerified ? styles["member-navigation"] : ""}`}
-        >
-          <NavLink href={browsePath}>
-            <Compass size={18} aria-hidden="true" />
-            {t("Browse")}
-          </NavLink>
-          {user ? (
-            <>
-              <NavLink
-                href={user.emailVerified ? listsPath : emailVerificationPath}
-              >
-                <List size={18} aria-hidden="true" />
-                {user.emailVerified ? t("My lists") : t("Verify email")}
-              </NavLink>
-              {user.emailVerified && (
-                <>
-                  <NavLink href={reservationsPath}>
-                    <Gift size={18} aria-hidden="true" />
-                    {t("My reservations")}
-                  </NavLink>
-                  <NavLink href={accountProfilePath} match="/account">
-                    <UserRound size={18} aria-hidden="true" />
-                    {t("Account")}
-                  </NavLink>
-                </>
-              )}
-            </>
-          ) : (
-            <>
-              <NavLink href={signInPath}>{t("Sign in")}</NavLink>
-              <NavLink href={signUpPath}>{t("Create account")}</NavLink>
-            </>
-          )}
-        </nav>
+        <MainNavigation collapsible={!!user?.emailVerified} items={items} />
         {user && access?.plan !== "PREMIUM" && (
           <Link href="/premium" className={styles["premium-link"]}>
             <Sparkles size={16} aria-hidden="true" />

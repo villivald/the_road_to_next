@@ -18,6 +18,7 @@ The URL selects the current language. Unprefixed visits use the explicit languag
 | wish              | toive               |
 | wishlist / list   | toivelista / lista  |
 | reservation       | varaus              |
+| favorites         | suosikit            |
 | available         | vapaana             |
 | reserved          | varattuna           |
 | Anyone can view   | Kaikkien nähtävissä |

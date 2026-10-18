@@ -30,6 +30,10 @@ model User {
   sentInvitations         Invitation[]
   billingAccount          BillingAccount?
   accountEmails           AccountEmail[]
+  favoriteLists           FavoriteList[]
+  favoriteWishes          FavoriteWish[]
+  favoritePeople          FavoritePerson[]         @relation("FavoriteOwner")
+  favoritedBy             FavoritePerson[]         @relation("FavoritePerson")
 }
 
 // Transactional guides, retained for deduplication and removed with the account.
@@ -111,6 +115,7 @@ model Wishlist {
   image               Media?
   invitations         Invitation[]
   guestLinks          GuestLink[]
+  favorites           FavoriteList[]
 
   @@index([ownerId, archivedAt, createdAt])
   @@index([visibility, publication, archivedAt, createdAt])
@@ -170,26 +175,66 @@ model Invitation {
 }
 
 model Wish {
-  id           String        @id @default(cuid())
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  title        String        @db.VarChar(200)
-  description  String?       @db.VarChar(4000)
-  externalUrl  String?       @db.VarChar(2048)
+  id           String         @id @default(cuid())
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  title        String         @db.VarChar(200)
+  description  String?        @db.VarChar(4000)
+  externalUrl  String?        @db.VarChar(2048)
   priceMinor   Int?
   currency     Currency?
-  priority     Int?          @db.SmallInt
-  hidden       Boolean       @default(false)
+  priority     Int?           @db.SmallInt
+  hidden       Boolean        @default(false)
   fulfilledAt  DateTime?
   wishlistId   String
   authorId     String?
-  wishlist     Wishlist      @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
-  author       User?         @relation("WishAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  wishlist     Wishlist       @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  author       User?          @relation("WishAuthor", fields: [authorId], references: [id], onDelete: SetNull)
   reservations Reservation[]
   image        Media?
+  favorites    FavoriteWish[]
 
   @@index([wishlistId, hidden, fulfilledAt, createdAt])
   @@index([authorId])
+}
+
+model FavoriteList {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  userId     String
+  wishlistId String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wishlist   Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, wishlistId])
+  @@index([userId, createdAt, id])
+  @@index([wishlistId])
+}
+
+model FavoriteWish {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  userId    String
+  wishId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wish      Wish     @relation(fields: [wishId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, wishId])
+  @@index([userId, createdAt, id])
+  @@index([wishId])
+}
+
+model FavoritePerson {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  userId    String
+  personId  String
+  user      User     @relation("FavoriteOwner", fields: [userId], references: [id], onDelete: Cascade)
+  person    User     @relation("FavoritePerson", fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, personId])
+  @@index([userId, createdAt, id])
+  @@index([personId])
 }
 
 model Reservation {
