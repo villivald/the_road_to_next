@@ -12,7 +12,7 @@ export function ReservationsFrame({ children }: { children: ReactNode }) {
         <div>
           <h1>{t("My reservations")}</h1>
           <p className={styles.muted}>
-            {t("Gifts you plan to get. Your identity is private.")}
+            {t("Gifts you plan to get, on your own or with a group.")}
           </p>
         </div>
       </div>

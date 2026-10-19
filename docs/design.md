@@ -85,3 +85,13 @@ motion, and check 320px layouts with 200% text in both languages and themes.
 This design changes presentation, not access or billing rules. Reuse the existing
 permission-aware actions, reservation controls, checkout state handling, guest-link
 restrictions, and translated messages when extending it.
+
+Group reservations live within My reservations, preserving the four mobile
+shortcuts. A wish offers an expandable “Reserve with others” flow with explicit
+name-sharing consent. Pending invitations appear separately from active reservations.
+Only accepted participants see the roster; organizers get search and management
+controls. Transfer and whole-group cancellation require confirmation. People search
+uses a debounced keyboard-accessible picker with public avatars or initials and an
+explicit Invite action. Empty invitation sections stay compact; individual and group
+reservation cards share aligned action footers. Consent text aligns at the first line.
+See [group reservations](group-reservations.md) for lifecycle and privacy rules.

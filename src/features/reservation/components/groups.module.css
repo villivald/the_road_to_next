@@ -1,0 +1,273 @@
+.panel {
+  display: grid;
+  gap: 0.85rem;
+  width: 100%;
+  min-width: 0;
+  padding: clamp(1rem, 2vw, 1.5rem);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow-wrap: anywhere;
+}
+
+.panel > p {
+  max-width: 75ch;
+}
+
+.panel > form {
+  max-width: 40rem;
+}
+
+.empty-invitations {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 1rem;
+  padding-block: 0.85rem;
+  border-block: 1px solid var(--border);
+}
+
+.empty-invitations h2 {
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.empty-invitations p {
+  font-size: 0.9rem;
+}
+
+.card-footer {
+  display: grid;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.disclosure {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow-wrap: anywhere;
+}
+
+.disclosure > summary {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 48px;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+
+.disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+.search-input > svg {
+  position: absolute;
+  inset-inline-start: 0.85rem;
+  color: var(--muted-foreground);
+  pointer-events: none;
+}
+
+.disclosure > summary svg {
+  flex-shrink: 0;
+}
+
+.disclosure > summary svg:last-child {
+  margin-inline-start: auto;
+}
+
+.disclosure[open] > summary svg:last-child {
+  transform: rotate(180deg);
+}
+
+.disclosure-content {
+  display: grid;
+  gap: 1rem;
+  padding: 0 1rem 1rem;
+}
+
+.disclosure-content > p {
+  font-size: 0.9rem;
+}
+
+.disclosure-content form,
+.disclosure-content fieldset {
+  gap: 0.75rem;
+}
+
+.consent {
+  display: grid;
+  grid-template-columns: 1.25rem minmax(0, 1fr);
+  align-items: start;
+  gap: 0.75rem;
+  min-height: 44px;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.consent input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.2em;
+  accent-color: var(--link);
+}
+
+.people {
+  width: 100%;
+  display: grid;
+  padding: 0;
+  list-style: none;
+}
+
+.people > li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  padding-block: 0.85rem;
+  border-bottom: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+
+.people > li > div {
+  min-width: 0;
+}
+
+.controls {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 28rem;
+}
+
+.picker {
+  display: grid;
+  gap: 0.75rem;
+  width: min(100%, 34rem);
+  min-width: 0;
+}
+
+.search-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input input {
+  width: 100%;
+  min-width: 0;
+  padding-inline-start: 2.7rem;
+}
+
+.results {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.search-status {
+  padding: 0.65rem 0.85rem;
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+}
+
+.results ul {
+  max-height: 18rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0;
+  list-style: none;
+}
+
+.results li {
+  padding: 0.75rem 0.85rem;
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.people > li:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.results li:hover,
+.results li[aria-selected="true"] {
+  background: var(--muted);
+  box-shadow: inset 3px 0 var(--link);
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--muted);
+  color: var(--foreground);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.avatar picture,
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.person-name {
+  display: grid;
+  min-width: 0;
+  font-size: 0.9rem;
+}
+
+.selection {
+  display: grid;
+  gap: 0.85rem;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--muted);
+}
+
+.selected-person {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.selected-person button {
+  flex-shrink: 0;
+}
+
+.clear {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--foreground);
+  cursor: pointer;
+}

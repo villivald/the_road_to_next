@@ -3,6 +3,8 @@
 Wishlist sends a practical welcome guide after successful email verification.
 It sends a Premium guide after the first confirmed payment for a new Paddle
 subscription, and an access-update guide after each successful promo redemption.
+The same delivery queue sends group reservation invitations and acceptance updates;
+see [group notifications](group-reservations.md#email-notifications).
 Recurring payments and repeated verification or billing events do not resend the
 welcome guides. Existing accounts are not enrolled retroactively.
 
@@ -15,7 +17,7 @@ English or Finnish language at the time the message is queued.
 
 ## Design and preview
 
-All five templates share `src/emails/components/layout.tsx`: warm paper, ink text,
+All email templates share `src/emails/components/layout.tsx`: warm paper, ink text,
 yellow actions, muted green notes, serif headings, and the existing heart and
 wordmark. The PNG logo works in clients without SVG support; the surrounding
 content remains readable when images are blocked. System font fallbacks avoid
@@ -61,7 +63,8 @@ no recipient addresses or message content. Do not automatically reset failed
 rows: an ambiguous send might already have reached the recipient.
 
 Unverified accounts, changed recipient addresses, and revoked or expired Premium
-grants are skipped. Deleting an account deletes its queued messages and rendered
+grants are skipped. Group emails also recheck invitation status, list access, and the
+current organizer before delivery. Deleting an account deletes its queued messages and rendered
 content. Successful or canceled delivery clears the rendered message bodies;
 sent rows retain the lifecycle key and delivery metadata to prevent duplicate
 guides without accumulating copies of long emails.

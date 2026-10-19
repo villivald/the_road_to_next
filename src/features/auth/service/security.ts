@@ -9,10 +9,11 @@ export const consumeRateLimit = async (
   identity: string,
   limit: number,
   windowMs: number,
+  db: Prisma.TransactionClient = prisma,
 ) => {
   const windowStart = Math.floor(Date.now() / windowMs) * windowMs;
   const key = hashToken(`${scope}:${identity}:${windowStart}`);
-  const result = await prisma.authRateLimit.upsert({
+  const result = await db.authRateLimit.upsert({
     where: { key },
     create: { key, attempts: 1, expiresAt: new Date(windowStart + windowMs) },
     update: { attempts: { increment: 1 } },

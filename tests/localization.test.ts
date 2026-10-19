@@ -59,6 +59,7 @@ describe("locale routing security", () => {
       "/en/lists/list-1/wishes/wish-1",
       "/fi/invitations/invite-1",
       "/lists/list-1",
+      "/fi/reservations/group-1",
     ])
       expect(safeReturnTo(path)).toBe(path);
     for (const path of [

@@ -60,7 +60,7 @@ export default async function DeleteAccountPage() {
           <dd>{impact.archiveCount}</dd>
         </div>
         <div>
-          <dt>{t("Your active reservations canceled")}</dt>
+          <dt>{t("Your active reservations")}</dt>
           <dd>{impact.reservationCount}</dd>
         </div>
         <div>
@@ -101,6 +101,11 @@ export default async function DeleteAccountPage() {
       <p className={styles.muted}>
         {t(
           "Your avatar becomes inaccessible immediately and is queued for file deletion. Archived list content and images are retained privately.",
+        )}
+      </p>
+      <p className={styles.muted}>
+        {t(
+          "Group reservations pass to the earliest eligible participant who has joined. If nobody remains, the reservation ends. Your group memberships and pending invitations are removed.",
         )}
       </p>
       <DeleteAccountForm

@@ -5,6 +5,7 @@ import PremiumEmail from "@/emails/account/premium";
 import WelcomeEmail from "@/emails/account/welcome";
 import EmailVerification from "@/emails/auth/email-verification";
 import EmailPasswordReset from "@/emails/password/email-password-reset";
+import GroupEmail from "@/emails/reservation/group";
 import InvitationEmail from "@/emails/sharing/invitation";
 
 afterEach(() => vi.unstubAllEnvs());
@@ -39,10 +40,19 @@ it.each(["en", "fi"])(
         locale,
         url: `https://wishlist.example/${locale}/invitations/example`,
       }),
+      ...(["INVITED", "ACCEPTED"] as const).map((kind) =>
+        createElement(GroupEmail, {
+          kind,
+          actorName: "<script>private name</script>",
+          locale,
+          url: `https://wishlist.example/${locale}/reservations/example`,
+        }),
+      ),
     ];
     for (const email of emails) {
       const html = await render(email);
       const plain = await render(email, { plainText: true });
+      expect(html).not.toContain("<script>");
       expect(html).toContain(`lang="${locale}"`);
       expect(html).toContain('src="https://wishlist.example/email-brand.png"');
       expect(html).toContain("#faf8f0");

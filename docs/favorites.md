@@ -106,5 +106,7 @@ Before trying the feature in an already-running development session, restart
 `npm run dev` so its Prisma client includes the new models. Open `/en/favorites`
 or `/fi/favorites`, or use Favorites in the main navigation.
 
-Group reservations are the next separate checkpoint after favorites review and
-commit. They are not part of this migration or feature.
+Favorites was committed as `e15d7c1`. The project owner reported applying its
+production migration on 18 October 2026. Group reservations are implemented in a
+separate migration; see [the group workflow and access rules](group-reservations.md).
+Accepted group participants keep the same bookmark behavior as individual reservers.

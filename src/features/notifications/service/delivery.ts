@@ -1,3 +1,4 @@
+import { isGroupEmailCurrent } from "@/features/reservation/service/group-emails";
 import { deliverRenderedEmail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
 import { generateRandomToken } from "@/utils/crypto";
@@ -45,7 +46,8 @@ export const deliverAccountEmails = async () => {
     if (
       !email.user.emailVerified ||
       email.user.email !== email.recipient ||
-      !eligibleGrant
+      !eligibleGrant ||
+      !(await isGroupEmailCurrent(email))
     ) {
       await prisma.accountEmail.updateMany({
         where: claimedWhere,

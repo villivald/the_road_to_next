@@ -1,3 +1,4 @@
+import { participantReservation } from "@/features/reservation/service/access";
 import {
   manageableLists,
   readableLists,
@@ -20,11 +21,7 @@ export const readableWishes = (
           ? [
               {
                 reservations: {
-                  some: {
-                    userId,
-                    endedAt: null,
-                    user: { emailVerified: true },
-                  },
+                  some: participantReservation(userId),
                 },
               },
             ]

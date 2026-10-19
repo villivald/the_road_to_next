@@ -42,6 +42,16 @@ Favorites work on Free and Premium. Reserving or canceling a wish preserves its
 favorite; My reservations shows priority and cancellation controls. See
 [favorites and rollout](docs/favorites.md).
 
+To reserve a gift together, open a wish and choose **Reserve with others**. The
+organizer reserves immediately, then searches for and invites people. Recipients
+review and accept under **My reservations → Group invitations**. Names are shared
+only after consent; invitations never grant private-list access. Groups support
+leaving, removal, coordination transfer, and cancellation. Invitees receive an email;
+organizers receive an acceptance email through the existing five-minute email job.
+Apply both group migrations, including `20261019000100_group_reservation_emails`.
+See
+[group reservations and deployment](docs/group-reservations.md).
+
 Images use private files in `.local/media` locally (no extra service). To use cloud storage, create a **private** Vercel Blob store, set `MEDIA_STORAGE=vercel` and its `BLOB_READ_WRITE_TOKEN` in `.env.local`, then restart. Use separate stores for development/preview and production. Add images when creating a wish, or upload them from List settings, Edit wish, or Your account.
 
 Inngest retries media cleanup every five minutes; run `npm run media:cleanup` to process one batch manually. Keep Inngest running for automatic cleanup.

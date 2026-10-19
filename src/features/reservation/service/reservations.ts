@@ -6,13 +6,17 @@ import { lockWishlist } from "@/features/wishlist/service/lock";
 import { wishlistIdSchema } from "@/features/wishlist/service/schemas";
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { participantReservation } from "./access";
 
 export class ReservationError extends Error {}
 
 const unavailable =
   "This reservation is unavailable or you do not have permission to change it.";
 
-const verifyActor = async (tx: Prisma.TransactionClient, userId: string) => {
+export const verifyActor = async (
+  tx: Prisma.TransactionClient,
+  userId: string,
+) => {
   await lockUser(tx, userId);
   const user = await tx.user.findFirst({
     where: { id: userId, emailVerified: true },
@@ -33,13 +37,14 @@ export const reserveWish = async (
   userId: string,
   listId: string,
   wishId: string,
+  groupEnabled = false,
 ) => {
   wishlistIdSchema.parse(listId);
   wishlistIdSchema.parse(wishId);
   await limitChanges(userId);
 
   try {
-    await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx) => {
       await verifyActor(tx, userId);
       await lockWishlist(tx, listId);
 
@@ -65,8 +70,8 @@ export const reserveWish = async (
         );
       }
 
-      await tx.reservation.create({
-        data: { userId, wishId: wish.id },
+      return tx.reservation.create({
+        data: { userId, wishId: wish.id, groupEnabled },
         select: { id: true },
       });
     });
@@ -152,9 +157,7 @@ export const readMyReservations = async (userId: string, requestedPage = 1) => {
       : 1;
   const results = await prisma.reservation.findMany({
     where: {
-      userId,
-      user: { emailVerified: true },
-      endedAt: null,
+      ...participantReservation(userId),
       wish: {
         hidden: false,
         fulfilledAt: null,
@@ -163,6 +166,7 @@ export const readMyReservations = async (userId: string, requestedPage = 1) => {
     },
     select: {
       id: true,
+      groupEnabled: true,
       wish: {
         select: {
           id: true,

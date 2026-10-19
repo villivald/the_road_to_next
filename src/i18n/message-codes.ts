@@ -2,6 +2,20 @@ import type { TextKey } from "./text";
 
 // Codes remain stable when presentation copy changes.
 export const messageCodes = {
+  "message.group_unavailable":
+    "This group is unavailable or you no longer have access.",
+  "message.group_disabled":
+    "New group invitations and acceptance are disabled for this list.",
+  "message.group_already_invited":
+    "This person has already been invited to this reservation.",
+  "message.group_full":
+    "A group can include up to ten people, including pending invitations.",
+  "message.group_transfer_required":
+    "Transfer coordination before leaving, or cancel the reservation for everyone.",
+  "message.group_consent_required":
+    "Confirm that your name and username will be shared with this group.",
+  "message.group_updated": "Group reservation updated.",
+
   "message.favorite_added": "Added to favorites.",
   "message.favorite_removed": "Removed from favorites.",
   "message.favorite_verify_email": "Verify your email to manage favorites.",

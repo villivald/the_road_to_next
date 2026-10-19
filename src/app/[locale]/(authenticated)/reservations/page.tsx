@@ -8,17 +8,24 @@ import { SuccessMessage } from "@/components/form/success-message";
 import styles from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import { cancel } from "@/features/reservation/actions/manage-reservation";
+import groupStyles from "@/features/reservation/components/groups.module.css";
 import {
   EmptyReservations,
   ReservationHelp,
   ReservationsFrame,
 } from "@/features/reservation/components/reservations-frame";
+import { readGroupInvitations } from "@/features/reservation/service/groups";
 import { readMyReservations } from "@/features/reservation/service/reservations";
 import { WishPriority } from "@/features/wish/components/wish-priority";
 import { formatWishPrice } from "@/features/wish/utils/money";
 import { Link } from "@/i18n/navigation";
 import { getText } from "@/i18n/server";
-import { listPath, reservationsPath, wishPath } from "@/paths";
+import {
+  listPath,
+  reservationGroupPath,
+  reservationsPath,
+  wishPath,
+} from "@/paths";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getText();
@@ -31,7 +38,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ReservationsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; canceled?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    canceled?: string;
+    invitationsPage?: string;
+  }>;
 }) {
   const t = await getText();
 
@@ -42,14 +53,74 @@ export default async function ReservationsPage({
     Number(query.page ?? 1),
   );
 
+  const invitations = await readGroupInvitations(
+    user.id,
+    Number(query.invitationsPage ?? 1),
+  );
   return (
     <ReservationsFrame>
+      <section
+        className={
+          invitations.invitations.length
+            ? groupStyles.panel
+            : groupStyles["empty-invitations"]
+        }
+        aria-labelledby="group-invitations-heading"
+      >
+        <h2 id="group-invitations-heading">{t("Group invitations")}</h2>
+        {invitations.invitations.length ? (
+          <ul className={styles["list-grid"]}>
+            {invitations.invitations.map((invitation) => (
+              <li key={invitation.id} className={styles["list-card"]}>
+                <h3>{invitation.reservation.wish.title}</h3>
+                <p>
+                  {t("Invited by {name}", {
+                    name:
+                      invitation.inviter?.name ??
+                      invitation.inviter?.username ??
+                      "",
+                  })}
+                </p>
+                <Link href={reservationGroupPath(invitation.reservationId)}>
+                  {t("Review invitation")}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className={styles.muted}>{t("No pending group invitations.")}</p>
+        )}
+        {(invitations.page > 1 || invitations.hasNextPage) && (
+          <nav
+            className={styles.actions}
+            aria-label={t("Group invitation pages")}
+          >
+            {invitations.page > 1 && (
+              <Link
+                href={`${reservationsPath}?invitationsPage=${invitations.page - 1}&page=${page}`}
+              >
+                {t("Previous page")}
+              </Link>
+            )}
+            <span>
+              {t("Page")} {invitations.page}
+            </span>
+            {invitations.hasNextPage && (
+              <Link
+                href={`${reservationsPath}?invitationsPage=${invitations.page + 1}&page=${page}`}
+              >
+                {t("Next page")}
+              </Link>
+            )}
+          </nav>
+        )}
+      </section>
       {query.canceled === "1" && (
         <SuccessMessage>{t("Reservation canceled.")}</SuccessMessage>
       )}
       {reservations.length ? (
         <ul className={styles["list-grid"]}>
-          {reservations.map(({ id, wish }) => (
+          {reservations.map(({ id, wish, groupEnabled }) => (
             <li key={id} className={styles["list-card"]}>
               <CardMediaLink
                 path={navigationPath(
@@ -88,15 +159,27 @@ export default async function ReservationsPage({
                 <WishPriority priority={wish.priority} />
               </div>
               <WishStatus reserved reservedByYou />
-              <ActionForm
-                action={cancel.bind(null, wish.wishlist.id, wish.id, id)}
-                label={t("Cancel reservation")}
-                pendingLabel={t("Canceling…")}
-              >
-                <span className={styles["visually-hidden"]}>
-                  {t("Cancel your reservation for")} {wish.title}
-                </span>
-              </ActionForm>
+              <div className={groupStyles["card-footer"]}>
+                {groupEnabled ? (
+                  <Link
+                    className={styles["secondary-button"]}
+                    href={reservationGroupPath(id)}
+                  >
+                    {t("Manage group reservation")}
+                  </Link>
+                ) : (
+                  <ActionForm
+                    action={cancel.bind(null, wish.wishlist.id, wish.id, id)}
+                    label={t("Cancel reservation")}
+                    secondary
+                    pendingLabel={t("Canceling…")}
+                  >
+                    <span className={styles["visually-hidden"]}>
+                      {t("Cancel your reservation for")} {wish.title}
+                    </span>
+                  </ActionForm>
+                )}
+              </div>
             </li>
           ))}
         </ul>

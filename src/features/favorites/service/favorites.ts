@@ -214,7 +214,13 @@ export const readFavorites = async (
             },
             reservations: {
               where: { endedAt: null },
-              select: { userId: true },
+              select: {
+                userId: true,
+                participants: {
+                  where: { userId, status: "ACCEPTED" },
+                  select: { id: true },
+                },
+              },
               take: 1,
             },
           },
@@ -244,7 +250,9 @@ export const readFavorites = async (
             reservations.length === 0,
           isReserved: reservations.length > 0,
           isReservedByYou: reservations.some(
-            (reservation) => reservation.userId === userId,
+            (reservation) =>
+              reservation.userId === userId ||
+              reservation.participants.length > 0,
           ),
         }),
       ),

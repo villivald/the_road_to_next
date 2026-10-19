@@ -1,5 +1,6 @@
 import { attachStagedImage, stageImage } from "@/features/media/service/media";
 import { imageSelection } from "@/features/media/types";
+import { participantReservation } from "@/features/reservation/service/access";
 import { manageableLists } from "@/features/wishlist/service/access";
 import { lockManagedWishlist } from "@/features/wishlist/service/lists";
 import { wishlistIdSchema } from "@/features/wishlist/service/schemas";
@@ -105,7 +106,7 @@ export const readWish = async (
       ...wishFields,
       _count: {
         select: {
-          reservations: { where: { userId: userId ?? "", endedAt: null } },
+          reservations: { where: participantReservation(userId ?? "") },
         },
       },
       wishlist: {
@@ -126,7 +127,7 @@ export const readWish = async (
       },
       reservations: {
         where: { endedAt: null },
-        select: { id: true },
+        select: { id: true, groupEnabled: true },
       },
     },
   });
@@ -151,6 +152,9 @@ export const readWish = async (
     canManage,
     isReserved: reservations.length > 0,
     isReservedByYou,
+    canStartGroup:
+      isReservedByYou && reservationsEnabled && publication === "PUBLISHED",
+    isGroupReservation: isReservedByYou && !!reservations[0]?.groupEnabled,
     reservationId:
       canManage || isReservedByYou ? (reservations[0]?.id ?? null) : null,
     canReserve:

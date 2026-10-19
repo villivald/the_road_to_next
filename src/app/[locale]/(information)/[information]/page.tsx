@@ -150,14 +150,14 @@ const information = (
           </li>
           <li>
             {t(
-              "Hidden lists and hidden, fulfilled, or reserved wishes do not appear in Browse. Only the person who reserved a wish and list admins can view that reserved wish. The person’s identity stays private.",
+              "Hidden lists and hidden, fulfilled, or reserved wishes do not appear in Browse. Reserved wishes are visible to the organizer, accepted group participants, and list admins. Group members share their names and usernames with each other; list admins do not see the roster unless they join.",
             )}
           </li>
         </ul>
         <h2>{t("What the app stores")}</h2>
         <p>
           {t(
-            "Account information, a password hash, session and recovery records, lists, wishes, uploaded images, memberships, invitations, reservations, and Premium records support the features you use. Account emails are delivered through the configured email service. The app does not store payment-card details; checkout is handled by Paddle when enabled.",
+            "Account information, a password hash, session and recovery records, lists, wishes, uploaded images, memberships, invitations, reservations, and Premium records support the features you use. Account emails, group invitations, and acceptance notifications are delivered through the configured email service. The app does not store payment-card details; checkout is handled by Paddle when enabled.",
           )}
         </p>
         <h2>{t("Cookies and preferences")}</h2>

@@ -77,7 +77,24 @@ const deletionImpact = async (tx: Prisma.TransactionClient, userId: string) => {
   }));
   const reservations = await tx.reservation.findMany({
     where: { userId, endedAt: null },
-    select: { id: true },
+    select: {
+      id: true,
+      groupEnabled: true,
+      participants: {
+        where: { status: "ACCEPTED" },
+        select: { userId: true, acceptedAt: true },
+        orderBy: { id: "asc" },
+      },
+    },
+    orderBy: { id: "asc" },
+  });
+  const groupMemberships = await tx.reservationParticipant.findMany({
+    where: {
+      userId,
+      status: { in: ["PENDING", "ACCEPTED"] },
+      reservation: { endedAt: null },
+    },
+    select: { id: true, status: true },
     orderBy: { id: "asc" },
   });
   const memberships = await tx.membership.findMany({
@@ -104,7 +121,14 @@ const deletionImpact = async (tx: Prisma.TransactionClient, userId: string) => {
     reservationCount: reservations.length,
     membershipCount: memberships.length,
     impactToken: hashToken(
-      JSON.stringify({ userId, outcomes, reservations, memberships, billing }),
+      JSON.stringify({
+        userId,
+        outcomes,
+        reservations,
+        groupMemberships,
+        memberships,
+        billing,
+      }),
     ),
   };
 };
@@ -167,7 +191,16 @@ export const deleteAccount = async (
                 some: {
                   OR: [
                     { authorId: userId },
-                    { reservations: { some: { userId } } },
+                    {
+                      reservations: {
+                        some: {
+                          OR: [
+                            { userId },
+                            { participants: { some: { userId } } },
+                          ],
+                        },
+                      },
+                    },
                   ],
                 },
               },

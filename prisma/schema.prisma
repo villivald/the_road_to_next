@@ -24,6 +24,8 @@ model User {
   ownedLists              Wishlist[]               @relation("ListOwner")
   authoredWishes          Wish[]                   @relation("WishAuthor")
   memberships             Membership[]
+  reservationParticipants ReservationParticipant[] @relation("ReservationParticipant")
+  reservationInvitations  ReservationParticipant[] @relation("ReservationInviter")
   reservations            Reservation[]
   premiumGrants           PremiumGrant[]
   promoRedemptions        PromoRedemption[]
@@ -36,27 +38,31 @@ model User {
   favoritedBy             FavoritePerson[]         @relation("FavoritePerson")
 }
 
-// Transactional guides, retained for deduplication and removed with the account.
+// Transactional account and group messages, retained for deduplication and removed with the account.
 model AccountEmail {
-  id               String    @id @default(cuid())
-  key              String    @unique
-  createdAt        DateTime  @default(now())
-  userId           String
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  grantId          String?
-  recipient        String    @db.VarChar(254)
-  sender           String
-  subject          String
-  html             String
-  text             String
-  sentAt           DateTime?
-  canceledAt       DateTime?
-  firstAttemptAt   DateTime?
-  nextAttemptAt    DateTime  @default(now())
-  deliveryAttempts Int       @default(0)
-  deliveryFailedAt DateTime?
-  claimId          String?
+  id                 String                  @id @default(cuid())
+  key                String                  @unique
+  createdAt          DateTime                @default(now())
+  userId             String
+  user               User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  grantId            String?
+  groupParticipantId String?
+  groupParticipant   ReservationParticipant? @relation(fields: [groupParticipantId], references: [id], onDelete: Cascade)
+  groupEmailKind     GroupEmailKind?
+  recipient          String                  @db.VarChar(254)
+  sender             String
+  subject            String
+  html               String
+  text               String
+  sentAt             DateTime?
+  canceledAt         DateTime?
+  firstAttemptAt     DateTime?
+  nextAttemptAt      DateTime                @default(now())
+  deliveryAttempts   Int                     @default(0)
+  deliveryFailedAt   DateTime?
+  claimId            String?
 
+  @@index([groupParticipantId])
   @@index([sentAt, canceledAt, deliveryFailedAt, nextAttemptAt])
   @@index([userId])
 }
@@ -238,17 +244,46 @@ model FavoritePerson {
 }
 
 model Reservation {
-  id        String    @id @default(cuid())
-  createdAt DateTime  @default(now())
-  endedAt   DateTime?
-  wishId    String
-  userId    String
-  wish      Wish      @relation(fields: [wishId], references: [id], onDelete: Cascade)
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupEnabled Boolean                  @default(false)
+  participants ReservationParticipant[]
+  id           String                   @id @default(cuid())
+  createdAt    DateTime                 @default(now())
+  endedAt      DateTime?
+  wishId       String
+  userId       String
+  wish         Wish                     @relation(fields: [wishId], references: [id], onDelete: Cascade)
+  user         User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // A partial unique index in the migration permits one active reservation per wish.
   @@index([wishId, endedAt])
   @@index([userId, endedAt, createdAt])
+}
+
+model ReservationParticipant {
+  id            String                       @id @default(cuid())
+  createdAt     DateTime                     @default(now())
+  expiresAt     DateTime
+  acceptedAt    DateTime?
+  status        ReservationParticipantStatus @default(PENDING)
+  reservationId String
+  userId        String
+  inviterId     String?
+  reservation   Reservation                  @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  user          User                         @relation("ReservationParticipant", fields: [userId], references: [id], onDelete: Cascade)
+  inviter       User?                        @relation("ReservationInviter", fields: [inviterId], references: [id], onDelete: SetNull)
+  emails        AccountEmail[]
+
+  @@unique([reservationId, userId])
+  @@index([userId, status, createdAt])
+  @@index([inviterId])
+}
+
+enum ReservationParticipantStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  REVOKED
+  LEFT
 }
 
 enum MembershipRole {
@@ -420,4 +455,9 @@ model BillingEvent {
   processedAt   DateTime?
 
   @@index([processedAt, nextAttemptAt])
+}
+
+enum GroupEmailKind {
+  INVITED
+  ACCEPTED
 }

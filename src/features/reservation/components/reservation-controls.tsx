@@ -7,11 +7,13 @@ import { Link } from "@/i18n/navigation";
 import { useText } from "@/i18n/use-text";
 import {
   emailVerificationPath,
+  reservationGroupPath,
   reservationsPath,
   signInPath,
   wishPath,
 } from "@/paths";
 import { cancel, reserve, revoke } from "../actions/manage-reservation";
+import { StartGroup } from "./group-controls";
 
 export function ReservationControls({
   wish,
@@ -32,7 +34,14 @@ export function ReservationControls({
       <h2 id="reservation-heading" className={styles["icon-label"]}>
         <Gift size={22} aria-hidden="true" /> {t("Reservation")}
       </h2>
-      {wish.isReservedByYou && wish.reservationId ? (
+      {wish.isGroupReservation && wish.reservationId ? (
+        <>
+          <p>{t("You are part of this group reservation.")}</p>
+          <Link href={reservationGroupPath(wish.reservationId)}>
+            {t("Manage group reservation")}
+          </Link>
+        </>
+      ) : wish.isReservedByYou && wish.reservationId ? (
         <>
           <p role="status">
             {t("You reserved this wish. Your identity is private.")}
@@ -48,6 +57,13 @@ export function ReservationControls({
               {t("Cancel when you no longer plan to get this gift.")}
             </p>
           </ActionForm>
+          {wish.canStartGroup && (
+            <StartGroup
+              reservationId={wish.reservationId}
+              listId={listId}
+              wishId={wish.id}
+            />
+          )}
         </>
       ) : wish.isReserved && wish.canManage && wish.reservationId ? (
         <ActionForm
@@ -65,18 +81,21 @@ export function ReservationControls({
         </ActionForm>
       ) : wish.canReserve ? (
         user?.emailVerified ? (
-          <ActionForm
-            key="reserve"
-            action={reserve.bind(null, listId, wish.id)}
-            label={t("Reserve wish")}
-            pendingLabel={t("Reserving…")}
-          >
-            <p className={styles.muted}>
-              {t(
-                "Reserve this wish to avoid duplicate gifts. While reserved, it is hidden from everyone except you and the list admins. Your identity stays private. Reserving does not buy the item.",
-              )}
-            </p>
-          </ActionForm>
+          <>
+            <ActionForm
+              key="reserve"
+              action={reserve.bind(null, listId, wish.id)}
+              label={t("Reserve wish")}
+              pendingLabel={t("Reserving…")}
+            >
+              <p className={styles.muted}>
+                {t(
+                  "Reserve this wish to avoid duplicate gifts. While reserved, it is hidden from everyone except you and the list admins. Your identity stays private. Reserving does not buy the item.",
+                )}
+              </p>
+            </ActionForm>
+            <StartGroup listId={listId} wishId={wish.id} />
+          </>
         ) : (
           <Link
             href={authReturnPath(

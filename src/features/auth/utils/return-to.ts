@@ -22,6 +22,7 @@ export const safeReturnTo = (value: unknown) => {
     accountPlanPath,
     favoritesPath,
   ].includes(path) ||
+    /^\/reservations\/[a-zA-Z0-9_-]{1,128}$/.test(path) ||
     /^\/invitations\/[a-zA-Z0-9_-]{1,128}$/.test(path) ||
     /^\/lists\/[a-zA-Z0-9_-]{1,128}(?:\/wishes\/[a-zA-Z0-9_-]{1,128})?$/.test(
       path,
