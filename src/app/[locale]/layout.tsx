@@ -35,7 +35,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: { default: "Wishlist", template: "%s · Wishlist" },
     description: t("A place for the things you wish for."),
-    referrer: "no-referrer",
+    // Native action posts need their origin; private URL paths stay out of referrers.
+    referrer: "strict-origin",
   };
 }
 
