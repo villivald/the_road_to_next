@@ -116,6 +116,23 @@
   position: relative;
 }
 
+.list-owner {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  color: var(--muted-foreground);
+}
+
+.list-owner > svg {
+  align-self: flex-start;
+  flex-shrink: 0;
+  margin-top: 0.2em;
+}
+
+.list-owner > span {
+  min-width: 0;
+}
+
 .list-footer {
   display: grid;
   gap: 0.65rem;

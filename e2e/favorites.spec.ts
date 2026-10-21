@@ -120,6 +120,12 @@ test("one-click favorites persist across lists, wishes, people, and detail navig
     listCard.getByText("1 available wish", { exact: true }),
   ).toBeVisible();
   await expect(
+    listCard.getByText("Favorite person", { exact: true }),
+  ).toBeVisible();
+  await expect(listCard.getByText("@e2e-owner", { exact: true })).toHaveCount(
+    0,
+  );
+  await expect(
     listCard.getByText("Visible · Anyone", { exact: true }),
   ).toHaveCount(0);
   await expect(
@@ -161,6 +167,11 @@ test("one-click favorites persist across lists, wishes, people, and detail navig
     .getByRole("link", { name: "Favorite notebook", exact: true })
     .click();
   await expect(favoritesLink(page)).toHaveAttribute("aria-current", "page");
+  await page.screenshot({
+    path: info.outputPath("wish-detail-favorite-heading.png"),
+    fullPage: true,
+    scale: "css",
+  });
   await page
     .getByRole("button", {
       name: "Remove Favorite notebook from favorites",
@@ -258,6 +269,111 @@ test("a stale save reports an accessible error and never bookmarks newly private
     await expect(
       page.getByRole("heading", { name: "No favorites yet" }),
     ).toBeVisible();
+  } finally {
+    await prisma.$disconnect();
+  }
+});
+
+test("same-title lists show owner names with username fallback in private favorites", async ({
+  page,
+}, info) => {
+  const prisma = testPrisma();
+  try {
+    await prisma.user.update({
+      where: { id: "e2e-owner" },
+      data: { name: "Alex" },
+    });
+    await prisma.user.update({
+      where: { id: "e2e-member" },
+      data: { name: "Taylor" },
+    });
+    await prisma.wishlist.update({
+      where: { id: listId },
+      data: { title: "Joulu" },
+    });
+    await prisma.wishlist.create({
+      data: {
+        id: "e2e-same-title-list",
+        title: "Joulu",
+        ownerId: "e2e-member",
+        publication: "PUBLISHED",
+        memberships: { create: { userId: "e2e-member", role: "ADMIN" } },
+      },
+    });
+    await signIn(page);
+    for (const locale of ["en", "fi"]) {
+      await page.goto(`/${locale}/browse?q=Joulu`);
+      const cards = page.getByRole("listitem").filter({
+        has: page.getByRole("heading", { name: "Joulu", exact: true }),
+      });
+      await expect(cards).toHaveCount(2);
+      for (const [name, username] of [
+        ["Alex", "e2e-owner"],
+        ["Taylor", "e2e-member"],
+      ]) {
+        const card = cards.filter({ hasText: name });
+        await expect(card).toHaveCount(1);
+        await expect(card.getByText(name, { exact: true })).toHaveAttribute(
+          "title",
+          `@${username}`,
+        );
+        await expect(
+          card.getByText(`@${username}`, { exact: true }),
+        ).toHaveCount(0);
+      }
+      await page.screenshot({
+        path: info.outputPath(`same-title-owners-${locale}.png`),
+        fullPage: true,
+        scale: "css",
+      });
+      if (locale === "en") {
+        await cards
+          .filter({ hasText: "Alex" })
+          .getByRole("button", { name: "Add Joulu to favorites", exact: true })
+          .click();
+        await expect(
+          cards.getByRole("button", { name: "Remove Joulu from favorites" }),
+        ).toBeVisible();
+      }
+    }
+    await prisma.wishlist.update({
+      where: { id: listId },
+      data: {
+        visibility: "PRIVATE",
+        memberships: { create: { userId: "e2e-member", role: "MEMBER" } },
+      },
+    });
+    await prisma.user.update({
+      where: { id: "e2e-owner" },
+      data: { name: null },
+    });
+    await page.setViewportSize({ width: 320, height: 740 });
+    await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
+    await page.goto("/fi/favorites");
+    await expect(page.getByRole("heading", { name: "Joulu" })).toBeVisible();
+    await expect(page.getByText("@e2e-owner", { exact: true })).toBeVisible();
+    await expect(page.getByRole("main")).not.toContainText(
+      accounts.owner.email,
+    );
+    await page.evaluate(
+      () => (document.documentElement.style.fontSize = "200%"),
+    );
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: info.outputPath("private-owner-fallback-fi-320.png"),
+      fullPage: true,
+      scale: "css",
+    });
+    await prisma.membership.deleteMany({
+      where: { wishlistId: listId, userId: "e2e-member" },
+    });
+    await page.reload();
+    await expect(page.getByRole("heading", { name: "Joulu" })).toHaveCount(0);
+    await expect(page.getByRole("main")).not.toContainText("@e2e-owner");
   } finally {
     await prisma.$disconnect();
   }

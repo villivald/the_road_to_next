@@ -94,3 +94,7 @@ npm run test:e2e
 ```
 
 Install Chromium once. Database/browser tests require Docker and use `wishlist_test`, schema `wishlist`, on port 55433 and an isolated inbox on port 8026. Browser tests build the production app and use port 3017. To build separately, run `npm run build`.
+
+Reusable setup, architecture, and migration documentation lives in `docs/` and is
+versioned with the code. Keep per-run acceptance reports, screenshots, and private
+test evidence in the Git-ignored `.local/` folder.

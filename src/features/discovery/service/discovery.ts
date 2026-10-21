@@ -56,6 +56,7 @@ export const discoverLists = async (
         select: {
           id: true,
           ownerId: true,
+          owner: { select: { name: true, username: true } },
           title: true,
           description: true,
           image: imageSelection,

@@ -141,7 +141,7 @@ individual/group reservations. Browser coverage exercises the full EN journey,
 Favorites persistence, individual-to-group conversion, declining, FI keyboard
 acceptance, narrow/enlarged-text layouts, themes, and automated accessibility.
 
-### Verified checkpoint — 19 October 2026
+### Local verification checkpoint — 19 October 2026
 
 - ESLint, Stylelint, Prettier, TypeScript, and all 132 unit tests pass.
 - All 257 isolated integration tests pass, including notification queueing, captured
@@ -165,6 +165,18 @@ Logs: `/private/tmp/group-notifications-browser-final.log`,
 `/private/tmp/group-notifications-check-complete.log`, and
 `/private/tmp/group-email-previews.log`.
 
-The checkpoint is uncommitted and ready for review. Native screen-reader,
-Safari/Firefox, real-device, delivered email-client, and hosted acceptance remain
-release checks.
+The feature is committed as `dc94221`; both group migrations were verified on
+production during the 19–20 October hosted acceptance. The checks cover public group creation,
+EN/FI invitation/acceptance emails, transfer, leaving, cancellation, protected
+images, and Favorites. The verified sending domain now uses a separate scoped
+production key. A fresh acceptance email from `support@wishlist.fi` arrived in
+Gmail with SPF/DKIM/DMARC PASS and correct domain links. A fresh English invitation
+also arrived in Tuta. Both used one delivery attempt.
+
+Private-list acceptance also passes: an invited Free member created a group,
+private-membership loss transferred coordination and revoked media/group access,
+and restoring list membership did not restore group participation. All four
+disposable groups are ended. The private owner fixture was later republished only
+for the natural guest-expiry check, which the owner is checking manually.
+Detailed per-run evidence stays in the Git-ignored `.local/` directory. Remaining
+release QA includes native screen-reader, browser, device, and mail-client checks.

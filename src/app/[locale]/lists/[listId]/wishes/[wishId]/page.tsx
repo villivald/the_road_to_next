@@ -97,13 +97,25 @@ export default async function WishPage({
               </p>
               <WishPriority priority={wish.priority} />
             </div>
-            {wish.canManage && (
-              <Link
-                className={styles.button}
-                href={`${wishPath(listId, wishId)}/edit`}
-              >
-                {t("Edit wish")}
-              </Link>
+            {(user?.emailVerified || wish.canManage) && (
+              <div className={styles.actions}>
+                {user?.emailVerified && (
+                  <FavoriteButton
+                    kind="wish"
+                    targetId={wish.id}
+                    saved={favoriteIds.includes(wish.id)}
+                    title={wish.title}
+                  />
+                )}
+                {wish.canManage && (
+                  <Link
+                    className={styles.button}
+                    href={`${wishPath(listId, wishId)}/edit`}
+                  >
+                    {t("Edit wish")}
+                  </Link>
+                )}
+              </div>
             )}
           </div>
 
@@ -115,15 +127,6 @@ export default async function WishPage({
               reservedByYou={wish.isReservedByYou}
             />
           )}
-          {user?.emailVerified && (
-            <FavoriteButton
-              kind="wish"
-              targetId={wish.id}
-              saved={favoriteIds.includes(wish.id)}
-              title={wish.title}
-            />
-          )}
-
           {wish.description && (
             <p className={styles.description}>{wish.description}</p>
           )}

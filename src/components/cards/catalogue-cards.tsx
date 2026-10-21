@@ -1,4 +1,4 @@
-import { List } from "lucide-react";
+import { List, UserRound } from "lucide-react";
 import {
   type DetailSection,
   navigationPath,
@@ -56,6 +56,7 @@ export function CatalogueListCard({
   favorite?: FavoriteTarget;
 }) {
   const t = useText();
+  const ownerName = list.owner?.name?.trim();
   return (
     <li className={`${styles["list-card"]} ${cardStyles["browse-card"]}`}>
       <CardMediaLink
@@ -74,6 +75,19 @@ export function CatalogueListCard({
           {list.title}
         </Link>
       </h2>
+      {list.owner && (
+        <p className={cardStyles["list-owner"]}>
+          <UserRound size={16} aria-hidden="true" />
+          <span>
+            <span className={styles["visually-hidden"]}>
+              {t("List owner")}:{" "}
+            </span>
+            <span title={`@${list.owner.username}`}>
+              {ownerName || `@${list.owner.username}`}
+            </span>
+          </span>
+        </p>
+      )}
       {list.publication &&
         list.visibility &&
         (list.publication === "DRAFT" || list.visibility === "PRIVATE") && (
