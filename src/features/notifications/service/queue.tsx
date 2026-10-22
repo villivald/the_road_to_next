@@ -39,7 +39,7 @@ export const queueAccountEmail = async (
   );
   // Snapshot the complete provider request so retries remain identical across
   // profile changes, deployments, and provider idempotency checks.
-  await tx.accountEmail.create({
+  const emailRecord = await tx.accountEmail.create({
     data: {
       key: message.key,
       userId: user.id,
@@ -56,5 +56,7 @@ export const queueAccountEmail = async (
       html: await render(email),
       text: await render(email, { plainText: true }),
     },
+    select: { id: true },
   });
+  return emailRecord.id;
 };

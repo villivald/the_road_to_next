@@ -37,6 +37,8 @@ import {
   revokeReservation,
 } from "@/features/reservation/service/reservations";
 import { readWish, transitionWish } from "@/features/wish/service/wishes";
+import { backgroundEvents } from "@/lib/background-events";
+import { inngest } from "@/lib/inngest";
 import * as mail from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
 import { assertTestDatabase } from "../e2e/environment";
@@ -554,6 +556,13 @@ describe("group email notifications", () => {
     expect(invitation.html).toContain(`/fi/reservations/${id}`);
     expect(invitation.text).toContain(organizer);
     expect(invitation.text).not.toContain("Together gift");
+    expect(inngest.send).toHaveBeenCalledWith([
+      {
+        name: backgroundEvents.accountEmail,
+        id: `${backgroundEvents.accountEmail}/${invitation.id}`,
+        data: { id: invitation.id },
+      },
+    ]);
     await expect(invite()).rejects.toThrow("already been invited");
     expect(await prisma.accountEmail.count()).toBe(1);
     expect(await deliverAccountEmails()).toEqual({
@@ -577,6 +586,13 @@ describe("group email notifications", () => {
     expect(accepted.text).toContain(`Name ${guest}`);
     expect(accepted.html).toContain(`/en/reservations/${id}`);
     expect(accepted.text).not.toContain("Together gift");
+    expect(inngest.send).toHaveBeenCalledWith([
+      {
+        name: backgroundEvents.accountEmail,
+        id: `${backgroundEvents.accountEmail}/${accepted.id}`,
+        data: { id: accepted.id },
+      },
+    ]);
     expect(await deliverAccountEmails()).toEqual({
       sent: 1,
       failed: 0,

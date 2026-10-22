@@ -6,6 +6,10 @@ import { readableLists } from "@/features/wishlist/service/access";
 import { lockWishlist } from "@/features/wishlist/service/lock";
 import { wishlistIdSchema } from "@/features/wishlist/service/schemas";
 import type { Prisma } from "@/generated/prisma/client";
+import {
+  backgroundEvents,
+  publishBackgroundEvents,
+} from "@/lib/background-events";
 import { prisma } from "@/lib/prisma";
 import { participantReservation } from "./access";
 import { queueGroupEmail } from "./group-emails";
@@ -205,108 +209,122 @@ export const searchGroupPeople = async (
   );
 };
 
-export const inviteToReservation = (
+export const inviteToReservation = async (
   userId: string,
   reservationId: string,
   targetId: string,
-) =>
-  changeGroup(userId, reservationId, targetId, async (tx, group) => {
-    requireOrganizer(group, userId);
-    requireEnabled(group.wish.wishlist.reservationsEnabled);
-    if (!group.groupEnabled || targetId === userId)
-      throw new ReservationError(unavailable);
-    const person = await tx.user.findFirst({
-      where: {
-        id: targetId,
-        ...eligiblePeople(
-          group.wish.wishlistId,
-          group.wish.wishlist.visibility,
-        ),
-      },
-      select: { id: true },
-    });
-    if (!person) throw new ReservationError(unavailable);
-    const existing = await tx.reservationParticipant.findUnique({
-      where: { reservationId_userId: { reservationId, userId: targetId } },
-      select: { id: true },
-    });
-    if (existing)
-      throw new ReservationError(
-        "This person has already been invited to this reservation.",
+) => {
+  const emailId = await changeGroup(
+    userId,
+    reservationId,
+    targetId,
+    async (tx, group) => {
+      requireOrganizer(group, userId);
+      requireEnabled(group.wish.wishlist.reservationsEnabled);
+      if (!group.groupEnabled || targetId === userId)
+        throw new ReservationError(unavailable);
+      const person = await tx.user.findFirst({
+        where: {
+          id: targetId,
+          ...eligiblePeople(
+            group.wish.wishlistId,
+            group.wish.wishlist.visibility,
+          ),
+        },
+        select: { id: true },
+      });
+      if (!person) throw new ReservationError(unavailable);
+      const existing = await tx.reservationParticipant.findUnique({
+        where: { reservationId_userId: { reservationId, userId: targetId } },
+        select: { id: true },
+      });
+      if (existing)
+        throw new ReservationError(
+          "This person has already been invited to this reservation.",
+        );
+      const count = await tx.reservationParticipant.count({
+        where: { reservationId, ...activePeople() },
+      });
+      if (count >= GROUP_LIMIT - 1)
+        throw new ReservationError(
+          "A group can include up to ten people, including pending invitations.",
+        );
+      // Cross-reservation protection prevents repeatedly inviting the same person
+      // by canceling and recreating a reservation. Declines never notify the inviter.
+      await consumeRateLimit(
+        "reservation-group-invite-pair",
+        `${userId}:${targetId}`,
+        3,
+        24 * 60 * 60 * 1000,
+        tx,
       );
-    const count = await tx.reservationParticipant.count({
-      where: { reservationId, ...activePeople() },
-    });
-    if (count >= GROUP_LIMIT - 1)
-      throw new ReservationError(
-        "A group can include up to ten people, including pending invitations.",
+      await consumeRateLimit(
+        "reservation-group-invite-recipient",
+        targetId,
+        10,
+        60 * 60 * 1000,
+        tx,
       );
-    // Cross-reservation protection prevents repeatedly inviting the same person
-    // by canceling and recreating a reservation. Declines never notify the inviter.
-    await consumeRateLimit(
-      "reservation-group-invite-pair",
-      `${userId}:${targetId}`,
-      3,
-      24 * 60 * 60 * 1000,
-      tx,
-    );
-    await consumeRateLimit(
-      "reservation-group-invite-recipient",
-      targetId,
-      10,
-      60 * 60 * 1000,
-      tx,
-    );
-    const invitation = await tx.reservationParticipant.create({
-      data: {
+      const invitation = await tx.reservationParticipant.create({
+        data: {
+          reservationId,
+          userId: targetId,
+          inviterId: userId,
+          expiresAt: new Date(Date.now() + invitationLifetime),
+        },
+      });
+      return queueGroupEmail(tx, {
+        participantId: invitation.id,
         reservationId,
-        userId: targetId,
-        inviterId: userId,
-        expiresAt: new Date(Date.now() + invitationLifetime),
-      },
-    });
-    await queueGroupEmail(tx, {
-      participantId: invitation.id,
-      reservationId,
-      recipientId: targetId,
-      actorId: userId,
-      kind: "INVITED",
-    });
-  });
+        recipientId: targetId,
+        actorId: userId,
+        kind: "INVITED",
+      });
+    },
+  );
+  await publishBackgroundEvents(backgroundEvents.accountEmail, [emailId]);
+};
 
-export const respondToReservation = (
+export const respondToReservation = async (
   userId: string,
   reservationId: string,
   accept: boolean,
-) =>
-  changeGroup(userId, reservationId, null, async (tx, group) => {
-    const invitation = await tx.reservationParticipant.findUnique({
-      where: { reservationId_userId: { reservationId, userId } },
-    });
-    if (
-      !group.groupEnabled ||
-      !invitation ||
-      invitation.status !== "PENDING" ||
-      invitation.expiresAt <= new Date()
-    )
-      throw new ReservationError(unavailable);
-    if (accept) requireEnabled(group.wish.wishlist.reservationsEnabled);
-    await tx.reservationParticipant.update({
-      where: { id: invitation.id },
-      data: {
-        status: accept ? "ACCEPTED" : "DECLINED",
-        acceptedAt: accept ? new Date() : null,
-      },
-    });
-    if (accept)
-      await queueGroupEmail(tx, {
-        participantId: invitation.id,
-        reservationId,
-        recipientId: group.userId,
-        actorId: userId,
-        kind: "ACCEPTED",
+) => {
+  const emailId = await changeGroup(
+    userId,
+    reservationId,
+    null,
+    async (tx, group) => {
+      const invitation = await tx.reservationParticipant.findUnique({
+        where: { reservationId_userId: { reservationId, userId } },
       });
-  });
+      if (
+        !group.groupEnabled ||
+        !invitation ||
+        invitation.status !== "PENDING" ||
+        invitation.expiresAt <= new Date()
+      )
+        throw new ReservationError(unavailable);
+      if (accept) requireEnabled(group.wish.wishlist.reservationsEnabled);
+      await tx.reservationParticipant.update({
+        where: { id: invitation.id },
+        data: {
+          status: accept ? "ACCEPTED" : "DECLINED",
+          acceptedAt: accept ? new Date() : null,
+        },
+      });
+      if (accept)
+        return queueGroupEmail(tx, {
+          participantId: invitation.id,
+          reservationId,
+          recipientId: group.userId,
+          actorId: userId,
+          kind: "ACCEPTED",
+        });
+    },
+  );
+  await publishBackgroundEvents(backgroundEvents.accountEmail, [emailId]);
+};
 
 export const removeReservationParticipant = (
   userId: string,

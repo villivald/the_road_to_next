@@ -6,7 +6,10 @@ export default defineConfig({
   test: {
     environment: "node",
     server: { deps: { inline: [/next-intl/] } },
-    setupFiles: ["./tests/i18n-setup.ts"],
+    setupFiles: [
+      "./tests/i18n-setup.ts",
+      ...(integration ? ["./tests/background-setup.ts"] : []),
+    ],
     include: integration
       ? ["tests/**/*.integration.test.ts"]
       : ["tests/**/*.test.ts"],

@@ -1,6 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { queueAccountEmail } from "@/features/notifications/service/queue";
+import {
+  backgroundEvents,
+  publishBackgroundEvents,
+} from "@/lib/background-events";
 import { prisma } from "@/lib/prisma";
 import { queueBilling, withBillingAccount } from "./accounts";
 import { billingConfig, billingEnabled, BillingError } from "./config";
@@ -47,6 +51,7 @@ export const syncBillingAccount = async (id: string) => {
     data: { claimId, leaseUntil: new Date(Date.now() + 5 * 60000) },
   });
   if (!claimed.count) return false;
+  const emailIds: (string | undefined)[] = [];
 
   try {
     const account = await prisma.billingAccount.findUniqueOrThrow({
@@ -283,18 +288,20 @@ export const syncBillingAccount = async (id: string) => {
             const user = await tx.user.findUniqueOrThrow({
               where: { id: current.userId },
             });
-            await queueAccountEmail(tx, user, {
-              key: `premium-subscription/${subscription.id}`,
-              premium: {
-                source:
-                  intervalFor(transaction.items[0].price.id) === "year"
-                    ? "year"
-                    : "month",
-                startsAt: startsAt.toISOString(),
-                expiresAt: expiresAt.toISOString(),
-                grantId: grant.id,
-              },
-            });
+            emailIds.push(
+              await queueAccountEmail(tx, user, {
+                key: `premium-subscription/${subscription.id}`,
+                premium: {
+                  source:
+                    intervalFor(transaction.items[0].price.id) === "year"
+                      ? "year"
+                      : "month",
+                  startsAt: startsAt.toISOString(),
+                  expiresAt: expiresAt.toISOString(),
+                  grantId: grant.id,
+                },
+              }),
+            );
           }
         }
       }
@@ -312,6 +319,7 @@ export const syncBillingAccount = async (id: string) => {
         },
       });
     });
+    await publishBackgroundEvents(backgroundEvents.accountEmail, emailIds);
     return true;
   } catch {
     const account = await prisma.billingAccount.findUnique({ where: { id } });
@@ -365,19 +373,27 @@ const resolveEventAccount = async (type: string, resourceId: string) => {
   return checkout?.accountId ?? null;
 };
 
-export const reconcileBilling = async () => {
+export const reconcileBilling = async (eventId?: string) => {
   if (!billingEnabled()) return { enabled: false, processed: 0, failed: 0 };
   let failed = 0;
   let processed = 0;
+  const eventAccounts = new Set<string>();
   const events = await prisma.billingEvent.findMany({
-    where: { processedAt: null, nextAttemptAt: { lte: new Date() } },
+    where: {
+      id: eventId,
+      processedAt: null,
+      nextAttemptAt: { lte: new Date() },
+    },
     orderBy: { createdAt: "asc" },
     take: 20,
   });
   for (const event of events) {
     try {
       const accountId = await resolveEventAccount(event.type, event.resourceId);
-      if (accountId) await queueBilling(accountId);
+      if (accountId) {
+        await queueBilling(accountId);
+        eventAccounts.add(accountId);
+      }
       await prisma.billingEvent.update({
         where: { id: event.id },
         data: { processedAt: new Date() },
@@ -393,21 +409,24 @@ export const reconcileBilling = async () => {
       failed++;
     }
   }
-  const accounts = await prisma.billingAccount.findMany({
-    where: {
-      nextSyncAt: { lte: new Date() },
-      OR: [{ leaseUntil: null }, { leaseUntil: { lte: new Date() } }],
-    },
-    orderBy: { nextSyncAt: "asc" },
-    take: 5,
-    select: { id: true },
-  });
+  const accounts = eventId
+    ? [...eventAccounts].map((id) => ({ id }))
+    : await prisma.billingAccount.findMany({
+        where: {
+          nextSyncAt: { lte: new Date() },
+          OR: [{ leaseUntil: null }, { leaseUntil: { lte: new Date() } }],
+        },
+        orderBy: { nextSyncAt: "asc" },
+        take: 5,
+        select: { id: true },
+      });
   for (const account of accounts) {
     if (await syncBillingAccount(account.id)) processed++;
     else failed++;
   }
-  await prisma.billingEvent.deleteMany({
-    where: { processedAt: { lt: new Date(Date.now() - 30 * 86400000) } },
-  });
+  if (!eventId)
+    await prisma.billingEvent.deleteMany({
+      where: { processedAt: { lt: new Date(Date.now() - 30 * 86400000) } },
+    });
   return { enabled: true, processed, failed };
 };

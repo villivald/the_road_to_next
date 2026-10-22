@@ -31,7 +31,7 @@ does not apply schema changes. A missing-column error such as
 
 Register in the app, then open the local inbox for verification codes and reset links. Local email is captured by Mailpit; it is not delivered to recipients. For real delivery, unset `MAILPIT_URL` and configure `RESEND_API_KEY` and `EMAIL_FROM`. Hosted Inngest needs its event/signing keys with `INNGEST_DEV` unset.
 
-After email verification, users receive a welcome guide. A confirmed new paid subscription or successful promo redemption queues a Premium guide. Inngest’s `deliver-account-emails` job sends these every five minutes; run `npm run emails:deliver` for one due batch locally. All email templates share the app’s branding in English and Finnish. See [account email delivery and deployment](docs/account-emails.md).
+After email verification, users receive a welcome guide. A confirmed new paid subscription or successful promo redemption queues a Premium guide. Inngest attempts newly queued messages immediately, with recovery every 15 minutes; run `npm run emails:deliver` for one due batch locally. All email templates share the app’s branding in English and Finnish. See [account email delivery and deployment](docs/account-emails.md) and [background job schedules and monitoring](docs/background-jobs.md).
 
 Choose **English / Suomi** in the header. Both versions are also available directly at `/en` and `/fi`; your choice is saved for future visits.
 
@@ -47,16 +47,17 @@ organizer reserves immediately, then searches for and invites people. Recipients
 review and accept under **My reservations → Group invitations**. Names are shared
 only after consent; invitations never grant private-list access. Groups support
 leaving, removal, coordination transfer, and cancellation. Invitees receive an email;
-organizers receive an acceptance email through the existing five-minute email job.
+organizers receive an acceptance email through immediate event-triggered delivery,
+with a 15-minute recovery schedule for missed or failed attempts.
 Apply both group migrations, including `20261019000100_group_reservation_emails`.
 See
 [group reservations and deployment](docs/group-reservations.md).
 
 Images use private files in `.local/media` locally (no extra service). To use cloud storage, create a **private** Vercel Blob store, set `MEDIA_STORAGE=vercel` and its `BLOB_READ_WRITE_TOKEN` in `.env.local`, then restart. Use separate stores for development/preview and production. Add images when creating a wish, or upload them from List settings, Edit wish, or Your account.
 
-Inngest retries media cleanup every five minutes; run `npm run media:cleanup` to process one batch manually. Keep Inngest running for automatic cleanup.
+Inngest runs media cleanup hourly; run `npm run media:cleanup` to process one batch manually. Keep Inngest running for automatic cleanup.
 
-Invite people from a list’s **Sharing and members** page; local invitations arrive in Mailpit. Failed sends retry through Inngest every five minutes, or run `npm run invitations:deliver` for one batch. Joined lists appear under **My lists → Lists you’ve joined**.
+Invite people from a list’s **Sharing and members** page; local invitations arrive in Mailpit. Delivery is attempted immediately; failed sends are recovered through Inngest every 15 minutes, respecting backoff, or run `npm run invitations:deliver` for one batch. Joined lists appear under **My lists → Lists you’ve joined**.
 
 For read-only access without an account, open **List settings → Manage guest links**. The list owner needs Premium to create links; choose **Show list** in List settings, copy the new link, and share it privately. Links expire and can be revoked there.
 

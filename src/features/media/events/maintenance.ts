@@ -2,7 +2,7 @@ import { inngest } from "@/lib/inngest";
 import { cleanupMedia } from "../service/cleanup";
 
 export const mediaMaintenance = inngest.createFunction(
-  { id: "cleanup-media", triggers: [{ cron: "*/5 * * * *" }] },
+  { id: "cleanup-media", triggers: [{ cron: "0 * * * *" }] },
   async () => {
     const result = await cleanupMedia();
 

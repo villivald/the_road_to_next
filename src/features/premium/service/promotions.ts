@@ -5,6 +5,10 @@ import {
 } from "@/features/auth/service/security";
 import { queueAccountEmail } from "@/features/notifications/service/queue";
 import { Prisma } from "@/generated/prisma/client";
+import {
+  backgroundEvents,
+  publishBackgroundEvents,
+} from "@/lib/background-events";
 import { prisma } from "@/lib/prisma";
 import { generateRandomToken, hashToken } from "@/utils/crypto";
 import { PremiumError, readPremiumAccess } from "./entitlements";
@@ -89,8 +93,8 @@ export const redeemPromo = async (
     throw new PremiumError(unavailable);
   }
   const codeHash = hashPromo(parsed.data);
-
-  return prisma.$transaction(async (tx) => {
+  let emailId: string | undefined;
+  const result = await prisma.$transaction(async (tx) => {
     await lockUser(tx, userId);
     const user = await tx.user.findFirst({
       where: {
@@ -156,7 +160,7 @@ export const redeemPromo = async (
       },
       select: { id: true, grant: { select: { id: true } } },
     });
-    await queueAccountEmail(tx, user, {
+    emailId = await queueAccountEmail(tx, user, {
       key: `premium-promo/${redemption.id}`,
       premium: {
         source: "promo",
@@ -168,4 +172,6 @@ export const redeemPromo = async (
 
     return { expiresAt };
   });
+  await publishBackgroundEvents(backgroundEvents.accountEmail, [emailId]);
+  return result;
 };

@@ -42,11 +42,12 @@ rendered message, sender, recipient, and a unique lifecycle key. If the transact
 rolls back, the email is not queued. A provider failure does not undo an account,
 redemption, or payment.
 
-Inngest’s `deliver-account-emails` job processes up to 20 messages every five minutes.
-Messages normally leave on the next scheduled run. Matching the existing
-five-minute jobs keeps the four periodic maintenance functions at approximately
-34,560 scheduled executions per 30 days, before retries and other activity,
-within [Inngest’s current 50,000-execution free allowance](https://www.inngest.com/pricing). Local delivery goes to Mailpit.
+After commit, the app publishes an Inngest event containing only the new email's
+opaque row ID. `deliver-account-emails` attempts that message immediately.
+An aligned 15-minute recovery schedule processes up to 20 due messages if a
+trigger or delivery was missed. Publishing failures leave the saved message
+intact. Local delivery goes to Mailpit. See [background jobs](background-jobs.md)
+for schedules, failure behavior and Neon monitoring.
 To process one due batch manually, using the database in `.env.local` / `.env`:
 
 ```bash
@@ -78,7 +79,9 @@ guides without accumulating copies of long emails.
    required: use the existing `APP_URL`, `EMAIL_FROM`, `RESEND_API_KEY`, and Inngest
    configuration. Production must not set `MAILPIT_URL`.
 3. Confirm that the deployed Inngest app shows `deliver-account-emails` and its
-   five-minute schedule. Refresh its app sync if the function list is stale.
+   `wishlist/account-email.queued` trigger and 15-minute recovery schedule.
+   Refresh its app sync if the function list is stale. The existing
+   `INNGEST_EVENT_KEY` must belong to this deployed app's Inngest environment.
 4. Verify a new test account’s email. Check the welcome email in Resend and its
    `AccountEmail.sentAt` record. With Paddle sandbox, complete one subscription
    and confirm the Premium guide. Redeem a separate test promo code and confirm

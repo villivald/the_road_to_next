@@ -1,4 +1,9 @@
+import { after } from "next/server";
 import { acceptWebhook } from "@/features/billing/service/webhook";
+import {
+  backgroundEvents,
+  publishBackgroundEvents,
+} from "@/lib/background-events";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,6 +28,10 @@ export async function POST(request: Request) {
     const status = await acceptWebhook(
       Buffer.concat(chunks),
       request.headers.get("paddle-signature") ?? "",
+      // Acknowledge durable receipt without waiting on another provider. If the
+      // post-response task is interrupted, the scheduled sweep finds the row.
+      (id) =>
+        after(() => publishBackgroundEvents(backgroundEvents.billing, [id])),
     );
     return new Response(null, { status, headers });
   } catch (error) {

@@ -8,6 +8,8 @@ import { generateEmailVerificationCode } from "@/features/auth/utils/generate-em
 import { deliverAccountEmails } from "@/features/notifications/service/delivery";
 import { queueAccountEmail } from "@/features/notifications/service/queue";
 import { issuePromo, redeemPromo } from "@/features/premium/service/promotions";
+import { backgroundEvents } from "@/lib/background-events";
+import { inngest } from "@/lib/inngest";
 import { prisma } from "@/lib/prisma";
 import { assertTestDatabase } from "../e2e/environment";
 import { accounts, newAccount, resetFixtures } from "../e2e/seed";
@@ -42,6 +44,7 @@ const due = (id: string) =>
 it("queues onboarding only after successful verification, once, in the account language", async () => {
   const result = await register({ ...newAccount, locale: "fi" });
   expect(await prisma.accountEmail.count()).toBe(0);
+  expect(inngest.send).not.toHaveBeenCalled();
   await expect(
     verifyEmail(result.user.id, result.user.email, "INVALIDX"),
   ).rejects.toThrow();
@@ -63,6 +66,60 @@ it("queues onboarding only after successful verification, once, in the account l
     sentAt: null,
   });
   expect(emails[0].html).toContain('lang="fi"');
+  expect(inngest.send).toHaveBeenCalledExactlyOnceWith([
+    {
+      name: backgroundEvents.accountEmail,
+      id: `${backgroundEvents.accountEmail}/${emails[0].id}`,
+      data: { id: emails[0].id },
+    },
+  ]);
+});
+
+it("publishes only committed email rows and targets one message ahead of an older backlog", async () => {
+  const owner = await prisma.user.findUniqueOrThrow({
+    where: { id: "e2e-owner" },
+  });
+  const older = await prisma.$transaction((tx) =>
+    queueAccountEmail(tx, owner, { key: "older-guide" }),
+  );
+  vi.mocked(inngest.send).mockImplementationOnce(async (payload) => {
+    const events = Array.isArray(payload) ? payload : [payload];
+    const id = events[0].data?.id as string;
+    // Separate connection: the row must already be visible outside its transaction.
+    expect(
+      await prisma.accountEmail.findUnique({ where: { id } }),
+    ).not.toBeNull();
+    expect(await deliverAccountEmails(id)).toEqual({
+      sent: 1,
+      failed: 0,
+      canceled: 0,
+    });
+    expect((await deliverAccountEmails(id)).sent).toBe(0);
+    return { ids: [id] };
+  });
+  await welcome();
+  expect(
+    (await prisma.accountEmail.findUniqueOrThrow({ where: { id: older } }))
+      .sentAt,
+  ).toBeNull();
+  expect((await deliverAccountEmails()).sent).toBe(1);
+});
+
+it("keeps successful verification and recovers delivery when event publishing fails", async () => {
+  const log = vi.spyOn(console, "error").mockImplementation(() => {});
+  vi.mocked(inngest.send).mockRejectedValueOnce(
+    new Error("secret provider diagnostic"),
+  );
+  const user = await welcome();
+  expect(
+    (await prisma.user.findUniqueOrThrow({ where: { id: user.id } }))
+      .emailVerified,
+  ).toBe(true);
+  expect((await prisma.accountEmail.findFirstOrThrow()).sentAt).toBeNull();
+  expect((await deliverAccountEmails()).sent).toBe(1);
+  expect(JSON.stringify(log.mock.calls)).not.toContain(
+    "secret provider diagnostic",
+  );
 });
 
 it("delivers to local Mailpit, records completion, and does not resend", async () => {
@@ -177,6 +234,7 @@ it("queues each successful promo redemption with its dates, including extensions
     orderBy: { createdAt: "asc" },
   });
   expect(emails).toHaveLength(2);
+  expect(inngest.send).toHaveBeenCalledTimes(2);
   expect(emails[1].text).toContain("may start later");
   expect(emails[1].text).not.toContain(second.code);
   await prisma.premiumGrant.update({
@@ -201,6 +259,7 @@ it("rolls back a delivery intent with its enclosing operation and erases queued 
     }),
   ).rejects.toThrow("rolled back");
   expect(await prisma.accountEmail.count()).toBe(0);
+  expect(inngest.send).not.toHaveBeenCalled();
   await welcome();
   await prisma.user.delete({ where: { email: newAccount.email } });
   expect(await prisma.accountEmail.count()).toBe(0);

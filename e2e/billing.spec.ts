@@ -165,6 +165,48 @@ test("checkout return checks Paddle automatically without trusting the return UR
   );
 });
 
+test("a canceled subscription allows a different plan only after paid access expires", async ({
+  page,
+}) => {
+  await choose(page);
+  const state = await providerState();
+  completePayment(state, state.transactions[0].id);
+  const expiresAt = Date.now() + 12_000;
+  state.transactions[0].billing_period!.ends_at = new Date(
+    expiresAt,
+  ).toISOString();
+  state.subscriptions[0].next_billed_at = new Date(expiresAt).toISOString();
+  await save(state);
+  await page.goto("/en/account/plan");
+  await refresh(page);
+  await expect(
+    page.getByRole("heading", { name: "Premium", exact: true }),
+  ).toBeVisible();
+
+  state.subscriptions[0].status = "canceled";
+  state.subscriptions[0].next_billed_at = null;
+  state.subscriptions[0].updated_at = new Date().toISOString();
+  await save(state);
+  await refresh(page);
+  await expect(
+    page.getByRole("button", { name: "Choose annual", exact: true }),
+  ).toHaveCount(0);
+
+  await expect
+    .poll(() => Date.now(), { timeout: 20_000 })
+    .toBeGreaterThan(expiresAt);
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "Free", exact: true }),
+  ).toBeVisible();
+  await choose(page, "annual");
+  const switched = await providerState();
+  expect(switched.createCount).toBe(2);
+  expect(switched.subscriptions).toHaveLength(1);
+  expect(switched.subscriptions[0].status).toBe("canceled");
+  expect(switched.transactions[1].details?.totals.total).toBe("1500");
+});
+
 test("checkout return falls back to manual controls when Paddle is unavailable, in Finnish", async ({
   page,
 }) => {

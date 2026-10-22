@@ -1,5 +1,9 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
+import {
+  backgroundEvents,
+  publishBackgroundEvents,
+} from "@/lib/background-events";
 import { prisma } from "@/lib/prisma";
 import { billingConfig } from "./config";
 
@@ -27,7 +31,12 @@ export const validSignature = (
   );
 };
 
-export const acceptWebhook = async (body: Buffer, signature: string) => {
+export const acceptWebhook = async (
+  body: Buffer,
+  signature: string,
+  notify: (id: string) => void | Promise<void> = (id) =>
+    publishBackgroundEvents(backgroundEvents.billing, [id]),
+) => {
   if (!validSignature(body, signature, billingConfig().webhookSecret))
     return 401;
   const parsed = z
@@ -48,10 +57,12 @@ export const acceptWebhook = async (body: Buffer, signature: string) => {
         : null;
   if (!prefix) return 200;
   if (!new RegExp(`^${prefix}_[a-z0-9]{26}$`).test(data.id)) return 400;
-  await prisma.billingEvent.upsert({
+  const event = await prisma.billingEvent.upsert({
     where: { id },
     create: { id, type, resourceId: data.id },
     update: {},
+    select: { processedAt: true },
   });
+  if (!event.processedAt) await notify(id);
   return 200;
 };

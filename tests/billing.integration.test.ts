@@ -27,6 +27,8 @@ import {
 import { acceptWebhook } from "@/features/billing/service/webhook";
 import { readPremiumAccess } from "@/features/premium/service/entitlements";
 import { issuePromo, redeemPromo } from "@/features/premium/service/promotions";
+import { backgroundEvents } from "@/lib/background-events";
+import { inngest } from "@/lib/inngest";
 import { prisma } from "@/lib/prisma";
 import { assertTestDatabase } from "../e2e/environment";
 import {
@@ -39,8 +41,17 @@ import {
 import { accounts, resetFixtures } from "../e2e/seed";
 
 assertTestDatabase(process.env);
+const postResponse = vi.hoisted(() => ({
+  callbacks: [] as (() => void | Promise<void>)[],
+}));
+vi.mock("next/server", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("next/server")>()),
+  after: (callback: () => void | Promise<void>) =>
+    postResponse.callbacks.push(callback),
+}));
 let state: PaddleState;
 beforeEach(async () => {
+  postResponse.callbacks.length = 0;
   await resetFixtures();
   state = emptyPaddleState();
   Object.entries(paddleEnvironment).forEach(([key, value]) =>
@@ -80,6 +91,7 @@ const event = async (
   resourceId: string,
   type = "transaction.completed",
   suffix = "1",
+  throughRoute = false,
 ) => {
   const body = Buffer.from(
     JSON.stringify({
@@ -96,7 +108,18 @@ const event = async (
     .update(`${timestamp}:`)
     .update(body)
     .digest("hex");
-  return acceptWebhook(body, `ts=${timestamp};h1=${signature}`);
+  const header = `ts=${timestamp};h1=${signature}`;
+  if (throughRoute)
+    return (
+      await POST(
+        new Request("http://localhost/api/paddle/webhook", {
+          method: "POST",
+          headers: { "paddle-signature": header },
+          body: body.toString("utf8"),
+        }),
+      )
+    ).status;
+  return acceptWebhook(body, header);
 };
 
 describe("Paddle subscriptions", () => {
@@ -143,6 +166,13 @@ describe("Paddle subscriptions", () => {
         interval === "year" ? "Vuositilaus" : "Kuukausitilaus",
       );
       expect(emails[0].html).toContain('lang="fi"');
+      expect(inngest.send).toHaveBeenCalledExactlyOnceWith([
+        {
+          name: backgroundEvents.accountEmail,
+          id: `${backgroundEvents.accountEmail}/${emails[0].id}`,
+          data: { id: emails[0].id },
+        },
+      ]);
     },
   );
   it("serializes concurrent checkout requests and resumes the same transaction", async () => {
@@ -428,6 +458,85 @@ describe("Paddle subscriptions", () => {
     expect((await POST(request("{}"))).status).toBe(401);
     expect((await POST(request("x".repeat(262145)))).status).toBe(413);
     expect(await prisma.billingEvent.count()).toBe(0);
+    expect(inngest.send).not.toHaveBeenCalled();
+    expect(postResponse.callbacks).toHaveLength(0);
+  });
+
+  it("acknowledges durable webhook receipt before publishing and survives a post-response trigger failure", async () => {
+    const { checkout, user } = await begin();
+    completePayment(state, checkout.transactionId!);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(inngest.send).mockRejectedValue(
+      new Error("event service unavailable"),
+    );
+    expect(
+      await event(checkout.transactionId!, "transaction.completed", "1", true),
+    ).toBe(200);
+    expect(
+      await prisma.billingEvent.count({ where: { processedAt: null } }),
+    ).toBe(1);
+    expect(inngest.send).not.toHaveBeenCalled();
+    expect(postResponse.callbacks).toHaveLength(1);
+    await postResponse.callbacks[0]();
+    expect(inngest.send).toHaveBeenCalledOnce();
+    expect((await reconcileBilling()).failed).toBe(0);
+    expect((await readPremiumAccess(user.id)).plan).toBe("PREMIUM");
+  });
+
+  it("processes a committed webhook immediately without waiting behind unrelated accounts", async () => {
+    const { checkout, user } = await begin();
+    completePayment(state, checkout.transactionId!);
+    await prisma.billingAccount.createMany({
+      data: Array.from({ length: 6 }, (_, index) => ({
+        id: `older-account-${index}`,
+        nextSyncAt: new Date(0),
+      })),
+    });
+    vi.mocked(inngest.send).mockImplementation(async (payload) => {
+      for (const item of Array.isArray(payload) ? payload : [payload]) {
+        if (item.name !== backgroundEvents.billing) continue;
+        const id = item.data?.id as string;
+        expect(
+          await prisma.billingEvent.findUnique({ where: { id } }),
+        ).not.toBeNull();
+        expect(await reconcileBilling(id)).toMatchObject({
+          processed: 1,
+          failed: 0,
+        });
+      }
+      return { ids: [] };
+    });
+    expect(await event(checkout.transactionId!)).toBe(200);
+    expect((await readPremiumAccess(user.id)).plan).toBe("PREMIUM");
+    expect(
+      await prisma.billingAccount.count({
+        where: { id: { startsWith: "older-account-" }, lastSyncedAt: null },
+      }),
+    ).toBe(6);
+    const sends = vi.mocked(inngest.send).mock.calls.length;
+    expect(await event(checkout.transactionId!)).toBe(200);
+    expect(inngest.send).toHaveBeenCalledTimes(sends);
+    expect(await prisma.billingPayment.count()).toBe(1);
+    expect(await prisma.accountEmail.count()).toBe(1);
+  });
+
+  it("acknowledges a durable webhook during an event outage and recovers on the scheduled sweep", async () => {
+    const { checkout, user } = await begin();
+    completePayment(state, checkout.transactionId!);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(inngest.send).mockRejectedValue(
+      new Error("event service unavailable"),
+    );
+    expect(await event(checkout.transactionId!)).toBe(200);
+    expect((await readPremiumAccess(user.id)).plan).toBe("FREE");
+    expect(
+      (await prisma.billingEvent.findFirstOrThrow()).processedAt,
+    ).toBeNull();
+    expect((await reconcileBilling()).failed).toBe(0);
+    expect((await readPremiumAccess(user.id)).plan).toBe("PREMIUM");
+    expect(await prisma.accountEmail.count({ where: { sentAt: null } })).toBe(
+      1,
+    );
   });
   it("retries failed webhook resolution after a provider outage", async () => {
     const { checkout } = await begin();

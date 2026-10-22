@@ -10,9 +10,9 @@ const pendingEmail = () => ({
   nextAttemptAt: { lte: new Date() },
 });
 
-export const deliverAccountEmails = async () => {
+export const deliverAccountEmails = async (id?: string) => {
   const pending = await prisma.accountEmail.findMany({
-    where: pendingEmail(),
+    where: { id, ...pendingEmail() },
     orderBy: [{ nextAttemptAt: "asc" }, { id: "asc" }],
     take: 20,
     select: { id: true },

@@ -44,7 +44,7 @@ export async function queueGroupEmail(
     />
   );
   // Queue with the mutation; identical rendered payloads make retries safe.
-  await tx.accountEmail.create({
+  const emailRecord = await tx.accountEmail.create({
     data: {
       key,
       userId: input.recipientId,
@@ -60,7 +60,9 @@ export async function queueGroupEmail(
       html: await render(email),
       text: await render(email, { plainText: true }),
     },
+    select: { id: true },
   });
+  return emailRecord.id;
 }
 
 export async function isGroupEmailCurrent(email: {

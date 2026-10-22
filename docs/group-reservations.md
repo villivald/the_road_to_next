@@ -90,9 +90,11 @@ branded HTML/plain-text templates. The email identifies the inviter or new membe
 and links to the signed-in group page; wish details and the group roster are omitted.
 Pending invitations remain available in My reservations even if email delivery fails.
 
-The existing `deliver-account-emails` job processes notifications every five minutes,
-up to 20 due messages per batch. No new scheduled job or provider configuration is
-needed. Retries keep an identical payload and idempotency key; duplicate mutations
+After each transaction commits, an event triggers the existing
+`deliver-account-emails` job for the saved notification. An aligned 15-minute
+recovery schedule processes up to 20 due messages per batch. The existing Inngest
+event key is required; see [background jobs](background-jobs.md). Retries keep an
+identical payload and idempotency key; duplicate mutations
 cannot queue duplicate notifications. Before delivery, the worker rechecks recipient
 verification/address, invitation status/expiry, group state, both users' list access,
 and current organizer identity. Stale messages are canceled and their bodies cleared.

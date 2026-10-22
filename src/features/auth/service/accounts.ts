@@ -3,6 +3,10 @@ import {
   hashPassword,
   verifyPasswordHash,
 } from "@/features/password/utils/hash-and-verify";
+import {
+  backgroundEvents,
+  publishBackgroundEvents,
+} from "@/lib/background-events";
 import { createSession } from "@/lib/lucia";
 import { prisma } from "@/lib/prisma";
 import { generateRandomToken, hashToken } from "@/utils/crypto";
@@ -67,6 +71,7 @@ export const verifyEmail = async (
   code: string,
 ) => {
   const token = generateRandomToken();
+  let emailId: string | undefined;
 
   const session = await prisma.$transaction(async (tx) => {
     await lockUser(tx, userId);
@@ -95,13 +100,16 @@ export const verifyEmail = async (
       data: { emailVerified: true },
     });
     if (!user.emailVerified) {
-      await queueAccountEmail(tx, user, { key: `welcome/${user.id}` });
+      emailId = await queueAccountEmail(tx, user, {
+        key: `welcome/${user.id}`,
+      });
     }
     await tx.session.deleteMany({ where: { userId } });
 
     return createSession(token, userId, tx);
   });
 
+  await publishBackgroundEvents(backgroundEvents.accountEmail, [emailId]);
   return { token, session };
 };
 

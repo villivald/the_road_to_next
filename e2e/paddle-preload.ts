@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { assertTestDatabase } from "./environment";
 import {
@@ -12,11 +12,22 @@ assertTestDatabase(process.env);
 const statePath = resolve(".local/paddle-test.json");
 await mkdir(resolve(".local"), { recursive: true });
 await writeFile(statePath, JSON.stringify(emptyPaddleState()));
+const eventsPath = resolve(".local/background-events-test.jsonl");
+await writeFile(eventsPath, "");
 const originalFetch = globalThis.fetch;
 let pending: Promise<unknown> = Promise.resolve();
 
 globalThis.fetch = async (input, init) => {
   const url = new URL(input instanceof Request ? input.url : String(input));
+  // This isolated browser suite has no Inngest server. Acknowledging fixture
+  // events avoids external sends; integration tests execute the real workers.
+  if (
+    url.origin === "http://127.0.0.1:8289" &&
+    url.pathname.startsWith("/e/")
+  ) {
+    await appendFile(eventsPath, `${String(init?.body)}\n`);
+    return Response.json({ status: 200, ids: [] });
+  }
   if (url.origin !== "https://sandbox-api.paddle.com")
     return originalFetch(input, init);
   const response = pending.then(async () => {
