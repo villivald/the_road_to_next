@@ -9,3 +9,6 @@ test-results
 public/illustrations/openmoji/*.svg
 Notes.md
 img/
+
+# Preserve third-party skill instructions and examples as published.
+.agents/skills/

@@ -1,0 +1,149 @@
+{
+  "version": 1,
+  "skills": {
+    "agent-browser": {
+      "source": "vercel-labs/agent-browser",
+      "sourceType": "github",
+      "skillPath": "skills/agent-browser/SKILL.md",
+      "computedHash": "80161e6836b3b40f4e83730a290deb40ac14d877d38c97ad5f6d71be37ce74c3"
+    },
+    "email-best-practices": {
+      "source": "resend/resend-skills",
+      "sourceType": "github",
+      "skillPath": "skills/email-best-practices/SKILL.md",
+      "computedHash": "4c26ca203af6b3df259621544b09a9b28183b9ead10897b7315225e87dd012d5"
+    },
+    "inngest-api-cli": {
+      "source": "inngest/inngest-skills",
+      "sourceType": "github",
+      "skillPath": "skills/inngest-api-cli/SKILL.md",
+      "computedHash": "66b999053d2c7ede72b23ae2190bf79edcb76c94a88f7e9f431fd36aca5fef72"
+    },
+    "inngest-brownfield-audit": {
+      "source": "inngest/inngest-skills",
+      "sourceType": "github",
+      "skillPath": "skills/inngest-brownfield-audit/SKILL.md",
+      "computedHash": "4f46633ae05254a48d646d3756630fae05e19eaa15ffea5b898edeb3f44579e8"
+    },
+    "inngest-cli": {
+      "source": "inngest/inngest-skills",
+      "sourceType": "github",
+      "skillPath": "skills/inngest-cli/SKILL.md",
+      "computedHash": "8edc3938b8877e6f0d6e26d7a98bf62757de00d970709b016e72168728f44449"
+    },
+    "inngest-durable-functions": {
+      "source": "inngest/inngest-skills",
+      "sourceType": "github",
+      "skillPath": "skills/inngest-durable-functions/SKILL.md",
+      "computedHash": "391dc92b29b79e5ac3b623a1524342b781ba260e8e298e329cd85ceb53019033"
+    },
+    "inngest-events": {
+      "source": "inngest/inngest-skills",
+      "sourceType": "github",
+      "skillPath": "skills/inngest-events/SKILL.md",
+      "computedHash": "14bfc909497f6cdee64997f343b38f2a7013f1617b753ffaffe5539a1545bd03"
+    },
+    "inngest-flow-control": {
+      "source": "inngest/inngest-skills",
+      "sourceType": "github",
+      "skillPath": "skills/inngest-flow-control/SKILL.md",
+      "computedHash": "816531118017e7c31d1598689380672b607adb438a0b1e0f4cc169f2f579b03f"
+    },
+    "inngest-steps": {
+      "source": "inngest/inngest-skills",
+      "sourceType": "github",
+      "skillPath": "skills/inngest-steps/SKILL.md",
+      "computedHash": "f37a3a423739fba256a5cd8cfa35b6121bf3192a0fe2a964e5c41af1036f3de0"
+    },
+    "neon": {
+      "source": "neondatabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/neon/SKILL.md",
+      "computedHash": "1be07bf84ddf85b14f1f26a4d782d1374c480b378f1716a155d4ac3d31389ca2"
+    },
+    "neon-postgres": {
+      "source": "neondatabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/neon-postgres/SKILL.md",
+      "computedHash": "0d936096676b18674d47828a87b21fcabf37cf0d7e3ed002e46e169eb7e0a7da"
+    },
+    "paddle-checkout-web": {
+      "source": "PaddleHQ/paddle-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/checkout-web/SKILL.md",
+      "computedHash": "b51ffda232bf6a4a99657967304c328ae200fd9f5bba30e926c82b5ae0f039ca"
+    },
+    "paddle-customer-portal": {
+      "source": "PaddleHQ/paddle-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/customer-portal/SKILL.md",
+      "computedHash": "4b9b06c9c39f59d8dc7f6d1f1d348e09da35dcf7a816b6f068759d8724007dfc"
+    },
+    "paddle-onboarding": {
+      "source": "PaddleHQ/paddle-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/onboarding/SKILL.md",
+      "computedHash": "2de6152eb7e68574f94a16c594f8cbbea13791e70482bc4bbfac95aed4fd138c"
+    },
+    "paddle-sandbox-testing": {
+      "source": "PaddleHQ/paddle-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/sandbox-testing/SKILL.md",
+      "computedHash": "4f55e581d5ceee52a1e44041e5d12b4d701c90882d7e4897081a937d5525a022"
+    },
+    "paddle-subscription-cancel": {
+      "source": "PaddleHQ/paddle-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/subscription-cancel/SKILL.md",
+      "computedHash": "5391bd391931dc243844f87af056dae71aeeada2722713aa3112cea4dfb245b6"
+    },
+    "paddle-subscription-sync": {
+      "source": "PaddleHQ/paddle-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/subscription-sync/SKILL.md",
+      "computedHash": "4ab055a690401aecc9a2317a4dbd1196e1413b53afd65491463fddbd11ab6c3f"
+    },
+    "paddle-webhooks": {
+      "source": "PaddleHQ/paddle-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/webhooks/SKILL.md",
+      "computedHash": "70511bce1c62036dc9321cbc216f121ae25b69880a540fe4271649a2a8afc8b7"
+    },
+    "react-email": {
+      "source": "resend/resend-skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-email/SKILL.md",
+      "computedHash": "ff40e3355c318e5ef203eb1118cab574454ce65dae01bb268b05a2e244b8041b"
+    },
+    "resend": {
+      "source": "resend/resend-skills",
+      "sourceType": "github",
+      "skillPath": "skills/resend/SKILL.md",
+      "computedHash": "e12ac96a3c05509aabf1b03f40a3112e710e1bda060161b6495f851b7ac18f34"
+    },
+    "resend-cli": {
+      "source": "resend/resend-skills",
+      "sourceType": "github",
+      "skillPath": "skills/resend-cli/SKILL.md",
+      "computedHash": "32c729456e8b6384e7d581d3aef289c4755cb85ba44c963137cc41531506023c"
+    },
+    "vercel-cli": {
+      "source": "vercel/vercel",
+      "sourceType": "github",
+      "skillPath": "skills/vercel-cli/SKILL.md",
+      "computedHash": "bc312e5c407c79c264503ef588613ee697508636b8e6ba76ee2585979b49ba2b"
+    },
+    "vercel-react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-best-practices/SKILL.md",
+      "computedHash": "3219a1944e404ffc14d1d9d6aef6dd2e3855b81387ee0a044ccbfe14d34c2357"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "computedHash": "a6a44d5498f7e8f68289902f3dedfc6f38ae0cee1e96527c80724cf27f727c2a"
+    }
+  }
+}
