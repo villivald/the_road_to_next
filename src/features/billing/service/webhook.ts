@@ -6,6 +6,7 @@ import {
 } from "@/lib/background-events";
 import { prisma } from "@/lib/prisma";
 import { billingConfig } from "./config";
+import { billingEventIdSchema } from "./event-id";
 
 export const validSignature = (
   body: Buffer,
@@ -41,14 +42,7 @@ export const acceptWebhook = async (
     return 401;
   const parsed = z
     .object({
-      // Paddle signs simulator events with their own ID namespace.
-      event_id: z
-        .string()
-        .regex(
-          process.env.PADDLE_ENVIRONMENT === "sandbox"
-            ? /^(?:evt|ntfsimevt)_[a-z0-9]{26}$/
-            : /^evt_[a-z0-9]{26}$/,
-        ),
+      event_id: billingEventIdSchema(),
       event_type: z.string(),
       data: z.object({ id: z.string() }),
     })

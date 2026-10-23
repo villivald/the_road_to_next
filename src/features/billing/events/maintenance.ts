@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { backgroundEvents } from "@/lib/background-events";
 import { inngest } from "@/lib/inngest";
+import { billingEventIdSchema } from "../service/event-id";
 import { reconcileBilling } from "../service/sync";
 
 export const billingMaintenance = inngest.createFunction(
@@ -14,9 +15,7 @@ export const billingMaintenance = inngest.createFunction(
       reconcileBilling(
         event.name === "inngest/scheduled.timer"
           ? undefined
-          : z
-              .object({ id: z.string().regex(/^evt_[a-z0-9]{26}$/) })
-              .parse(event.data).id,
+          : z.object({ id: billingEventIdSchema() }).parse(event.data).id,
       ),
     ),
 );

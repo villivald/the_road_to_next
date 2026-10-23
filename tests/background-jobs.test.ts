@@ -50,7 +50,10 @@ vi.mock("@/features/sharing/service/delivery", () => ({
 vi.mock("@/features/media/service/cleanup", () => ({ cleanupMedia: vi.fn() }));
 
 beforeEach(() => mocks.send.mockResolvedValue({ ids: [] }));
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllEnvs();
+});
 
 const run = async (id: string, name: string, data: unknown = {}) =>
   mocks.functions.get(id)!.handler({
@@ -84,6 +87,33 @@ it("does not turn malformed events into unbounded recovery scans", async () => {
   expect(mocks.deliver).not.toHaveBeenCalled();
   expect(mocks.reconcile).not.toHaveBeenCalled();
 });
+
+it.each(["sandbox", "production", undefined])(
+  "validates simulator IDs inside the actual billing worker (%s)",
+  async (environment) => {
+    vi.stubEnv("PADDLE_ENVIRONMENT", environment);
+    const platformId = `evt_${"1".repeat(26)}`;
+    const simulatorId = `ntfsimevt_${"1".repeat(26)}`;
+    await run("reconcile-paddle-billing", backgroundEvents.billing, {
+      id: platformId,
+    });
+    expect(mocks.reconcile).toHaveBeenCalledExactlyOnceWith(platformId);
+    const simulated = run(
+      "reconcile-paddle-billing",
+      backgroundEvents.billing,
+      {
+        id: simulatorId,
+      },
+    );
+    if (environment === "sandbox") {
+      await simulated;
+      expect(mocks.reconcile).toHaveBeenLastCalledWith(simulatorId);
+    } else {
+      await expect(simulated).rejects.toThrow();
+      expect(mocks.reconcile).toHaveBeenCalledOnce();
+    }
+  },
+);
 
 it("aligns recovery schedules and keeps nonurgent cleanup less frequent", () => {
   for (const id of [
