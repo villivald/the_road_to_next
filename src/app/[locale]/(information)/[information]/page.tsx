@@ -163,6 +163,11 @@ const information = (
         <h2>{t("Cookies and preferences")}</h2>
         <p>
           {t(
+            "Signup, password recovery, and verification-email requests use Cloudflare Turnstile to help prevent automated abuse. Cloudflare processes browser and device signals for this security check.",
+          )}
+        </p>
+        <p>
+          {t(
             "Cookies keep you signed in and remember access granted by a guest link. Your theme preference is stored in your browser. The app has no advertising or analytics tracking configured.",
           )}
         </p>

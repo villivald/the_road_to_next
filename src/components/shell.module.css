@@ -660,6 +660,17 @@
   white-space: nowrap;
 }
 
+.account-challenge {
+  min-width: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.challenge-widget {
+  min-width: 0;
+  width: 100%;
+}
+
 .empty-state,
 .list-card {
   min-width: 0;

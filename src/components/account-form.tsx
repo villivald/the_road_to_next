@@ -11,6 +11,7 @@ import { passwordReset } from "@/features/password/actions/password-reset";
 import { notifyFormSaved } from "@/i18n/form-changes";
 import type { TextKey } from "@/i18n/text";
 import { useText } from "@/i18n/use-text";
+import { AccountBotCheck } from "./account-bot-check";
 import styles from "./shell.module.css";
 
 const actions = {
@@ -120,6 +121,12 @@ const labels: Record<Mode, TextKey> = {
   passwordChange: "Change password",
 };
 
+const challenges = {
+  signUp: "sign_up",
+  passwordForgot: "password_recovery",
+  emailVerificationResend: "verification_resend",
+} as const;
+
 export function AccountForm({
   mode,
   tokenId,
@@ -144,6 +151,8 @@ export function AccountForm({
   const hasErrors = Object.values(state.fieldErrors).some(
     (errors) => errors?.length,
   );
+  const challenge =
+    mode in challenges ? challenges[mode as keyof typeof challenges] : null;
   return (
     <form action={action} className={styles.form} aria-busy={pending}>
       {returnTo && <input type="hidden" name="returnTo" value={returnTo} />}
@@ -192,6 +201,20 @@ export function AccountForm({
           </div>
         );
       })}
+      {challenge && (
+        <AccountBotCheck
+          key={state.timestamp}
+          action={challenge}
+          attempt={state.timestamp}
+        />
+      )}
+      {(mode === "passwordForgot" || mode === "emailVerificationResend") && (
+        <p className={styles.muted}>
+          {t(
+            "Wait at least one minute between emails. Check your spam folder too.",
+          )}
+        </p>
+      )}
       <button
         className={
           mode === "emailVerificationResend"

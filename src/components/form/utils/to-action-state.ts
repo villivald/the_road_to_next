@@ -26,7 +26,8 @@ const safePayload = (formData?: FormData) => {
   if (!formData) return undefined;
   const payload = new FormData();
   for (const [key, value] of formData) {
-    if (!/password|token|code|^\$ACTION/i.test(key)) payload.append(key, value);
+    if (!/password|token|code|turnstile|^website$|^\$ACTION/i.test(key))
+      payload.append(key, value);
   }
   return payload;
 };

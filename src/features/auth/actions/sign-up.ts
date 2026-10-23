@@ -9,19 +9,23 @@ import { Prisma } from "@/generated/prisma/client";
 import { resolveLocale } from "@/i18n/config";
 import { redirect } from "@/i18n/server-navigation";
 import { emailVerificationPath } from "@/paths";
-import { sendEmailVerification } from "../emails/send-email-verification";
 import { register } from "../service/accounts";
 import { authActionError } from "../service/action-error";
-import { limitAuthRequest } from "../service/request-limit";
+import { verifyAccountChallenge } from "../service/bot-protection";
+import { requestVerificationEmail } from "../service/email-requests";
+import {
+  limitAccountEmailSource,
+  limitAuthRequest,
+} from "../service/request-limit";
 import { signUpSchema } from "../service/schemas";
-import { generateEmailVerificationCode } from "../utils/generate-email-verification-code";
 import { authReturnPath } from "../utils/return-to";
 import { setSessionCookie } from "../utils/session-cookie";
 
 export const signUp = async (_state: ActionState, data: FormData) => {
   try {
     const input = signUpSchema.parse(Object.fromEntries(data));
-
+    await verifyAccountChallenge(data, "sign_up");
+    await limitAccountEmailSource(true);
     await limitAuthRequest("sign-up", input.email, 5);
 
     const result = await register({
@@ -31,16 +35,7 @@ export const signUp = async (_state: ActionState, data: FormData) => {
 
     await setSessionCookie(result.token, result.session.expiresAt);
     try {
-      const code = await generateEmailVerificationCode(
-        result.user.id,
-        result.user.email,
-      );
-      await sendEmailVerification(
-        result.user.username,
-        result.user.email,
-        code,
-        result.user.locale,
-      );
+      await requestVerificationEmail(result.user);
     } catch {
       // Account and session remain usable; the verification page offers resend.
       console.error("Initial verification email failed; resend is available");

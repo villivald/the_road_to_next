@@ -1032,5 +1032,15 @@
   "Hidden lists and hidden, fulfilled, or reserved wishes do not appear in Browse. Reserved wishes are visible to the organizer, accepted group participants, and list admins. Group members share their names and usernames with each other; list admins do not see the roster unless they join.": "Hidden lists and hidden, fulfilled, or reserved wishes do not appear in Browse. Reserved wishes are visible to the organizer, accepted group participants, and list admins. Group members share their names and usernames with each other; list admins do not see the roster unless they join.",
   "Account information, a password hash, session and recovery records, lists, wishes, uploaded images, memberships, invitations, reservations, and Premium records support the features you use. Account emails, group invitations, and acceptance notifications are delivered through the configured email service. The app does not store payment-card details; checkout is handled by Paddle when enabled.": "Account information, a password hash, session and recovery records, lists, wishes, uploaded images, memberships, invitations, reservations, and Premium records support the features you use. Account emails, group invitations, and acceptance notifications are delivered through the configured email service. The app does not store payment-card details; checkout is handled by Paddle when enabled.",
   "Group invitation": "Group invitation",
-  "Invitation accepted": "Invitation accepted"
+  "Invitation accepted": "Invitation accepted",
+  "Account protection is temporarily unavailable. Please try again shortly.": "Account protection is temporarily unavailable. Please try again shortly.",
+  "Please complete the security check and try again.": "Please complete the security check and try again.",
+  "Please wait before requesting another email. Check your inbox and spam folder.": "Please wait before requesting another email. Check your inbox and spam folder.",
+  "Leave this field empty": "Leave this field empty",
+  "Security check unavailable or expired. Please retry.": "Security check unavailable or expired. Please retry.",
+  "Retry security check": "Retry security check",
+  "Enable JavaScript to complete the security check.": "Enable JavaScript to complete the security check.",
+  "Wait at least one minute between emails. Check your spam folder too.": "Wait at least one minute between emails. Check your spam folder too.",
+  "Security check": "Security check",
+  "Signup, password recovery, and verification-email requests use Cloudflare Turnstile to help prevent automated abuse. Cloudflare processes browser and device signals for this security check.": "Signup, password recovery, and verification-email requests use Cloudflare Turnstile to help prevent automated abuse. Cloudflare processes browser and device signals for this security check."
 }

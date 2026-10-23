@@ -1032,5 +1032,15 @@
   "Hidden lists and hidden, fulfilled, or reserved wishes do not appear in Browse. Reserved wishes are visible to the organizer, accepted group participants, and list admins. Group members share their names and usernames with each other; list admins do not see the roster unless they join.": "Piilotetut listat sekä piilotetut, toteutuneet tai varatut toiveet eivät näy Selaa-näkymässä. Varatut toiveet näkyvät järjestäjälle, ryhmään liittyneille osallistujille ja listan ylläpitäjille. Ryhmän jäsenet jakavat nimensä ja käyttäjänimensä toisilleen. Listan ylläpitäjät eivät näe jäsenluetteloa, elleivät he liity ryhmään.",
   "Account information, a password hash, session and recovery records, lists, wishes, uploaded images, memberships, invitations, reservations, and Premium records support the features you use. Account emails, group invitations, and acceptance notifications are delivered through the configured email service. The app does not store payment-card details; checkout is handled by Paddle when enabled.": "Tilitiedot, salasanan tiiviste, istunto- ja palautustiedot, listat, toiveet, ladatut kuvat, jäsenyydet, kutsut, varaukset ja Premium-tiedot tukevat käyttämiäsi toimintoja. Tilisähköpostit, ryhmäkutsut ja hyväksymisilmoitukset toimitetaan määritetyn sähköpostipalvelun kautta. Sovellus ei tallenna maksukorttitietoja. Paddle hoitaa maksamisen, kun se on käytössä.",
   "Group invitation": "Ryhmäkutsu",
-  "Invitation accepted": "Kutsu hyväksytty"
+  "Invitation accepted": "Kutsu hyväksytty",
+  "Account protection is temporarily unavailable. Please try again shortly.": "Tilin suojaus on tilapäisesti poissa käytöstä. Yritä hetken kuluttua uudelleen.",
+  "Please complete the security check and try again.": "Suorita turvatarkistus ja yritä uudelleen.",
+  "Please wait before requesting another email. Check your inbox and spam folder.": "Odota ennen uuden sähköpostin pyytämistä. Tarkista saapuneet viestit ja roskapostikansio.",
+  "Leave this field empty": "Jätä tämä kenttä tyhjäksi",
+  "Security check unavailable or expired. Please retry.": "Turvatarkistus ei ole käytettävissä tai se on vanhentunut. Yritä uudelleen.",
+  "Retry security check": "Yritä turvatarkistusta uudelleen",
+  "Enable JavaScript to complete the security check.": "Ota JavaScript käyttöön turvatarkistusta varten.",
+  "Wait at least one minute between emails. Check your spam folder too.": "Odota vähintään minuutti sähköpostipyyntöjen välillä. Tarkista myös roskapostikansio.",
+  "Security check": "Turvatarkistus",
+  "Signup, password recovery, and verification-email requests use Cloudflare Turnstile to help prevent automated abuse. Cloudflare processes browser and device signals for this security check.": "Rekisteröityminen, salasanan palautus ja vahvistusviestien pyytäminen käyttävät Cloudflare Turnstilea automatisoidun väärinkäytön torjumiseen. Cloudflare käsittelee selaimen ja laitteen tietoja tätä turvatarkistusta varten."
 }

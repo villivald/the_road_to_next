@@ -2,6 +2,12 @@ import type { TextKey } from "./text";
 
 // Codes remain stable when presentation copy changes.
 export const messageCodes = {
+  "message.account_protection_is_temporarily_unavailable_please_try_again_shortly":
+    "Account protection is temporarily unavailable. Please try again shortly.",
+  "message.please_complete_the_security_check_and_try_again":
+    "Please complete the security check and try again.",
+  "message.please_wait_before_requesting_another_email_check_your_inbox_and_spam_folder":
+    "Please wait before requesting another email. Check your inbox and spam folder.",
   "message.group_unavailable":
     "This group is unavailable or you no longer have access.",
   "message.group_disabled":

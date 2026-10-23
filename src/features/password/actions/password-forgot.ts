@@ -4,32 +4,25 @@ import {
   toActionState,
 } from "@/components/form/utils/to-action-state";
 import { authActionError } from "@/features/auth/service/action-error";
-import { limitAuthRequest } from "@/features/auth/service/request-limit";
+import { verifyAccountChallenge } from "@/features/auth/service/bot-protection";
+import { requestPasswordRecovery } from "@/features/auth/service/email-requests";
+import {
+  limitAccountEmailSource,
+  limitAuthRequest,
+} from "@/features/auth/service/request-limit";
 import { emailSchema } from "@/features/auth/service/schemas";
-import { prisma } from "@/lib/prisma";
-import { sendEmailPasswordReset } from "../emails/send-email-password-reset";
-import { generatePasswordResetLink } from "../utils/generate-password-reset-link";
 
 export const passwordForgot = async (_state: ActionState, data: FormData) => {
   try {
     const email = emailSchema.parse(data.get("email"));
-
+    await verifyAccountChallenge(data, "password_recovery");
+    await limitAccountEmailSource();
     await limitAuthRequest("recovery", email, 3);
 
-    const user = await prisma.user.findUnique({ where: { email } });
-
-    if (user) {
-      try {
-        const url = await generatePasswordResetLink(user.id, user.locale);
-        await sendEmailPasswordReset(
-          user.username,
-          user.email,
-          url,
-          user.locale,
-        );
-      } catch {
-        console.error("Password recovery email failed");
-      }
+    try {
+      await requestPasswordRecovery(email);
+    } catch {
+      console.error("Password recovery email failed");
     }
     return toActionState(
       "SUCCESS",

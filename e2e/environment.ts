@@ -21,6 +21,8 @@ export const testEnvironment = {
   INNGEST_EVENT_KEY: "",
   INNGEST_SIGNING_KEY: "",
   RESEND_API_KEY: "re_e2e_not_a_real_key",
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: "",
+  TURNSTILE_SECRET_KEY: "",
   EMAIL_FROM: "Wishlist Tests <noreply@example.test>",
 };
 

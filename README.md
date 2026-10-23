@@ -94,6 +94,7 @@ npx playwright install chromium
 npm run test:e2e
 npx playwright install firefox webkit
 npm run test:e2e:cross-browser
+npm run test:e2e:auth-protection
 ```
 
 Install Chromium once. Database/browser tests require Docker and use `wishlist_test`, schema `wishlist`, on port 55433 and an isolated inbox on port 8026. Browser tests build the production app and use port 3017. To build separately, run `npm run build`.
@@ -103,6 +104,12 @@ The cross-browser suite checks recovery forms, localization, accessibility,
 groups, guest access, and billing in Firefox and WebKit. WebKit automation does
 not establish real-device Safari or VoiceOver behavior; record those checks
 separately.
+
+Before deploying account forms, configure the Turnstile site/secret keys described
+in [account abuse protection](docs/account-abuse-protection.md). Hosted signup,
+recovery requests, and verification resend fail closed without them. The dedicated
+auth-protection suite uses isolated provider fixtures; the ordinary suite retains
+local native-form coverage. No database migration is needed for these controls.
 
 Reusable setup, architecture, and migration documentation lives in `docs/` and is
 versioned with the code. Keep per-run acceptance reports, screenshots, and private

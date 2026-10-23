@@ -24,6 +24,7 @@
     "test:integration": "tsx scripts/e2e.ts --integration",
     "test:e2e": "tsx scripts/e2e.ts",
     "test:e2e:cross-browser": "tsx scripts/e2e.ts --config playwright.cross-browser.config.ts",
+    "test:e2e:auth-protection": "tsx scripts/e2e.ts --config playwright.auth-protection.config.ts",
     "db:rebuild:up": "docker compose -f compose.rebuild.yaml up -d --wait dev-db dev-mail",
     "db:rebuild:down": "docker compose -f compose.rebuild.yaml down",
     "media:cleanup": "tsx scripts/cleanup-media.ts",
