@@ -41,7 +41,14 @@ export const acceptWebhook = async (
     return 401;
   const parsed = z
     .object({
-      event_id: z.string().regex(/^evt_[a-z0-9]{26}$/),
+      // Paddle signs simulator events with their own ID namespace.
+      event_id: z
+        .string()
+        .regex(
+          process.env.PADDLE_ENVIRONMENT === "sandbox"
+            ? /^(?:evt|ntfsimevt)_[a-z0-9]{26}$/
+            : /^evt_[a-z0-9]{26}$/,
+        ),
       event_type: z.string(),
       data: z.object({ id: z.string() }),
     })

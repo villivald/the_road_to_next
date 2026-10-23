@@ -15,6 +15,12 @@ batch. Billing resolves the trusted provider resource and synchronizes the affec
 account; a webhook payload alone never grants Premium. Payment synchronization
 also triggers any newly committed Premium guide.
 
+Paddle's sandbox simulator uses `ntfsimevt_` event IDs; normal platform events
+use `evt_`. Both are accepted in sandbox after signature validation. Simulator
+IDs remain invalid outside sandbox. Simulations still reconcile real provider
+resources, so fabricated payment details cannot grant Premium. Use a real
+sandbox resource ID when testing reconciliation.
+
 ## Recovery and schedules
 
 | Function                   | Immediate trigger            | Scheduled recovery (UTC) |

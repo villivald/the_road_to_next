@@ -92,10 +92,11 @@ const event = async (
   type = "transaction.completed",
   suffix = "1",
   throughRoute = false,
+  prefix = "evt",
 ) => {
   const body = Buffer.from(
     JSON.stringify({
-      event_id: `evt_${suffix.padStart(26, "0")}`,
+      event_id: `${prefix}_${suffix.padStart(26, "0")}`,
       event_type: type,
       data: { id: resourceId, email: "should-not-be-stored@example.test" },
     }),
@@ -459,6 +460,92 @@ describe("Paddle subscriptions", () => {
     expect((await POST(request("x".repeat(262145)))).status).toBe(413);
     expect(await prisma.billingEvent.count()).toBe(0);
     expect(inngest.send).not.toHaveBeenCalled();
+    expect(postResponse.callbacks).toHaveLength(0);
+  });
+
+  it("processes signed Paddle sandbox simulator events once using provider truth", async () => {
+    const { checkout, user } = await begin();
+    const id = `ntfsimevt_${"1".padStart(26, "0")}`;
+    expect(
+      await event(
+        checkout.transactionId!,
+        "transaction.completed",
+        "1",
+        true,
+        "ntfsimevt",
+      ),
+    ).toBe(200);
+    expect(inngest.send).not.toHaveBeenCalled();
+    expect(postResponse.callbacks).toHaveLength(1);
+    await postResponse.callbacks[0]();
+    expect(inngest.send).toHaveBeenCalledExactlyOnceWith([
+      {
+        name: backgroundEvents.billing,
+        id: `${backgroundEvents.billing}/${id}`,
+        data: { id },
+      },
+    ]);
+    expect(await reconcileBilling(id)).toMatchObject({ failed: 0 });
+    expect(
+      (await prisma.billingEvent.findUniqueOrThrow({ where: { id } }))
+        .processedAt,
+    ).not.toBeNull();
+    // The simulation claims completion; Paddle still has an unpaid checkout.
+    expect((await readPremiumAccess(user.id)).plan).toBe("FREE");
+    expect(await prisma.billingPayment.count()).toBe(0);
+    expect(await prisma.accountEmail.count()).toBe(0);
+    expect(
+      await event(
+        checkout.transactionId!,
+        "transaction.completed",
+        "1",
+        true,
+        "ntfsimevt",
+      ),
+    ).toBe(200);
+    expect(await prisma.billingEvent.count()).toBe(1);
+    expect(postResponse.callbacks).toHaveLength(1);
+    expect(inngest.send).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    ["ntfsim", "1"],
+    ["ntfsimevt", "!"],
+    ["ntfsimevt", "1".repeat(27)],
+  ])(
+    "rejects a signed malformed simulator ID (%s, %s)",
+    async (prefix, suffix) => {
+      expect(
+        await event(
+          `txn_${"1".repeat(26)}`,
+          "transaction.completed",
+          suffix,
+          true,
+          prefix,
+        ),
+      ).toBe(400);
+      expect(await prisma.billingEvent.count()).toBe(0);
+      expect(postResponse.callbacks).toHaveLength(0);
+      expect(inngest.send).not.toHaveBeenCalled();
+    },
+  );
+
+  it("rejects an unsigned simulator event", async () => {
+    expect(
+      (
+        await POST(
+          new Request("http://localhost/api/paddle/webhook", {
+            method: "POST",
+            body: JSON.stringify({
+              event_id: `ntfsimevt_${"1".repeat(26)}`,
+              event_type: "transaction.completed",
+              data: { id: `txn_${"1".repeat(26)}` },
+            }),
+          }),
+        )
+      ).status,
+    ).toBe(401);
+    expect(await prisma.billingEvent.count()).toBe(0);
     expect(postResponse.callbacks).toHaveLength(0);
   });
 
