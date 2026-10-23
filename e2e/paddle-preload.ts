@@ -1,17 +1,13 @@
-import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
+import { appendFile, mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { assertTestDatabase } from "./environment";
-import {
-  emptyPaddleState,
-  paddleFixtureResponse,
-  type PaddleState,
-} from "./paddle-fixture";
+import { emptyPaddleState, paddleFixtureResponse } from "./paddle-fixture";
+import { readPaddleState, writePaddleState } from "./paddle-state";
 
 // Loaded only by Playwright's server command, never by the application or build.
 assertTestDatabase(process.env);
-const statePath = resolve(".local/paddle-test.json");
 await mkdir(resolve(".local"), { recursive: true });
-await writeFile(statePath, JSON.stringify(emptyPaddleState()));
+await writePaddleState(emptyPaddleState());
 const eventsPath = resolve(".local/background-events-test.jsonl");
 await writeFile(eventsPath, "");
 const originalFetch = globalThis.fetch;
@@ -31,9 +27,11 @@ globalThis.fetch = async (input, init) => {
   if (url.origin !== "https://sandbox-api.paddle.com")
     return originalFetch(input, init);
   const response = pending.then(async () => {
-    const state = JSON.parse(await readFile(statePath, "utf8")) as PaddleState;
+    const state = await readPaddleState();
+    const before = JSON.stringify(state);
     const result = paddleFixtureResponse(state, url, init);
-    await writeFile(statePath, JSON.stringify(state));
+    // A read must not overwrite a payment completed concurrently by the test.
+    if (JSON.stringify(state) !== before) await writePaddleState(state);
     return result;
   });
   pending = response.catch(() => undefined);

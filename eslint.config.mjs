@@ -7,6 +7,8 @@ const eslintConfig = [
   ...nextTypescript,
   {
     ignores: [
+      ".local/**",
+      ".agents/skills/**",
       ".next/**",
       "src/generated/**",
       "node_modules/**",

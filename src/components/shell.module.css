@@ -351,6 +351,10 @@
   opacity: 1;
 }
 
+.field select {
+  overflow: hidden;
+}
+
 .field textarea {
   resize: vertical;
 }

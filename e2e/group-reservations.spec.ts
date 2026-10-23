@@ -198,6 +198,7 @@ test("create, invite, consent, favorites, transfer, leave and cancel a group", a
 test("Finnish invitations and group screens support keyboard, mobile reflow and dark mode", async ({
   page,
   browser,
+  browserName,
 }, info) => {
   const memberContext = await browser.newContext({
     baseURL: testOrigin,
@@ -259,7 +260,12 @@ test("Finnish invitations and group screens support keyboard, mobile reflow and 
     );
     await consent.focus();
     await member.keyboard.press("Space");
-    await member.keyboard.press("Tab");
+    // Safari's default macOS navigation uses Option-Tab to include buttons.
+    await member.keyboard.press(
+      browserName === "webkit" && process.platform === "darwin"
+        ? "Alt+Tab"
+        : "Tab",
+    );
     await expect(
       member.getByRole("button", { name: "Hyväksy kutsu", exact: true }),
     ).toBeFocused();

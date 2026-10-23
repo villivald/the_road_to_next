@@ -1,10 +1,10 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
-import { writeFile } from "node:fs/promises";
 import { hashToken } from "../src/utils/crypto";
 import { testEnvironment, testOrigin } from "./environment";
 import { openMainNavigation } from "./navigation";
 import { emptyPaddleState } from "./paddle-fixture";
+import { writePaddleState } from "./paddle-state";
 import { accounts, newAccount, resetFixtures, testPrisma } from "./seed";
 
 const signIn = async (page: Page, account = accounts.owner, locale = "fi") => {
@@ -421,10 +421,7 @@ test("Finnish invitations use the recipient's saved language and keep the accept
 test("Finnish billing explains the provider language and returns checkout to Finnish", async ({
   page,
 }) => {
-  await writeFile(
-    ".local/paddle-test.json",
-    JSON.stringify(emptyPaddleState()),
-  );
+  await writePaddleState(emptyPaddleState());
   await page.route("https://cdn.paddle.com/paddle/v2/paddle.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",

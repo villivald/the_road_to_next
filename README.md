@@ -92,9 +92,17 @@ npm run check
 npm run test:integration
 npx playwright install chromium
 npm run test:e2e
+npx playwright install firefox webkit
+npm run test:e2e:cross-browser
 ```
 
 Install Chromium once. Database/browser tests require Docker and use `wishlist_test`, schema `wishlist`, on port 55433 and an isolated inbox on port 8026. Browser tests build the production app and use port 3017. To build separately, run `npm run build`.
+
+Run the browser suites sequentially: they share the isolated database and port.
+The cross-browser suite checks recovery forms, localization, accessibility,
+groups, guest access, and billing in Firefox and WebKit. WebKit automation does
+not establish real-device Safari or VoiceOver behavior; record those checks
+separately.
 
 Reusable setup, architecture, and migration documentation lives in `docs/` and is
 versioned with the code. Keep per-run acceptance reports, screenshots, and private

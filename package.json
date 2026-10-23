@@ -23,6 +23,7 @@
     "db:studio": "prisma studio --port 5555",
     "test:integration": "tsx scripts/e2e.ts --integration",
     "test:e2e": "tsx scripts/e2e.ts",
+    "test:e2e:cross-browser": "tsx scripts/e2e.ts --config playwright.cross-browser.config.ts",
     "db:rebuild:up": "docker compose -f compose.rebuild.yaml up -d --wait dev-db dev-mail",
     "db:rebuild:down": "docker compose -f compose.rebuild.yaml down",
     "media:cleanup": "tsx scripts/cleanup-media.ts",
@@ -42,7 +43,7 @@
     "dotenv": "^18.0.4",
     "inngest": "^4.21.0",
     "lucide-react": "^1.48.0",
-    "next": "16.3.8",
+    "next": "16.4.2",
     "next-intl": "^4.14.9",
     "next-themes": "^0.4.6",
     "react": "^19.3.0",
@@ -60,7 +61,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "eslint": "^9.39.5",
-    "eslint-config-next": "16.3.8",
+    "eslint-config-next": "16.4.2",
     "eslint-plugin-simple-import-sort": "^14.0.0",
     "inngest-cli": "^1.45.1",
     "prettier": "^3.9.9",
@@ -69,7 +70,7 @@
     "stylelint-config-standard": "^40.0.0",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
-    "vitest": "^5.0.2"
+    "vitest": "^5.0.5"
   },
   "engines": {
     "node": ">=24.0.0 <25"
@@ -86,7 +87,7 @@
       "mysql2": "^3.24.4"
     },
     "@react-email/ui": {
-      "next": "16.3.8"
+      "next": "16.4.2"
     }
   }
 }

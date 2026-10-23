@@ -1,17 +1,11 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
-import { readFile, writeFile } from "node:fs/promises";
+import { completePayment, emptyPaddleState } from "./paddle-fixture";
 import {
-  completePayment,
-  emptyPaddleState,
-  type PaddleState,
-} from "./paddle-fixture";
+  readPaddleState as providerState,
+  writePaddleState as save,
+} from "./paddle-state";
 import { accounts, resetFixtures, testPrisma } from "./seed";
-
-const providerState = async () =>
-  JSON.parse(await readFile(".local/paddle-test.json", "utf8")) as PaddleState;
-const save = (state: PaddleState) =>
-  writeFile(".local/paddle-test.json", JSON.stringify(state));
 
 test.beforeEach(async ({ page }) => {
   await resetFixtures();
@@ -55,13 +49,25 @@ const choose = async (
     "true",
   );
 };
+const billingSettled = async (
+  page: import("@playwright/test").Page,
+  locale = "en",
+) =>
+  expect(
+    page.getByRole("status", {
+      name: locale === "fi" ? "Maksutietojen tila" : "Billing status",
+    }),
+  ).toContainText(
+    locale === "fi"
+      ? "Maksutiedot ovat ajan tasalla."
+      : "Billing details are up to date",
+  );
+
 const refresh = async (page: import("@playwright/test").Page) => {
   await page
     .getByRole("button", { name: "Refresh billing", exact: true })
     .click();
-  await expect(
-    page.getByRole("status", { name: "Billing status" }),
-  ).toContainText("Billing details are up to date");
+  await billingSettled(page);
 };
 
 test("checkout return checks Paddle automatically without trusting the return URL", async ({
@@ -103,11 +109,13 @@ test("checkout return checks Paddle automatically without trusting the return UR
     page.getByText("Payment confirmed. Your Premium access is ready."),
   ).toBeVisible();
   expect((await providerState()).createCount).toBe(1);
+  await billingSettled(page);
   await page.goto(checkoutUrl);
   await expect(page).toHaveURL(/account\/plan\?checkout=returned/);
   await expect(
     page.getByRole("button", { name: "Choose monthly", exact: true }),
   ).toHaveCount(0);
+  await billingSettled(page);
   await page.screenshot({
     path: info.outputPath("billing-active.png"),
     fullPage: true,
@@ -139,7 +147,9 @@ test("checkout return checks Paddle automatically without trusting the return UR
   await expect(
     page.getByRole("button", { name: "Choose monthly", exact: true }),
   ).toHaveCount(0);
-  await page.goto("/fi/account/plan");
+  await billingSettled(page);
+  await page.getByRole("combobox", { name: "Language" }).selectOption("fi");
+  await expect(page).toHaveURL(/\/fi\/account\/plan/);
   await expect(
     page.getByText("Automaattinen uusiminen peruttu", { exact: true }),
   ).toBeVisible();
@@ -149,7 +159,10 @@ test("checkout return checks Paddle automatically without trusting the return UR
       { exact: true },
     ),
   ).toBeVisible();
-  await page.goto("/en/account/plan");
+  await billingSettled(page, "fi");
+  await page.getByRole("combobox", { name: "Kieli" }).selectOption("en");
+  await expect(page).toHaveURL(/\/en\/account\/plan/);
+  await billingSettled(page);
   await page.route("https://sandbox-customer-portal.paddle.com/**", (route) =>
     route.fulfill({
       body: "<h1>Paddle customer portal fixture</h1>",
