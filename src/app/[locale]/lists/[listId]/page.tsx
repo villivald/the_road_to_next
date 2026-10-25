@@ -11,6 +11,10 @@ import { getAuth } from "@/features/auth/actions/get-auth";
 import { FavoriteButton } from "@/features/favorites/components/favorite-button";
 import { readFavoriteIds } from "@/features/favorites/service/favorites";
 import { MediaImage } from "@/features/media/components/media-image";
+import { ListTheme } from "@/features/premium/components/list-theme";
+import premiumStyles from "@/features/premium/components/personalization.module.css";
+import { SharingCardDownload } from "@/features/premium/components/sharing-card-download";
+import { readSharingCard } from "@/features/premium/service/sharing-card";
 import { WishCollection } from "@/features/wish/components/wish-collection";
 import { readWishlist } from "@/features/wishlist/service/lists";
 import { Link } from "@/i18n/navigation";
@@ -48,7 +52,7 @@ export default async function ListPage({
 }) {
   const t = await getText();
 
-  const { user } = await getAuth();
+  const { user, session } = await getAuth();
   const { listId } = await params;
   const list = await readWishlist(listId, user?.id ?? null);
 
@@ -60,11 +64,13 @@ export default async function ListPage({
   const { created, saved, wishDeleted } = query;
   const section = detailSection(query.from, list.canManage);
   const published = list.publication === "PUBLISHED";
-  const favoriteIds = await readFavoriteIds(
-    user?.emailVerified ? user.id : null,
-    "list",
-    [list.id],
-  );
+  const [favoriteIds, sharingCard] = await Promise.all([
+    readFavoriteIds(user?.emailVerified ? user.id : null, "list", [list.id]),
+    list.canManage && user && session
+      ? readSharingCard(user.id, session.id, list.id)
+      : null,
+  ]);
+  const premium = sharingCard !== null;
 
   return (
     <section className={styles.page}>
@@ -105,35 +111,51 @@ export default async function ListPage({
         </SuccessMessage>
       )}
 
-      <div className={styles["page-heading"]}>
-        <div>
-          <ListStatus
-            publication={list.publication}
-            visibility={list.visibility}
-          />
-          <h1>{list.title}</h1>
+      <ListTheme theme={list.theme}>
+        <div
+          className={`${styles["page-heading"]} ${list.theme !== "classic" ? premiumStyles["themed-heading"] : ""}`}
+        >
+          <div className={styles["list-identity"]}>
+            <MediaImage image={list.image} cover sizes="144px" />
+            <div>
+              <ListStatus
+                publication={list.publication}
+                visibility={list.visibility}
+              />
+              <h1>{list.title}</h1>
+            </div>
+          </div>
+          <div className={styles.actions}>
+            {user?.emailVerified && (
+              <FavoriteButton
+                kind="list"
+                targetId={list.id}
+                saved={favoriteIds.includes(list.id)}
+                title={list.title}
+              />
+            )}
+            {published && list.visibility === "PUBLIC" && (
+              <CopyLink path={listPath(list.id)} title={list.title} />
+            )}
+            {list.canManage && (
+              <SharingCardDownload
+                modal
+                listId={list.id}
+                title={list.title}
+                theme={list.theme}
+                published={published}
+                privateList={list.visibility === "PRIVATE"}
+                premium={premium}
+              />
+            )}
+            {list.canManage && (
+              <Link className={styles.button} href={listSettingsPath(list.id)}>
+                <Settings size={18} aria-hidden="true" /> {t("List settings")}
+              </Link>
+            )}
+          </div>
         </div>
-        <div className={styles.actions}>
-          {user?.emailVerified && (
-            <FavoriteButton
-              kind="list"
-              targetId={list.id}
-              saved={favoriteIds.includes(list.id)}
-              title={list.title}
-            />
-          )}
-          {published && list.visibility === "PUBLIC" && (
-            <CopyLink path={listPath(list.id)} title={list.title} />
-          )}
-          {list.canManage && (
-            <Link className={styles.button} href={listSettingsPath(list.id)}>
-              <Settings size={18} aria-hidden="true" /> {t("List settings")}
-            </Link>
-          )}
-        </div>
-      </div>
-
-      <MediaImage image={list.image} />
+      </ListTheme>
 
       {list.description && (
         <p className={styles.description}>{list.description}</p>

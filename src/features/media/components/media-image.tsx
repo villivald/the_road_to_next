@@ -6,11 +6,13 @@ import styles from "./media.module.css";
 export function MediaImage({
   image,
   compact = false,
+  cover = false,
   guestListId,
   sizes = DETAIL_IMAGE_SIZES,
 }: {
   image: ImageDetails | null;
   compact?: boolean;
+  cover?: boolean;
   guestListId?: string;
   sizes?: string;
 }) {
@@ -30,7 +32,7 @@ export function MediaImage({
     : undefined;
 
   return (
-    <picture className={styles.picture}>
+    <picture className={cover ? styles.cover : styles.picture}>
       {srcSet && <source type="image/webp" srcSet={srcSet} sizes={sizes} />}
       <Image
         className={compact ? styles.thumbnail : styles.image}

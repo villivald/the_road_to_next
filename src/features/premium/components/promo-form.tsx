@@ -5,6 +5,7 @@ import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
 import styles from "@/components/shell.module.css";
 import { useText } from "@/i18n/use-text";
 import { redeemPromoCode } from "../actions/redeem-promo";
+import formStyles from "./promo-form.module.css";
 
 export function PromoForm() {
   const t = useText();
@@ -15,14 +16,14 @@ export function PromoForm() {
   });
 
   return (
-    <form action={action} className={styles.form} aria-busy={pending}>
+    <form action={action} className={formStyles.form} aria-busy={pending}>
       <ActionFeedback state={state} />
-      <fieldset disabled={pending} className={styles["form-fields"]}>
+      <fieldset disabled={pending} className={formStyles.fields}>
         <legend className={styles["visually-hidden"]}>
           {t("Redeem a promo code")}
         </legend>
-        <div className={styles.field}>
-          <label htmlFor="promo-code">{t("Promo code")}</label>
+        <label htmlFor="promo-code">{t("Promo code")}</label>
+        <div className={formStyles.controls}>
           <input
             key={state.timestamp}
             id="promo-code"
@@ -34,15 +35,23 @@ export function PromoForm() {
             required
             aria-describedby="promo-help"
           />
-          <p id="promo-help" className={styles.muted}>
+          <button type="submit" className={styles.button}>
+            {pending ? t("Redeeming…") : t("Redeem code")}
+          </button>
+        </div>
+        <p id="promo-help" className={formStyles.help}>
+          {t(
+            "Each code can be used once. It adds Premium time without starting a subscription.",
+          )}
+        </p>
+        <details className={styles.disclosure}>
+          <summary>{t("How promo time works")}</summary>
+          <p className={formStyles.help}>
             {t(
-              "Use each code once per account. Promo days extend your current Premium access, or start today on Free. Subscription payments keep their original schedule.",
+              "Promo time extends your current Premium access, or starts today on Free. Existing subscription payment dates do not change.",
             )}
           </p>
-        </div>
-        <button type="submit" className={styles.button}>
-          {pending ? t("Redeeming…") : t("Redeem code")}
-        </button>
+        </details>
       </fieldset>
     </form>
   );

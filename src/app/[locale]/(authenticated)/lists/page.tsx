@@ -10,6 +10,7 @@ import { SuccessMessage } from "@/components/form/success-message";
 import styles from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import { readFavoriteIds } from "@/features/favorites/service/favorites";
+import { ListTheme } from "@/features/premium/components/list-theme";
 import { MyListsControls } from "@/features/wishlist/components/my-lists-controls";
 import { getMyLists } from "@/features/wishlist/queries/get-my-lists";
 import { Link } from "@/i18n/navigation";
@@ -55,13 +56,15 @@ export default async function ListsPage({
         <ul className={styles["list-grid"]}>
           {lists.map((list) => (
             <li key={list.id} className={styles["list-card"]}>
-              <CardMediaLink path={listPath(list.id)} title={list.title}>
-                <ListPreview
-                  image={list.image}
-                  images={list.previewImages}
-                  title={list.title}
-                />
-              </CardMediaLink>
+              <ListTheme theme={list.theme} media>
+                <CardMediaLink path={listPath(list.id)} title={list.title}>
+                  <ListPreview
+                    image={list.image}
+                    images={list.previewImages}
+                    title={list.title}
+                  />
+                </CardMediaLink>
+              </ListTheme>
               <h2>
                 <Link href={listPath(list.id)}>{list.title}</Link>
               </h2>

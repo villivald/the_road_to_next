@@ -358,3 +358,16 @@
   padding-block: 1rem;
   border-block: 1px solid var(--border);
 }
+
+.person-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.65rem;
+  min-width: 0;
+}
+
+.person-name h2 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

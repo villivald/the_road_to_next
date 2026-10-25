@@ -10,6 +10,7 @@ import {
   readGuestWishes,
 } from "@/features/guest/service/access";
 import { MediaImage } from "@/features/media/components/media-image";
+import { ListTheme } from "@/features/premium/components/list-theme";
 import { WishPriority } from "@/features/wish/components/wish-priority";
 import { formatWishPrice } from "@/features/wish/utils/money";
 import { localizedPath } from "@/i18n/config";
@@ -50,8 +51,17 @@ export default async function GuestListPage({
           "Guest view · Read only. This link does not allow editing, joining, or reserving.",
         )}
       </p>
-      <h1>{list.title}</h1>
-      <MediaImage image={list.image} guestListId={listId} />
+      <ListTheme theme={list.theme}>
+        <div className={styles["list-identity"]}>
+          <MediaImage
+            image={list.image}
+            cover
+            sizes="144px"
+            guestListId={listId}
+          />
+          <h1>{list.title}</h1>
+        </div>
+      </ListTheme>
       {list.description && (
         <p className={styles.description}>{list.description}</p>
       )}

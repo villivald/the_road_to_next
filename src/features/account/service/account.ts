@@ -6,6 +6,7 @@ import {
 import { detachBilling } from "@/features/billing/service/accounts";
 import { syncBillingAccount } from "@/features/billing/service/sync";
 import { verifyPasswordHash } from "@/features/password/utils/hash-and-verify";
+import { requirePremium } from "@/features/premium/service/entitlements";
 import { lockWishlist } from "@/features/wishlist/service/lock";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -35,7 +36,7 @@ const currentAccount = async (
 export const readProfile = (userId: string) =>
   prisma.user.findUniqueOrThrow({
     where: { id: userId },
-    select: { name: true, description: true },
+    select: { name: true, description: true, showPremiumBadge: true },
   });
 
 export const updateProfile = async (
@@ -49,9 +50,19 @@ export const updateProfile = async (
   await prisma.$transaction(async (tx) => {
     await lockUser(tx, userId);
     await currentAccount(tx, userId, sessionId);
+    const current = await tx.user.findUniqueOrThrow({
+      where: { id: userId },
+      select: { showPremiumBadge: true },
+    });
+    if (data.showPremiumBadge && !current.showPremiumBadge)
+      await requirePremium(userId, tx);
     await tx.user.update({
       where: { id: userId },
-      data: { name: data.name || null, description: data.description || null },
+      data: {
+        name: data.name || null,
+        description: data.description || null,
+        showPremiumBadge: data.showPremiumBadge,
+      },
     });
   });
 };

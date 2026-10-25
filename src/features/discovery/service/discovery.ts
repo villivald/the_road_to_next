@@ -58,6 +58,7 @@ export const discoverLists = async (
           ownerId: true,
           owner: { select: { name: true, username: true } },
           title: true,
+          theme: true,
           description: true,
           image: imageSelection,
           reservationsEnabled: true,
@@ -218,10 +219,22 @@ export const discoverUsers = async (
         select: {
           id: true,
           username: true,
+          showPremiumBadge: true,
           name: true,
           description: true,
           image: imageSelection,
-          _count: { select: { ownedLists: { where: publicLists } } },
+          _count: {
+            select: {
+              ownedLists: { where: publicLists },
+              premiumGrants: {
+                where: {
+                  revokedAt: null,
+                  startsAt: { lte: new Date() },
+                  expiresAt: { gt: new Date() },
+                },
+              },
+            },
+          },
         },
         orderBy: [{ createdAt: "desc" }, { id: "desc" }],
         skip: orderedPeople ? 0 : (filters.page - 1) * 20,
@@ -241,6 +254,7 @@ export const discoverUsers = async (
       ...user,
       isViewer: id === viewerId,
       publicListCount: _count.ownedLists,
+      showPremiumBadge: user.showPremiumBadge && _count.premiumGrants > 0,
     })),
     hasNextPage: !filters.error && users.length > 20 && filters.page < 1000,
   };

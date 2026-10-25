@@ -1230,6 +1230,25 @@
   min-width: 0;
 }
 
+.list-identity,
+.page-heading > .list-identity {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.list-identity > div {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.list-identity h1 {
+  min-width: 0;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+}
+
 .detail-image img {
   width: 100%;
   max-width: none;

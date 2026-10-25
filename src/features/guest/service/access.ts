@@ -58,7 +58,13 @@ export const resolveGuestLink = (token: unknown) =>
 export const readGuestList = (listId: string, token: unknown) =>
   prisma.wishlist.findFirst({
     where: guestListAccess(listId, token),
-    select: { id: true, title: true, description: true, image: imageSelection },
+    select: {
+      id: true,
+      title: true,
+      theme: true,
+      description: true,
+      image: imageSelection,
+    },
   });
 
 export const readGuestWishes = async (

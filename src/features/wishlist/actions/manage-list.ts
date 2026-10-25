@@ -25,6 +25,7 @@ import {
 } from "../service/lists";
 
 const listInput = (data: FormData) => ({
+  theme: data.get("theme") ?? undefined,
   title: data.get("title"),
   description: data.get("description") ?? "",
   reservationsEnabled: data.get("reservationsEnabled") === "on",

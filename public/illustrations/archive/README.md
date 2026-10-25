@@ -1,7 +1,7 @@
 # Botanical illustration
 
 `hortus-malabaricus.jpg` is a locally hosted image from _Hortus Malabaricus_
-(1678–1693), used decoratively on the welcome and Premium pages.
+(1678–1693), used decoratively on the welcome page.
 
 - Collection: https://publicdomainreview.org/collection/hortus-malabaricus-1678-1693/
 - Source: Biodiversity Heritage Library / Missouri Botanical Garden.

@@ -13,6 +13,13 @@ if (
 
 const nextConfig: NextConfig = {
   agentRules: false,
+  serverExternalPackages: ["opentype.js"],
+  outputFileTracingIncludes: {
+    "/api/lists/*/sharing-card": [
+      "./src/assets/fonts/*-Variable.ttf",
+      "./public/illustrations/themes/*.webp",
+    ],
+  },
   experimental: { serverActions: { bodySizeLimit: "4mb" } },
 };
 export default createNextIntlPlugin()(nextConfig);

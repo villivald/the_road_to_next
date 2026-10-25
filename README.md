@@ -75,6 +75,13 @@ npm run promo -- revoke --id PROMO_ID
 
 Creation prints the code once; keep it private. Revocation stops new redemptions but preserves granted access.
 
+## Premium personalization
+
+Premium list owners can choose six curated themes in **List settings** and download
+QR sharing cards for published lists using **Sharing card** beside the list actions. **Account → Profile** has an optional Premium
+badge, hidden by default. See [personalization rules and deployment](docs/premium-personalization.md).
+The additive personalization migration must be applied before deploying this feature.
+
 ## Subscription testing
 
 Local development needs no Paddle setup; promo codes remain available. Hosted sandbox testing follows deployment. After configuration, use **Account → Your plan and promo codes**. Inngest handles billing reconciliation and cancellation retries; `npm run billing:sync` runs one due batch, and `npm run billing:sync -- --status` shows pending issues for the configured database. Real payments are disabled.
@@ -100,8 +107,9 @@ npm run test:e2e:auth-protection
 Install Chromium once. Database/browser tests require Docker and use `wishlist_test`, schema `wishlist`, on port 55433 and an isolated inbox on port 8026. Browser tests build the production app and use port 3017. To build separately, run `npm run build`.
 
 Run the browser suites sequentially: they share the isolated database and port.
+For dependency updates and scoped overrides, see [dependency maintenance](docs/dependency-maintenance.md).
 The cross-browser suite checks recovery forms, localization, accessibility,
-groups, guest access, and billing in Firefox and WebKit. WebKit automation does
+groups, guest access, billing, and Premium personalization in Firefox and WebKit. WebKit automation does
 not establish real-device Safari or VoiceOver behavior; record those checks
 separately.
 

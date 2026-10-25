@@ -170,6 +170,7 @@ describe("profile and account deletion", () => {
       passwordHash: "spoof",
     });
     expect(await readProfile(account.user.id)).toEqual({
+      showPremiumBadge: false,
       name: "Ada Lovelace",
       description: "Books & gardens",
     });
@@ -181,6 +182,7 @@ describe("profile and account deletion", () => {
       passwordHash: account.user.passwordHash,
     });
     expect(await readProfile("e2e-member")).toEqual({
+      showPremiumBadge: false,
       name: null,
       description: null,
     });
@@ -189,6 +191,7 @@ describe("profile and account deletion", () => {
       description: "",
     });
     expect(await readProfile(account.user.id)).toEqual({
+      showPremiumBadge: false,
       name: null,
       description: null,
     });

@@ -269,6 +269,20 @@ test("list image upload, replacement, removal and revocation work through the UI
   await expectImageLoaded(
     page.getByRole("img", { name: "A second blue landscape" }),
   );
+  const cover = await page
+    .getByRole("img", { name: "A second blue landscape" })
+    .boundingBox();
+  expect(cover?.width).toBeLessThanOrEqual(144);
+  expect(cover?.height).toBeLessThanOrEqual(108);
+  if ((page.viewportSize()?.width ?? 0) >= 760) {
+    const title = await page.getByRole("heading", { level: 1 }).boundingBox();
+    expect(title!.x).toBeGreaterThanOrEqual(cover!.x + cover!.width);
+    expect(title!.y).toBeLessThan(cover!.y + cover!.height);
+  }
+  await page.screenshot({
+    path: testInfo.outputPath("compact-list-cover.png"),
+    fullPage: true,
+  });
   await page.getByRole("link", { name: "List settings", exact: true }).click();
   await page.getByRole("button", { name: "Hide list", exact: true }).click();
   await expect(

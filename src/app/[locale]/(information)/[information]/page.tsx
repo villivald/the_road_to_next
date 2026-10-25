@@ -67,6 +67,13 @@ const information = (
             </a>
             {t(", via The Public Domain Review. Public domain.")}
           </li>
+          <li>
+            {t("Botanical and Waves feature artwork from")}{" "}
+            <a href="https://publicdomainreview.org/collection/japanese-designs-1902/">
+              Shin-Bijutsukai (1902)
+            </a>
+            {t(", via The Public Domain Image Archive.")}
+          </li>
         </ul>
       </>
     ),

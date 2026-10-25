@@ -31,7 +31,9 @@ export default async function AccountPage() {
     <section className={`${styles.page} ${styles["profile-page"]}`}>
       <AccountLayout
         identity={<AccountDetails user={user} />}
-        profile={<ProfileForm profile={profile} />}
+        profile={
+          <ProfileForm profile={profile} premium={access.plan === "PREMIUM"} />
+        }
         plan={
           <section
             className={styles["plan-summary"]}
@@ -48,10 +50,10 @@ export default async function AccountPage() {
             </h2>
             <p>
               {access.plan === "PREMIUM"
-                ? t("Choose who can see your lists.")
-                : t(
-                    "Premium adds private sharing and help from trusted people.",
-                  )}
+                ? t(
+                    "List themes, QR sharing cards, and private sharing are included in your plan.",
+                  )
+                : t("Premium adds list themes, QR cards, and private sharing.")}
             </p>
             <div className={styles.actions}>
               <Link

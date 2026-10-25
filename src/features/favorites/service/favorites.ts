@@ -146,6 +146,7 @@ export const readFavorites = async (
             ownerId: true,
             owner: { select: { name: true, username: true } },
             title: true,
+            theme: true,
             description: true,
             publication: true,
             visibility: true,
@@ -267,10 +268,22 @@ export const readFavorites = async (
         select: {
           id: true,
           username: true,
+          showPremiumBadge: true,
           name: true,
           description: true,
           image: imageSelection,
-          _count: { select: { ownedLists: { where: publicLists } } },
+          _count: {
+            select: {
+              ownedLists: { where: publicLists },
+              premiumGrants: {
+                where: {
+                  revokedAt: null,
+                  startsAt: { lte: new Date() },
+                  expiresAt: { gt: new Date() },
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -282,6 +295,7 @@ export const readFavorites = async (
     people: rows.slice(0, 20).map(({ person: { id, _count, ...person } }) => ({
       ...person,
       publicListCount: _count.ownedLists,
+      showPremiumBadge: person.showPremiumBadge && _count.premiumGrants > 0,
       isViewer: id === userId,
     })),
   };

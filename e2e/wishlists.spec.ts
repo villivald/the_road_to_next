@@ -198,7 +198,9 @@ test("draft/private content stays out of direct responses and another account ca
       "First legitimate edit",
     );
     await expect(
-      page.getByText("First legitimate edit", { exact: true }),
+      page
+        .locator("header")
+        .getByText("First legitimate edit", { exact: true }),
     ).toBeVisible();
 
     await page.getByLabel("Title", { exact: true }).fill("Latest owner edit");
@@ -207,7 +209,7 @@ test("draft/private content stays out of direct responses and another account ca
       "Latest owner edit",
     );
     await expect(
-      page.getByText("Latest owner edit", { exact: true }),
+      page.locator("header").getByText("Latest owner edit", { exact: true }),
     ).toBeVisible();
 
     // Replay a real action with the other browser's session, without parsing action internals.
@@ -244,7 +246,7 @@ test("draft/private content stays out of direct responses and another account ca
       "Latest owner edit",
     );
     await expect(
-      page.getByText("Latest owner edit", { exact: true }),
+      page.locator("header").getByText("Latest owner edit", { exact: true }),
     ).toBeVisible();
   } finally {
     await other.close();

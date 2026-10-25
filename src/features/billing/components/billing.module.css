@@ -198,6 +198,7 @@
 .help > section,
 .help > div {
   min-width: 0;
+  align-self: start;
 }
 
 .benefits {

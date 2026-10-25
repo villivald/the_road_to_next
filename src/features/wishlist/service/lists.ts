@@ -16,6 +16,7 @@ const listFields = {
   image: imageSelection,
   id: true,
   title: true,
+  theme: true,
   description: true,
   publication: true,
   visibility: true,
@@ -116,7 +117,8 @@ export const createWishlist = async (userId: string, input: unknown) => {
       );
     }
 
-    if (visibility === "PRIVATE") await requirePremium(user.id, tx);
+    if (visibility === "PRIVATE" || (data.theme && data.theme !== "classic"))
+      await requirePremium(user.id, tx);
 
     return tx.wishlist.create({
       data: {
@@ -161,7 +163,17 @@ export const updateWishlist = async (
 
   await prisma.$transaction(async (tx) => {
     await lockManagedWishlist(tx, id, userId);
-
+    const current = await tx.wishlist.findUniqueOrThrow({
+      where: { id },
+      select: { theme: true, ownerId: true },
+    });
+    if (
+      data.theme &&
+      data.theme !== current.theme &&
+      data.theme !== "classic"
+    ) {
+      await requirePremium(current.ownerId!, tx);
+    }
     await tx.wishlist.update({
       where: { id },
       data: { ...data, description: data.description || null },

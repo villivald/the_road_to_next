@@ -1,0 +1,246 @@
+import AxeBuilder from "@axe-core/playwright";
+import { expect, type Page, test } from "@playwright/test";
+import { accounts, resetFixtures, testPrisma } from "./seed";
+const listId = "e2e-personalized-list";
+const signIn = async (page: Page) => {
+  await page.goto("/en/sign-in");
+  await page.getByLabel("Email", { exact: true }).fill(accounts.owner.email);
+  await page
+    .getByLabel("Password", { exact: true })
+    .fill(accounts.owner.password);
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(page).toHaveURL(/\/lists$/);
+};
+test.beforeEach(async () => {
+  await resetFixtures();
+  const db = testPrisma();
+  try {
+    await db.premiumGrant.create({
+      data: {
+        userId: "e2e-owner",
+        startsAt: new Date(Date.now() - 1000),
+        expiresAt: new Date(Date.now() + 86400000),
+      },
+    });
+    await db.wishlist.create({
+      data: {
+        id: listId,
+        title: "Birthday wishes",
+        ownerId: "e2e-owner",
+        publication: "PUBLISHED",
+        memberships: { create: { userId: "e2e-owner", role: "ADMIN" } },
+      },
+    });
+  } finally {
+    await db.$disconnect();
+  }
+});
+test("themes persist, show in the list and export a sharing card", async ({
+  page,
+}, info) => {
+  await signIn(page);
+  await page.goto(`/en/lists/${listId}/edit`);
+  await page.getByRole("radio", { name: "Botanical", exact: true }).check();
+  await page.getByRole("button", { name: "Save changes", exact: true }).click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Changes saved." }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByRole("radio", { name: "Botanical", exact: true }),
+  ).toBeChecked();
+  await page.screenshot({
+    path: info.outputPath("list-settings.png"),
+    fullPage: true,
+  });
+  const download = page.waitForEvent("download");
+  await page
+    .getByRole("link", { name: "Download sharing card", exact: true })
+    .click();
+  expect((await download).suggestedFilename()).toBe("wishlist-card.png");
+  await page.goto(`/en/lists/${listId}`);
+  await expect(
+    page.getByRole("heading", { name: "Birthday wishes", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.locator('[data-list-theme="botanical"]:visible'),
+  ).toBeVisible();
+  const sharingButton = page.getByRole("button", {
+    name: "Sharing card",
+    exact: true,
+  });
+  await sharingButton.click();
+  const dialog = page.getByRole("dialog", {
+    name: "Download a QR sharing card",
+  });
+  await expect(dialog).toBeVisible();
+  await expect(
+    dialog.getByText("PNG image · 1200 × 800 pixels · QR code included"),
+  ).toBeVisible();
+  const toolbarDownload = page.waitForEvent("download");
+  await dialog
+    .getByRole("link", { name: "Download sharing card", exact: true })
+    .click();
+  expect(await (await toolbarDownload).failure()).toBeNull();
+  await page.screenshot({
+    path: info.outputPath("sharing-card-dialog.png"),
+    fullPage: true,
+  });
+  const dialogAudit = await new AxeBuilder({ page }).analyze();
+  expect(dialogAudit.violations).toEqual([]);
+  await page.keyboard.press("Escape");
+  await expect(dialog).not.toBeVisible();
+  await expect(sharingButton).toBeFocused();
+  await expect(
+    page.locator('[data-list-theme="botanical"]:visible'),
+  ).toContainText("Birthday wishes");
+  await page.screenshot({
+    path: info.outputPath("themed-list.png"),
+    fullPage: true,
+  });
+  const errors = await new AxeBuilder({ page }).include("main").analyze();
+  expect(errors.violations).toEqual([]);
+});
+test("profile badge is opt-in and can be hidden", async ({ page }) => {
+  await signIn(page);
+  await page.goto("/en/account/profile");
+  const toggle = page.getByRole("checkbox", { name: /Show a Premium badge/ });
+  await expect(toggle).not.toBeChecked();
+  await toggle.check();
+  await page.getByRole("button", { name: "Save profile", exact: true }).click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Profile saved." }),
+  ).toBeVisible();
+  await page.goto("/en/browse?view=users");
+  const person = page.getByRole("listitem").filter({
+    has: page.getByRole("heading", { name: "e2e-owner", exact: true }),
+  });
+  await expect(person.getByText("Premium", { exact: true })).toBeVisible();
+  const heading = await person
+    .getByRole("heading", { name: "e2e-owner", exact: true })
+    .boundingBox();
+  const badge = await person
+    .getByText("Premium", { exact: true })
+    .boundingBox();
+  expect(Math.abs((heading?.y ?? 0) - (badge?.y ?? 100))).toBeLessThan(24);
+  await person.screenshot({ path: test.info().outputPath("profile-card.png") });
+  await page.goto("/en/account/profile");
+  await page.getByRole("checkbox", { name: /Show a Premium badge/ }).uncheck();
+  await page.getByRole("button", { name: "Save profile", exact: true }).click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Profile saved." }),
+  ).toBeVisible();
+  await page.goto("/en/browse?view=users");
+  await expect(person.getByText("Premium", { exact: true })).toHaveCount(0);
+});
+test("a free list owner can find sharing cards and sees the Premium requirement", async ({
+  page,
+}) => {
+  const db = testPrisma();
+  try {
+    await db.premiumGrant.updateMany({
+      where: { userId: "e2e-owner" },
+      data: { revokedAt: new Date() },
+    });
+  } finally {
+    await db.$disconnect();
+  }
+  await signIn(page);
+  await page.goto(`/en/lists/${listId}`);
+  await page.getByRole("button", { name: "Sharing card", exact: true }).click();
+  const dialog = page.getByRole("dialog", {
+    name: "Download a QR sharing card",
+  });
+  await expect(
+    dialog.getByText("The list owner needs Premium to download sharing cards."),
+  ).toBeVisible();
+  await expect(
+    dialog.getByRole("link", { name: "Download sharing card", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    dialog.getByRole("link", { name: "Explore Premium", exact: true }),
+  ).toBeVisible();
+});
+test("premium showcase works in both languages and themes without overflow", async ({
+  page,
+}, info) => {
+  for (const locale of ["en", "fi"]) {
+    await page.goto(`/${locale}/premium`);
+    await expect(page.getByRole("radio")).toHaveCount(7);
+    for (const theme of [
+      "festive",
+      "birthday",
+      "playful",
+      "wedding",
+      "botanical",
+      "minimal",
+    ]) {
+      const choice = page.locator(`label[data-theme="${theme}"]`);
+      await choice.getByRole("radio").check();
+      await expect(page.locator(`[data-list-theme="${theme}"]`)).toBeVisible();
+      await expect
+        .poll(() =>
+          choice
+            .locator("img")
+            .evaluate(
+              (img: HTMLImageElement) => img.complete && img.naturalWidth > 0,
+            ),
+        )
+        .toBe(true);
+    }
+    await page
+      .getByRole("radio", {
+        name: locale === "fi" ? "Rakkaus" : "Love",
+        exact: true,
+      })
+      .check();
+    await expect(page.locator('[data-list-theme="wedding"]')).toBeVisible();
+    await expect(
+      page.getByRole("img", {
+        name:
+          locale === "fi"
+            ? "Esimerkki syntymäpäivän jakokortista, jossa on listan nimi ja QR-koodi"
+            : "Example birthday sharing card with a list title and QR code",
+      }),
+    ).toBeVisible();
+    for (const scheme of ["light", "dark"] as const) {
+      await page.evaluate((value) => {
+        document.documentElement.classList.toggle("dark", value === "dark");
+        document.documentElement.style.colorScheme = value;
+      }, scheme);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= window.innerWidth,
+        ),
+      ).toBe(true);
+      const result = await new AxeBuilder({ page }).include("main").analyze();
+      expect(result.violations).toEqual([]);
+      await page.screenshot({
+        path: info.outputPath(`premium-${locale}-${scheme}.png`),
+        fullPage: true,
+      });
+    }
+    const viewport = page.viewportSize();
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = "200%";
+    });
+    await expect
+      .poll(() =>
+        page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      )
+      .toBe(true);
+    const labels = page.getByRole("radio").locator("..");
+    for (const label of await labels.all()) {
+      expect(
+        await label.evaluate(
+          (element) => element.scrollWidth <= element.clientWidth,
+        ),
+      ).toBe(true);
+    }
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = "";
+    });
+    if (viewport) await page.setViewportSize(viewport);
+  }
+});

@@ -11,8 +11,14 @@ import { saveProfile } from "../actions/manage-account";
 export function ProfileForm({
   profile,
   loading = false,
+  premium = false,
 }: {
-  profile: { name: string | null; description: string | null };
+  profile: {
+    name: string | null;
+    description: string | null;
+    showPremiumBadge?: boolean;
+  };
+  premium?: boolean;
   loading?: boolean;
 }) {
   const t = useText();
@@ -109,6 +115,27 @@ export function ProfileForm({
               {state.fieldErrors.description.map(t.message).join(" ")}
             </p>
           )}
+        </div>
+        <div>
+          <label className={styles["checkbox-label"]}>
+            <input
+              type="checkbox"
+              name="showPremiumBadge"
+              key={`badge-${state.timestamp}`}
+              defaultChecked={
+                state.payload
+                  ? state.payload.get("showPremiumBadge") === "on"
+                  : profile.showPremiumBadge
+              }
+              disabled={!premium && !profile.showPremiumBadge}
+            />
+            {t("Show a Premium badge on my public profile")}
+          </label>
+          <p className={styles.muted}>
+            {t(
+              "Optional. Visible in People only while Premium is active. You can hide it at any time.",
+            )}
+          </p>
         </div>
         <button type="submit" className={styles.button}>
           {pending ? t("Saving…") : t("Save profile")}

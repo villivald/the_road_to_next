@@ -3,6 +3,7 @@ import { useActionState, useId } from "react";
 import { ActionFeedback } from "@/components/form/action-feedback";
 import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
 import styles from "@/components/shell.module.css";
+import { ThemePicker } from "@/features/premium/components/theme-picker";
 import { Link } from "@/i18n/navigation";
 import { useText } from "@/i18n/use-text";
 import { listPath, listsPath } from "@/paths";
@@ -12,6 +13,7 @@ import formStyles from "./list-form.module.css";
 type ListValues = {
   id: string;
   title: string;
+  theme?: string;
   description: string | null;
   reservationsEnabled: boolean;
 };
@@ -19,9 +21,11 @@ type ListValues = {
 export function ListForm({
   list,
   canCreatePrivate = false,
+  canCustomizeTheme = canCreatePrivate,
 }: {
   list?: ListValues;
   canCreatePrivate?: boolean;
+  canCustomizeTheme?: boolean;
 }) {
   const t = useText();
 
@@ -175,6 +179,13 @@ export function ListForm({
           </fieldset>
         )}
 
+        <ThemePicker
+          current={list?.theme ?? "classic"}
+          initial={String(
+            state.payload?.get("theme") ?? list?.theme ?? "classic",
+          )}
+          premium={canCustomizeTheme}
+        />
         <div className={styles.actions}>
           <button type="submit" className={styles.button}>
             {pending

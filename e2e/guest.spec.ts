@@ -171,6 +171,9 @@ test("create once, open anonymously, protect secrets, show only available conten
     await visit(guest, link);
     const cover = guest.getByRole("img", { name: "Guest cover" });
     await expect(cover).toHaveJSProperty("naturalWidth", 40);
+    const coverSize = await cover.boundingBox();
+    expect(coverSize?.width).toBeLessThanOrEqual(144);
+    expect(coverSize?.height).toBeLessThanOrEqual(108);
     const imageUrl = (await cover.getAttribute("src"))!;
     expect(imageUrl).toContain(`${guestUrl.replace("/en", "")}/media/`);
     expect(await guest.evaluate(() => document.cookie)).not.toContain(token);
@@ -267,7 +270,9 @@ test("signed-in owners get the same guest restrictions and cannot replay a write
   await page.getByRole("button", { name: "Save changes", exact: true }).click();
   const actionRequest = await submitted;
   await expect(
-    page.getByText("Guest-only private list", { exact: true }),
+    page
+      .locator("header")
+      .getByText("Guest-only private list", { exact: true }),
   ).toBeVisible();
   await expect(page.getByRole("status")).toContainText("Changes saved.");
   const headers = Object.fromEntries(

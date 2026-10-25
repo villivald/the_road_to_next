@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const profileSchema = z.object({
+  showPremiumBadge: z.boolean().optional(),
   name: z.string().trim().max(80, "Use at most 80 characters"),
   description: z.string().trim().max(1000, "Use at most 1,000 characters"),
 });

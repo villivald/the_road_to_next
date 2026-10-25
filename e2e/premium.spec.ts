@@ -184,6 +184,7 @@ test("revoked codes and expired sessions cannot consume a grant", async ({
 
 test("plan and redemption work with a keyboard at 320px in dark mode", async ({
   page,
+  browserName,
 }, info) => {
   const promo = await createPromo();
   await signIn(page);
@@ -191,7 +192,11 @@ test("plan and redemption work with a keyboard at 320px in dark mode", async ({
   await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
   await page.goto("/en/account/plan");
   await page.getByLabel("Promo code", { exact: true }).fill(promo.code);
-  await page.keyboard.press("Tab");
+  await page.keyboard.press(
+    browserName === "webkit" && process.platform === "darwin"
+      ? "Alt+Tab"
+      : "Tab",
+  );
   await expect(
     page.getByRole("button", { name: "Redeem code", exact: true }),
   ).toBeFocused();

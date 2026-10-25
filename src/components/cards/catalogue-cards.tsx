@@ -10,6 +10,8 @@ import type {
 } from "@/features/discovery/service/discovery";
 import { FavoriteButton } from "@/features/favorites/components/favorite-button";
 import type { FavoriteTarget } from "@/features/favorites/types";
+import { ListTheme } from "@/features/premium/components/list-theme";
+import { PremiumBadge } from "@/features/premium/components/premium-badge";
 import { WishPriority } from "@/features/wish/components/wish-priority";
 import { formatWishPrice } from "@/features/wish/utils/money";
 import { Link } from "@/i18n/navigation";
@@ -59,16 +61,18 @@ export function CatalogueListCard({
   const ownerName = list.owner?.name?.trim();
   return (
     <li className={`${styles["list-card"]} ${cardStyles["browse-card"]}`}>
-      <CardMediaLink
-        path={navigationPath(listPath(list.id), section)}
-        title={list.title}
-      >
-        <ListPreview
-          image={list.image}
-          images={list.previewImages}
+      <ListTheme theme={list.theme} media>
+        <CardMediaLink
+          path={navigationPath(listPath(list.id), section)}
           title={list.title}
-        />
-      </CardMediaLink>
+        >
+          <ListPreview
+            image={list.image}
+            images={list.previewImages}
+            title={list.title}
+          />
+        </CardMediaLink>
+      </ListTheme>
       {list.isOwner && <OwnershipBadge edge />}
       <h2>
         <Link href={navigationPath(listPath(list.id), section)}>
@@ -212,7 +216,10 @@ export function CataloguePersonCard({
         )}
         {user.isViewer && <OwnershipBadge user />}
       </div>
-      <h2>{user.name ?? user.username}</h2>
+      <div className={cardStyles["person-name"]}>
+        <h2>{user.name ?? user.username}</h2>
+        {user.showPremiumBadge && <PremiumBadge />}
+      </div>
       <p>
         {t.plural(
           "{count} public list",

@@ -288,10 +288,18 @@ for (const locale of ["en", "fi"] as const) {
     await page.goto(`/${locale}/premium`);
     await expect(
       page.getByRole("heading", {
-        name: fi ? "Ilmainen ja Premium" : "Free and Premium",
+        name: fi
+          ? "Tee toivelistastasi omannäköinen."
+          : "Make your wishlist your own.",
         exact: true,
       }),
     ).toBeVisible();
+    await page
+      .getByText(
+        fi ? "Tarvitsevatko kaikki Premiumin?" : "Does everyone need Premium?",
+        { exact: true },
+      )
+      .click();
     await expect(
       page.getByText(
         fi

@@ -62,3 +62,14 @@ test("a signed webhook is saved and publishes its opaque ID after the HTTP respo
     await prisma.$disconnect();
   }
 });
+
+test("background jobs initialize with the real SDK and compatibility dependencies", async ({
+  request,
+}) => {
+  const response = await request.get("/api/inngest");
+  expect(response.status()).toBe(200);
+  expect(await response.json()).toMatchObject({
+    function_count: 5,
+    schema_version: "2024-05-24",
+  });
+});

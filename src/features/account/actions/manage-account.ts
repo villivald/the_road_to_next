@@ -9,6 +9,7 @@ import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect"
 import { authActionError } from "@/features/auth/service/action-error";
 import { limitSourceRequest } from "@/features/auth/service/request-limit";
 import { deleteSessionCookie } from "@/features/auth/utils/session-cookie";
+import { PremiumError } from "@/features/premium/service/entitlements";
 import { redirect, revalidatePath } from "@/i18n/server-navigation";
 import { accountProfilePath, browsePath, signInPath } from "@/paths";
 import { deleteAccount, updateProfile } from "../service/account";
@@ -18,8 +19,13 @@ export const saveProfile = async (_state: ActionState, data: FormData) => {
 
   try {
     await limitSourceRequest("profile-change");
-    await updateProfile(user.id, session.id, Object.fromEntries(data));
+    await updateProfile(user.id, session.id, {
+      ...Object.fromEntries(data),
+      showPremiumBadge: data.get("showPremiumBadge") === "on",
+    });
   } catch (error) {
+    if (error instanceof PremiumError)
+      return toActionState("ERROR", error.message, data);
     return authActionError(error, data);
   }
 

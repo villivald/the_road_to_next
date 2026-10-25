@@ -104,6 +104,10 @@ export default async function PlanPage({
             {t("About Premium")}
           </h2>
           <ul className={styles.benefits}>
+            <li>
+              {t("Six curated list themes and downloadable sharing cards.")}
+            </li>
+            <li>{t("An optional Premium badge on your public profile.")}</li>
             <li>{t("Choose who can see your lists.")}</li>
             <li>{t("Invite people or share a private guest link.")}</li>
             <li>{t("Let trusted members help manage your lists.")}</li>
@@ -117,6 +121,11 @@ export default async function PlanPage({
             <p>
               {t(
                 "Your lists and existing access stay in place. New private sharing, invitations, guest links, and admin assignments require Premium. You can still remove access.",
+              )}
+            </p>
+            <p>
+              {t(
+                "Selected themes stay when Premium ends. New Premium themes and card downloads require active Premium; the badge is hidden until Premium is active again.",
               )}
             </p>
           </details>

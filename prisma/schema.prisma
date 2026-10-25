@@ -13,6 +13,7 @@ model User {
   username                String                   @unique @db.VarChar(40)
   name                    String?                  @db.VarChar(80)
   description             String?                  @db.VarChar(1000)
+  showPremiumBadge        Boolean                  @default(false)
   email                   String                   @unique @db.VarChar(254)
   emailVerified           Boolean                  @default(false)
   locale                  String                   @default("en") @db.VarChar(2)
@@ -110,6 +111,7 @@ model Wishlist {
   updatedAt           DateTime       @updatedAt
   title               String         @db.VarChar(200)
   description         String?        @db.VarChar(2000)
+  theme               String         @default("classic") @db.VarChar(20)
   publication         Publication    @default(DRAFT)
   visibility          ListVisibility @default(PUBLIC)
   reservationsEnabled Boolean        @default(false)

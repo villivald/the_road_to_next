@@ -24,6 +24,8 @@ export default defineConfig({
     "**/group-reservations.spec.ts",
     "**/guest.spec.ts",
     "**/billing.spec.ts",
+    "**/personalization.spec.ts",
+    "**/premium.spec.ts",
   ],
   outputDir: "test-results/cross-browser",
   reporter: [

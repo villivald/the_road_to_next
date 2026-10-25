@@ -25,6 +25,22 @@
   display: contents;
 }
 
+.cover {
+  display: block;
+  flex: 0 0 auto;
+  width: clamp(5rem, 12vw, 9rem);
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--muted);
+}
+
+.cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .image,
 .thumbnail {
   display: block;
