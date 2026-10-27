@@ -175,7 +175,7 @@ const information = (
         </p>
         <p>
           {t(
-            "Cookies keep you signed in and remember access granted by a guest link. Your theme preference is stored in your browser. The app has no advertising or analytics tracking configured.",
+            "Cookies keep you signed in and remember access granted by a guest link. Your theme preference is stored in your browser. Optional performance measurements use no visitor identifiers.",
           )}
         </p>
         <h2>{t("Your controls")}</h2>

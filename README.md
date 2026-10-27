@@ -113,6 +113,15 @@ groups, guest access, billing, and Premium personalization in Firefox and WebKit
 not establish real-device Safari or VoiceOver behavior; record those checks
 separately.
 
+## Performance
+
+Run `npm run performance:lab` for the empty, typical and larger capacity fixtures
+and cross-browser monitoring checks. It uses a separate `performance` schema in
+the isolated test database; run it sequentially with the other browser suites.
+Optional sampled Web Vitals/server timing logs require `PERFORMANCE_MONITORING=1`;
+they are disabled by default. No migration is needed. See
+[budgets, privacy rules and measurement instructions](docs/performance-and-capacity.md).
+
 Before deploying account forms, configure the Turnstile site/secret keys described
 in [account abuse protection](docs/account-abuse-protection.md). Hosted signup,
 recovery requests, and verification resend fail closed without them. The dedicated

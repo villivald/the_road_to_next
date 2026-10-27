@@ -25,6 +25,8 @@
     "test:e2e": "tsx scripts/e2e.ts",
     "test:e2e:cross-browser": "tsx scripts/e2e.ts --config playwright.cross-browser.config.ts",
     "test:e2e:auth-protection": "tsx scripts/e2e.ts --config playwright.auth-protection.config.ts",
+    "performance:lab": "tsx scripts/performance.ts",
+    "performance:summary": "node --import tsx scripts/performance-summary.ts",
     "db:rebuild:up": "docker compose -f compose.rebuild.yaml up -d --wait dev-db dev-mail",
     "db:rebuild:down": "docker compose -f compose.rebuild.yaml down",
     "media:cleanup": "tsx scripts/cleanup-media.ts",
@@ -36,6 +38,9 @@
   },
   "dependencies": {
     "@node-rs/argon2": "^2.2.1",
+    "@opentelemetry/api": "1.9.0",
+    "@opentelemetry/context-async-hooks": "2.11.0",
+    "@opentelemetry/sdk-trace": "2.11.0",
     "@oslojs/crypto": "^1.0.1",
     "@oslojs/encoding": "^1.1.0",
     "@prisma/adapter-pg": "7.10.0",

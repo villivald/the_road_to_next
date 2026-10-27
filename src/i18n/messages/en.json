@@ -141,7 +141,7 @@
   "Confirm this change before continuing.": "Confirm this change before continuing.",
   "Contact support": "Contact support",
   "Cookies and preferences": "Cookies and preferences",
-  "Cookies keep you signed in and remember access granted by a guest link. Your theme preference is stored in your browser. The app has no advertising or analytics tracking configured.": "Cookies keep you signed in, remember guest-link access, and save your language choice. Signed-in accounts also store the chosen language. Your theme preference stays in your browser. No advertising or analytics tracking is configured.",
+  "Cookies keep you signed in and remember access granted by a guest link. Your theme preference is stored in your browser. Optional performance measurements use no visitor identifiers.": "Cookies keep you signed in, remember guest-link access, and save your language choice. Signed-in accounts also store the chosen language. Your theme preference stays in your browser. Optional performance monitoring records numerical timings and general page types without advertising cookies, visitor identifiers, search text or list content. Guest-link exchange and payment pages are excluded. Browser reports respect Do Not Track and Global Privacy Control.",
   "Copy guest link": "Copy guest link",
   "Copy link": "Copy link",
   "Copy link to {value0}": "Copy link to {value0}",

@@ -10,6 +10,8 @@ import { NavigationProvider } from "@/app/_navigation/navigation-context";
 import { FeedbackProvider } from "@/components/form/feedback-provider";
 import styles from "@/components/shell.module.css";
 import ThemeProvider from "@/components/theme/theme-provider";
+import { PerformanceVitals } from "@/features/performance/components/performance-vitals";
+import { performanceSampleRate } from "@/features/performance/config";
 import { isLocale } from "@/i18n/config";
 import { getText } from "@/i18n/server";
 
@@ -58,6 +60,13 @@ export default async function RootLayout({
         className={`${manrope.variable} ${fraunces.variable} ${styles.body}`}
       >
         <NextIntlClientProvider locale={locale} messages={{}}>
+          {process.env.PERFORMANCE_MONITORING === "1" && (
+            <PerformanceVitals
+              sampleRate={performanceSampleRate(
+                process.env.PERFORMANCE_SAMPLE_RATE,
+              )}
+            />
+          )}
           <ThemeProvider>
             <NavigationProvider>
               <FeedbackProvider>

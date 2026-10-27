@@ -141,7 +141,7 @@
   "Confirm this change before continuing.": "Vahvista muutos ennen jatkamista.",
   "Contact support": "Ota yhteyttä tukeen",
   "Cookies and preferences": "Evästeet ja asetukset",
-  "Cookies keep you signed in and remember access granted by a guest link. Your theme preference is stored in your browser. The app has no advertising or analytics tracking configured.": "Evästeet pitävät sinut kirjautuneena, muistavat vieraslinkin käyttöoikeuden ja tallentavat kielivalintasi. Kirjautuneen käyttäjän kielivalinta tallennetaan myös tilille. Teemavalinta säilyy selaimessa. Palvelussa ei ole mainos- tai analytiikkaseurantaa.",
+  "Cookies keep you signed in and remember access granted by a guest link. Your theme preference is stored in your browser. Optional performance measurements use no visitor identifiers.": "Evästeet pitävät sinut kirjautuneena, muistavat vieraslinkin käyttöoikeuden ja tallentavat kielivalintasi. Kirjautuneen käyttäjän kielivalinta tallennetaan myös tilille. Teemavalinta säilyy selaimessa. Valinnainen suorituskyvyn seuranta tallentaa numeerisia ajoituksia ja yleisiä sivutyyppejä ilman mainosevästeitä, kävijätunnisteita, hakutekstejä tai listojen sisältöä. Vieraslinkin avaamis- ja maksusivut on rajattu pois. Selainraportointi noudattaa Do Not Track- ja Global Privacy Control -asetuksia.",
   "Copy guest link": "Kopioi vieraslinkki",
   "Copy link": "Kopioi linkki",
   "Copy link to {value0}": "Kopioi linkki: {value0}",
