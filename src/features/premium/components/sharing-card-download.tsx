@@ -1,12 +1,13 @@
 "use client";
 
 import { Download, QrCode, X } from "lucide-react";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import shell from "@/components/shell.module.css";
 import { Link } from "@/i18n/navigation";
 import { useText } from "@/i18n/use-text";
 import { ListTheme } from "./list-theme";
 import styles from "./personalization.module.css";
+import { SharingCardPreview } from "./sharing-card-preview";
 
 export function SharingCardDownload({
   listId,
@@ -33,41 +34,54 @@ export function SharingCardDownload({
     "idle",
   );
   const href = `/api/lists/${encodeURIComponent(listId)}/sharing-card?locale=${t.locale}`;
+  useEffect(() => {
+    if (status !== "done") return;
+    const timer = window.setTimeout(() => setStatus("idle"), 8000);
+    return () => window.clearTimeout(timer);
+  }, [status]);
   const content = (
     <div className={styles["download-body"]}>
       <p>
         {t(
-          "Download an image of your list title with a QR code. Send it in a message or print it to share your list.",
+          "Share your list with an image and QR code. Send the card in a message or print it.",
         )}
       </p>
-      <div className={styles["download-preview"]}>
-        <ListTheme theme={theme} compact>
-          <span className={styles.kicker}>{t("Wishlist preview")}</span>
-          <strong className={styles["preview-title"]}>{title}</strong>
-        </ListTheme>
-      </div>
-      <p className={styles.format}>
-        {t("PNG image · 1200 × 800 pixels · QR code included")}
-      </p>
-      <p className={shell.muted}>
-        {privateList
-          ? t(
-              "The card includes your private list title. Share it only with people you trust. Its QR code requires existing list access; it does not grant guest access.",
-            )
-          : t(
-              "The QR code opens your public list. The card never includes wishes or reservations.",
-            )}
-      </p>
-      {!published ? (
+      {!published && (
         <p className={shell.notice}>
           {t("Show your list before downloading a sharing card.")}
         </p>
-      ) : !premium ? (
+      )}
+      {!premium && (
         <p>
           {t("The list owner needs Premium to download sharing cards.")}{" "}
           <Link href="/premium">{t("Explore Premium")}</Link>
         </p>
+      )}
+      {premium ? (
+        <div className={styles["download-preview"]}>
+          <ListTheme theme={theme} compact>
+            <span className={styles.kicker}>{t("Wishlist preview")}</span>
+            <strong className={styles["preview-title"]}>{title}</strong>
+          </ListTheme>
+        </div>
       ) : (
+        <SharingCardPreview />
+      )}
+      <p className={styles.format}>
+        {t("PNG image · 1200 × 800 pixels · QR code included")}
+      </p>
+      {premium && (
+        <p className={shell.muted}>
+          {privateList
+            ? t(
+                "The card includes your private list title. Share it only with people you trust. Its QR code requires existing list access; it does not grant guest access.",
+              )
+            : t(
+                "Your downloaded card opens your public list. Wishes and reservations are not included.",
+              )}
+        </p>
+      )}
+      {premium && published && (
         <a
           className={shell.button}
           href={href}
@@ -105,7 +119,7 @@ export function SharingCardDownload({
         </a>
       )}
       {status !== "idle" && (
-        <p role="status">
+        <p role={status === "failed" ? "alert" : "status"}>
           {status === "loading"
             ? t("Preparing card…")
             : status === "done"
@@ -141,7 +155,7 @@ export function SharingCardDownload({
         onClose={() => trigger.current?.focus()}
       >
         <header className={styles["dialog-heading"]}>
-          <h2 id={id}>{t("Download a QR sharing card")}</h2>
+          <h2 id={id}>{t("Sharing card")}</h2>
           <button
             type="button"
             className={styles.close}

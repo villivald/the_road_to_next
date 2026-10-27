@@ -68,7 +68,7 @@ export default async function GuestLinksPage({
         </p>
       )}
       {query.revoked === "1" && (
-        <SuccessMessage>
+        <SuccessMessage queryKeys={["revoked"]}>
           {t(
             "Guest link disabled. It no longer opens this list or its images.",
           )}

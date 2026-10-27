@@ -131,9 +131,9 @@ test("reserve, view, cancel and admin revoke preserve identity and image privacy
     await page
       .getByRole("button", { name: "Cancel reservation", exact: true })
       .click();
-    await expect(page.getByRole("main").getByRole("status")).toHaveText(
-      "Reservation canceled.",
-    );
+    await expect(
+      page.getByRole("status", { name: "Save confirmation" }),
+    ).toHaveText("Reservation canceled.");
     await expect(
       page.getByRole("heading", { name: "No active reservations" }),
     ).toBeVisible();

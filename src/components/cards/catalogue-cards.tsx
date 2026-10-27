@@ -211,10 +211,12 @@ export function CataloguePersonCard({
     <li className={`${styles["list-card"]} ${cardStyles["user-card"]}`}>
       <div className={cardStyles["user-heading"]}>
         <UserAvatar image={user.image} />
-        {favorite && (
-          <FavoriteButton {...favorite} title={user.name ?? user.username} />
-        )}
-        {user.isViewer && <OwnershipBadge user />}
+        <div className={cardStyles["user-tools"]}>
+          {user.isViewer && <OwnershipBadge user />}
+          {favorite && (
+            <FavoriteButton {...favorite} title={user.name ?? user.username} />
+          )}
+        </div>
       </div>
       <div className={cardStyles["person-name"]}>
         <h2>{user.name ?? user.username}</h2>

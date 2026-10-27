@@ -105,9 +105,9 @@ test("browse another user's list, sign in, reserve and remove it from discovery"
   await page
     .getByRole("button", { name: "Cancel reservation", exact: true })
     .click();
-  await expect(page.getByRole("main").getByRole("status")).toHaveText(
-    "Reservation canceled.",
-  );
+  await expect(
+    page.getByRole("status", { name: "Save confirmation" }),
+  ).toHaveText("Reservation canceled.");
   await page.goto("/en/browse?view=wishes");
   await expect(
     page.getByRole("link", { name: "A garden book", exact: true }),

@@ -64,17 +64,19 @@ export default async function SharedListsPage({
         </div>
       </div>
       {query.roleChanged === "1" && (
-        <SuccessMessage>
+        <SuccessMessage queryKeys={["roleChanged"]}>
           {t("You are now a member. Admin controls are no longer available.")}
         </SuccessMessage>
       )}
       {query.joined === "1" && (
-        <SuccessMessage>
+        <SuccessMessage queryKeys={["joined"]}>
           {t("Invitation accepted. You have joined the list.")}
         </SuccessMessage>
       )}
       {query.left === "1" && (
-        <SuccessMessage>{t("You have left the list.")}</SuccessMessage>
+        <SuccessMessage queryKeys={["left"]}>
+          {t("You have left the list.")}
+        </SuccessMessage>
       )}
       {lists.length ? (
         <ul className={styles["list-grid"]}>

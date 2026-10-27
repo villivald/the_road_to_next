@@ -112,6 +112,13 @@ export function ListSettings({
             action={changePublication.bind(null, list.id)}
             label={visible ? t("Hide list") : t("Show list")}
             pendingLabel={t("Updating…")}
+            confirmationMessage={
+              visible
+                ? t(
+                    "Hide this list? Active reservations will end and cannot be restored.",
+                  )
+                : undefined
+            }
             icon={
               visible ? (
                 <EyeOff size={18} aria-hidden="true" />

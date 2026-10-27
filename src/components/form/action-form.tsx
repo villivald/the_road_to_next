@@ -18,6 +18,8 @@ export function ActionForm({
   secondary = false,
   icon,
   requireConfirmation = false,
+  successDisplay = "toast",
+  confirmationMessage,
 }: {
   action: (state: ActionState, data: FormData) => Promise<ActionState>;
   label: string;
@@ -27,6 +29,8 @@ export function ActionForm({
   secondary?: boolean;
   icon?: ReactNode;
   requireConfirmation?: boolean;
+  successDisplay?: "inline" | "toast";
+  confirmationMessage?: string;
 }) {
   const t = useText();
   const [confirmation, setConfirmation] = useState<{
@@ -41,8 +45,16 @@ export function ActionForm({
     confirmation.timestamp === state.timestamp && confirmation.checked;
 
   return (
-    <form action={submit} className={styles.form} aria-busy={pending}>
-      <ActionFeedback state={state} />
+    <form
+      action={submit}
+      className={styles.form}
+      aria-busy={pending}
+      onSubmit={(event) => {
+        if (confirmationMessage && !window.confirm(confirmationMessage))
+          event.preventDefault();
+      }}
+    >
+      <ActionFeedback state={state} successDisplay={successDisplay} />
 
       <fieldset
         key={requireConfirmation ? state.timestamp : undefined}

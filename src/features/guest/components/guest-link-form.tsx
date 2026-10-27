@@ -12,12 +12,19 @@ function CopyLink({ url }: { url: string }) {
   const t = useText();
 
   const [message, setMessage] = useState("");
+  const [copyCount, setCopyCount] = useState(0);
   const id = useId();
   const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     input.current?.focus();
   }, []);
+
+  useEffect(() => {
+    if (message !== "Link copied.") return;
+    const timer = window.setTimeout(() => setMessage(""), 8000);
+    return () => window.clearTimeout(timer);
+  }, [message, copyCount]);
 
   return (
     <section
@@ -48,6 +55,7 @@ function CopyLink({ url }: { url: string }) {
           try {
             await navigator.clipboard.writeText(url);
             setMessage("Link copied.");
+            setCopyCount((count) => count + 1);
           } catch {
             setMessage("Select the link above and copy it manually.");
           }
@@ -56,7 +64,11 @@ function CopyLink({ url }: { url: string }) {
         <Copy size={18} aria-hidden="true" />
         {t("Copy guest link")}
       </button>
-      {message && <p role="status">{t.message(message)}</p>}
+      {message && (
+        <p role={message === "Link copied." ? "status" : "alert"}>
+          {t.message(message)}
+        </p>
+      )}
     </section>
   );
 }
@@ -149,7 +161,7 @@ export function GuestLinkForm({ listId }: { listId: string }) {
 
   return (
     <div className={styles.form}>
-      <ActionFeedback state={state} />
+      <ActionFeedback state={state} successDisplay="inline" />
       {url ? (
         <>
           <CopyLink key={url} url={url} />

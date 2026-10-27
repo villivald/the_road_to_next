@@ -71,7 +71,7 @@ test("themes persist, show in the list and export a sharing card", async ({
   });
   await sharingButton.click();
   const dialog = page.getByRole("dialog", {
-    name: "Download a QR sharing card",
+    name: "Sharing card",
   });
   await expect(dialog).toBeVisible();
   await expect(
@@ -123,6 +123,20 @@ test("profile badge is opt-in and can be hidden", async ({ page }) => {
     .getByText("Premium", { exact: true })
     .boundingBox();
   expect(Math.abs((heading?.y ?? 0) - (badge?.y ?? 100))).toBeLessThan(24);
+  const favorite = await person
+    .getByRole("button", { name: "Add e2e-owner to favorites", exact: true })
+    .boundingBox();
+  const toolbar = await person.locator('[class*="user-heading"]').boundingBox();
+  const ownership = await person
+    .getByText("You", { exact: true })
+    .boundingBox();
+  expect(favorite).not.toBeNull();
+  expect(toolbar).not.toBeNull();
+  expect(ownership).not.toBeNull();
+  expect(
+    Math.abs(favorite!.x + favorite!.width - toolbar!.x - toolbar!.width),
+  ).toBeLessThan(2);
+  expect(favorite!.x).toBeGreaterThan(ownership!.x + ownership!.width);
   await person.screenshot({ path: test.info().outputPath("profile-card.png") });
   await page.goto("/en/account/profile");
   await page.getByRole("checkbox", { name: /Show a Premium badge/ }).uncheck();
@@ -135,7 +149,7 @@ test("profile badge is opt-in and can be hidden", async ({ page }) => {
 });
 test("a free list owner can find sharing cards and sees the Premium requirement", async ({
   page,
-}) => {
+}, info) => {
   const db = testPrisma();
   try {
     await db.premiumGrant.updateMany({
@@ -149,7 +163,7 @@ test("a free list owner can find sharing cards and sees the Premium requirement"
   await page.goto(`/en/lists/${listId}`);
   await page.getByRole("button", { name: "Sharing card", exact: true }).click();
   const dialog = page.getByRole("dialog", {
-    name: "Download a QR sharing card",
+    name: "Sharing card",
   });
   await expect(
     dialog.getByText("The list owner needs Premium to download sharing cards."),
@@ -160,6 +174,75 @@ test("a free list owner can find sharing cards and sees the Premium requirement"
   await expect(
     dialog.getByRole("link", { name: "Explore Premium", exact: true }),
   ).toBeVisible();
+  await expect(dialog.getByRole("radio")).toHaveCount(3);
+  for (const name of ["Birthday", "Christmas", "Botanical"]) {
+    await dialog.getByRole("radio", { name, exact: true }).check();
+    const preview = dialog.getByRole("img", {
+      name: `Example sharing card in the ${name} theme`,
+    });
+    await expect(preview).toBeVisible();
+    await expect
+      .poll(() =>
+        preview.evaluate(
+          (image: HTMLImageElement) => image.complete && image.naturalWidth > 0,
+        ),
+      )
+      .toBe(true);
+  }
+  expect(
+    (
+      await page.request.get(`/api/lists/${listId}/sharing-card?locale=en`)
+    ).status(),
+  ).toBe(404);
+  await dialog.screenshot({ path: info.outputPath("free-sharing-card.png") });
+  await page.keyboard.press("Escape");
+  await page.reload();
+  await expect(
+    page.locator('[data-list-theme="classic"]').first(),
+  ).toBeVisible();
+  expect(
+    (await new AxeBuilder({ page }).include("main").analyze()).violations,
+  ).toEqual([]);
+  for (const locale of ["en", "fi"]) {
+    await page.goto(`/${locale}/lists/${listId}`);
+    await page
+      .getByRole("button", {
+        name: locale === "fi" ? "Jakokortti" : "Sharing card",
+        exact: true,
+      })
+      .click();
+    const exampleDialog = page.getByRole("dialog");
+    await exampleDialog.getByRole("radio").last().check();
+    await page.setViewportSize({ width: 320, height: 800 });
+    for (const dark of [false, true]) {
+      await page.evaluate((dark) => {
+        document.documentElement.classList.toggle("dark", dark);
+        document.documentElement.style.fontSize = "200%";
+      }, dark);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      expect(
+        await exampleDialog.evaluate(
+          (element) => element.scrollWidth <= element.clientWidth,
+        ),
+      ).toBe(true);
+      await exampleDialog.screenshot({
+        path: info.outputPath(
+          `free-preview-${locale}-${dark ? "dark" : "light"}.png`,
+        ),
+      });
+      expect(
+        (await new AxeBuilder({ page }).include("dialog").analyze()).violations,
+      ).toEqual([]);
+    }
+    await page.keyboard.press("Escape");
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = "";
+    });
+  }
 });
 test("premium showcase works in both languages and themes without overflow", async ({
   page,

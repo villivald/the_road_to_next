@@ -93,6 +93,7 @@ test("create, validate, edit, publish, unpublish, and confirm deletion", async (
       animations: "disabled",
       scale: "css",
     });
+    page.once("dialog", (dialog) => dialog.accept());
     await page.getByRole("button", { name: "Hide list" }).click();
     await expect(page.getByRole("status")).toContainText(
       "List hidden from viewers",
@@ -118,7 +119,7 @@ test("create, validate, edit, publish, unpublish, and confirm deletion", async (
       page.getByRole("button", { name: "Delete permanently" }),
     ).toBeEnabled();
     await page.getByRole("button", { name: "Delete permanently" }).click();
-    await expect(page).toHaveURL(/\/lists\?deleted=1$/);
+    await expect(page).toHaveURL(/\/lists$/);
     await expect(page.getByRole("status")).toContainText("List deleted");
     await expect(
       page.getByRole("heading", { name: "No lists yet" }),

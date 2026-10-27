@@ -116,7 +116,9 @@ export default async function ReservationsPage({
         )}
       </section>
       {query.canceled === "1" && (
-        <SuccessMessage>{t("Reservation canceled.")}</SuccessMessage>
+        <SuccessMessage queryKeys={["canceled"]}>
+          {t("Reservation canceled.")}
+        </SuccessMessage>
       )}
       {reservations.length ? (
         <ul className={styles["list-grid"]}>

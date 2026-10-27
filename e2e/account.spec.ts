@@ -179,9 +179,9 @@ test("register, publish, reserve, cancel, fulfill and delete without a successor
     await expect(
       page.getByRole("heading", { name: "My reservations", exact: true }),
     ).toBeVisible();
-    await expect(page.getByRole("main").getByRole("status")).toHaveText(
-      "Reservation canceled.",
-    );
+    await expect(
+      page.getByRole("status", { name: "Save confirmation" }),
+    ).toHaveText("Reservation canceled.");
     await page.goto(wishUrl);
     await expect(
       page.getByRole("button", { name: "Reserve wish", exact: true }),

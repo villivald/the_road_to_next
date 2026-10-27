@@ -14,9 +14,14 @@ import { MediaImage } from "@/features/media/components/media-image";
 import { ListTheme } from "@/features/premium/components/list-theme";
 import premiumStyles from "@/features/premium/components/personalization.module.css";
 import { SharingCardDownload } from "@/features/premium/components/sharing-card-download";
-import { readSharingCard } from "@/features/premium/service/sharing-card";
+import { readPremiumAccess } from "@/features/premium/service/entitlements";
 import { WishCollection } from "@/features/wish/components/wish-collection";
-import { readWishlist } from "@/features/wishlist/service/lists";
+import headerStyles from "@/features/wishlist/components/list-header.module.css";
+import { ListPublication } from "@/features/wishlist/components/list-publication";
+import {
+  readManagedWishlist,
+  readWishlist,
+} from "@/features/wishlist/service/lists";
 import { Link } from "@/i18n/navigation";
 import { getText } from "@/i18n/server";
 import {
@@ -52,7 +57,7 @@ export default async function ListPage({
 }) {
   const t = await getText();
 
-  const { user, session } = await getAuth();
+  const { user } = await getAuth();
   const { listId } = await params;
   const list = await readWishlist(listId, user?.id ?? null);
 
@@ -64,13 +69,13 @@ export default async function ListPage({
   const { created, saved, wishDeleted } = query;
   const section = detailSection(query.from, list.canManage);
   const published = list.publication === "PUBLISHED";
-  const [favoriteIds, sharingCard] = await Promise.all([
+  const [favoriteIds, managedList] = await Promise.all([
     readFavoriteIds(user?.emailVerified ? user.id : null, "list", [list.id]),
-    list.canManage && user && session
-      ? readSharingCard(user.id, session.id, list.id)
-      : null,
+    list.canManage && user ? readManagedWishlist(list.id, user.id) : null,
   ]);
-  const premium = sharingCard !== null;
+  const premium = managedList?.ownerId
+    ? (await readPremiumAccess(managedList.ownerId)).plan === "PREMIUM"
+    : false;
 
   return (
     <section className={styles.page}>
@@ -96,65 +101,83 @@ export default async function ListPage({
       </Link>
 
       {list.canManage && (created === "1" || saved === "1") && (
-        <SuccessMessage>
+        <SuccessMessage queryKeys={["created", "saved"]}>
           {created === "1"
-            ? t("List created. It’s hidden from viewers until you show it.")
+            ? list.publication === "DRAFT"
+              ? t("List created. It’s hidden from viewers until you show it.")
+              : t("List created.")
             : t("Changes saved.")}
-          {created === "1" && (
-            <>
-              {" "}
-              <Link href={listSettingsPath(list.id)}>
-                {t("Go to list settings")}
-              </Link>
-            </>
-          )}
         </SuccessMessage>
       )}
 
       <ListTheme theme={list.theme}>
-        <div
-          className={`${styles["page-heading"]} ${list.theme !== "classic" ? premiumStyles["themed-heading"] : ""}`}
+        <header
+          className={`${headerStyles.header} ${list.canManage ? headerStyles.managed : ""} ${list.theme !== "classic" ? premiumStyles["themed-heading"] : ""}`}
         >
-          <div className={styles["list-identity"]}>
+          <div
+            className={`${styles["list-identity"]} ${headerStyles.identity}`}
+          >
             <MediaImage image={list.image} cover sizes="144px" />
             <div>
-              <ListStatus
-                publication={list.publication}
-                visibility={list.visibility}
-              />
+              {!list.canManage && (
+                <ListStatus
+                  publication={list.publication}
+                  visibility={list.visibility}
+                />
+              )}
               <h1>{list.title}</h1>
             </div>
           </div>
-          <div className={styles.actions}>
-            {user?.emailVerified && (
-              <FavoriteButton
-                kind="list"
-                targetId={list.id}
-                saved={favoriteIds.includes(list.id)}
-                title={list.title}
-              />
-            )}
-            {published && list.visibility === "PUBLIC" && (
-              <CopyLink path={listPath(list.id)} title={list.title} />
-            )}
-            {list.canManage && (
-              <SharingCardDownload
-                modal
-                listId={list.id}
-                title={list.title}
-                theme={list.theme}
-                published={published}
-                privateList={list.visibility === "PRIVATE"}
-                premium={premium}
-              />
-            )}
-            {list.canManage && (
-              <Link className={styles.button} href={listSettingsPath(list.id)}>
-                <Settings size={18} aria-hidden="true" /> {t("List settings")}
-              </Link>
-            )}
+          <div className={headerStyles.toolbar}>
+            {list.canManage && <ListPublication list={list} />}
+            <div className={`${styles.actions} ${headerStyles.tools}`}>
+              <div className={headerStyles.quick}>
+                {user?.emailVerified && (
+                  <FavoriteButton
+                    kind="list"
+                    targetId={list.id}
+                    saved={favoriteIds.includes(list.id)}
+                    title={list.title}
+                  />
+                )}
+                {published && list.visibility === "PUBLIC" && (
+                  <CopyLink path={listPath(list.id)} title={list.title} />
+                )}
+              </div>
+              <div className={headerStyles.primary}>
+                {list.canManage && (
+                  <SharingCardDownload
+                    modal
+                    listId={list.id}
+                    title={list.title}
+                    theme={list.theme}
+                    published={published}
+                    privateList={list.visibility === "PRIVATE"}
+                    premium={premium}
+                  />
+                )}
+                {list.canManage && (
+                  <Link
+                    className={styles.button}
+                    href={listSettingsPath(list.id)}
+                    aria-label={t("List settings")}
+                  >
+                    <Settings size={18} aria-hidden="true" />
+                    <span className={headerStyles["full-label"]}>
+                      {t("List settings")}
+                    </span>
+                    <span
+                      className={headerStyles["short-label"]}
+                      aria-hidden="true"
+                    >
+                      {t("Settings")}
+                    </span>
+                  </Link>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
+        </header>
       </ListTheme>
 
       {list.description && (
@@ -162,7 +185,9 @@ export default async function ListPage({
       )}
 
       {list.canManage && wishDeleted === "1" && (
-        <SuccessMessage>{t("Wish deleted.")}</SuccessMessage>
+        <SuccessMessage queryKeys={["wishDeleted"]}>
+          {t("Wish deleted.")}
+        </SuccessMessage>
       )}
 
       <WishCollection

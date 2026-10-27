@@ -49,7 +49,9 @@ export default async function ListsPage({
       <MyListsControls />
 
       {params.deleted === "1" && (
-        <SuccessMessage>{t("List deleted.")}</SuccessMessage>
+        <SuccessMessage queryKeys={["deleted"]}>
+          {t("List deleted.")}
+        </SuccessMessage>
       )}
 
       {lists.length ? (

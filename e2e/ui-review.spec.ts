@@ -244,13 +244,26 @@ for (const locale of ["en", "fi"] as const) {
     await expect(page.getByRole("status")).toHaveText(
       fi ? "Profiili tallennettu." : "Profile saved.",
     );
-    const confirmation = page.getByRole("complementary", {
+    const confirmation = page.getByRole("status", {
       name: fi ? "Tallennusvahvistus" : "Save confirmation",
     });
     await expect(confirmation).toBeInViewport();
-    await confirmation.getByRole("button").click();
+    const dismiss = confirmation.getByRole("button");
+    await page
+      .getByRole("button", {
+        name: fi ? "Tallenna profiili" : "Save profile",
+        exact: true,
+      })
+      .focus();
+    await dismiss.focus();
+    await dismiss.press("Enter");
     await expect(confirmation).toHaveCount(0);
-    await expect(page.getByRole("status")).toBeVisible();
+    await expect(
+      page.getByRole("button", {
+        name: fi ? "Tallenna profiili" : "Save profile",
+        exact: true,
+      }),
+    ).toBeFocused();
     const avatar = page.locator("header").getByRole("link", {
       name: fi ? "Tilisi: e2e-member" : "Your account: e2e-member",
       exact: true,

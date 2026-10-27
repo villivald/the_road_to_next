@@ -22,15 +22,33 @@
   flex: 0 0 auto;
 }
 
+.success > span {
+  flex: 1;
+  min-width: 0;
+}
+
 .toast {
   position: fixed;
   z-index: 50;
-  inset-block-end: 1rem;
-  inset-inline-end: 1rem;
+  inset-block-end: calc(
+    1rem + env(safe-area-inset-bottom, 0px) + var(--toast-keyboard-inset, 0px)
+  );
+  inset-inline-end: calc(1rem + env(safe-area-inset-right, 0px));
   display: flex;
   align-items: flex-start;
   gap: 0.65rem;
-  width: min(28rem, calc(100% - 2rem));
+  width: min(
+    28rem,
+    calc(
+      100% - 2rem - env(safe-area-inset-left, 0px) -
+        env(safe-area-inset-right, 0px)
+    )
+  );
+  max-height: calc(
+    var(--toast-viewport-height, 100dvh) - 2rem -
+      env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)
+  );
+  overflow: auto;
   padding: 1rem;
   border: 1px solid var(--positive);
   border-inline-start-width: 4px;
@@ -48,7 +66,7 @@
   font-weight: 650;
 }
 
-.toast button {
+.dismiss {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
@@ -63,6 +81,39 @@
   cursor: pointer;
 }
 
-.toast button:hover {
-  background: var(--accent);
+.dismiss:hover {
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+
+.toast > .dismiss {
+  position: sticky;
+  inset-block-start: 0;
+}
+
+.toast[data-placement="top"] {
+  inset-block: calc(
+      0.75rem + env(safe-area-inset-top, 0px) + var(--toast-viewport-top, 0px)
+    )
+    auto;
+}
+
+@media (width <= 760px) {
+  .toast {
+    inset-inline: calc(0.75rem + env(safe-area-inset-left, 0px))
+      calc(0.75rem + env(safe-area-inset-right, 0px));
+    inset-block-end: calc(
+      0.75rem + env(safe-area-inset-bottom, 0px) +
+        var(--toast-keyboard-inset, 0px)
+    );
+    width: auto;
+    max-height: min(
+      calc(var(--toast-viewport-height, 100dvh) * 0.45),
+      calc(
+        var(--toast-viewport-height, 100dvh) - 1.5rem -
+          env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)
+      )
+    );
+    padding: 0.75rem;
+    font-size: 0.875rem;
+  }
 }

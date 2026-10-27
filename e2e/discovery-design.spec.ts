@@ -39,9 +39,9 @@ const upload = async (
     .setInputFiles({ name: "image.png", mimeType: "image/png", buffer });
   await page.getByLabel("Image description", { exact: true }).fill(alt);
   await page.getByRole("button", { name: "Upload image", exact: true }).click();
-  await expect(page.getByRole("main").getByRole("status")).toHaveText(
-    "Image saved.",
-  );
+  await expect(
+    page.getByRole("status", { name: "Save confirmation" }),
+  ).toHaveText("Image saved.");
 };
 const accessible = async (page: Page) => {
   expect(

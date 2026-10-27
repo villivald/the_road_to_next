@@ -32,9 +32,9 @@ const upload = async (page: Page, description: string, replacement = false) => {
       exact: true,
     })
     .click();
-  await expect(page.getByRole("main").getByRole("status")).toHaveText(
-    "Image saved.",
-  );
+  await expect(
+    page.getByRole("status", { name: "Save confirmation" }),
+  ).toHaveText("Image saved.");
   const image = page.getByRole("img", { name: description, exact: true });
   await expect(image).toBeVisible();
   await expectImageLoaded(image);
@@ -135,7 +135,7 @@ test("wish creation previews an image, keeps it after validation and saves it wi
   });
   await page.getByLabel("Title", { exact: true }).fill("A travel camera");
   await page.getByRole("button", { name: "Add wish", exact: true }).click();
-  await expect(page).toHaveURL(/\/wishes\/[^/]+\?created=1$/);
+  await expect(page).toHaveURL(/\/wishes\/(?!new$)[^/?]+$/);
   const image = page.getByRole("img", { name: "A blue camera for trips" });
   await expect(image).toBeVisible();
   await expectImageLoaded(image);
@@ -204,7 +204,7 @@ test("invalid creation images do not create wishes, and image description can fa
     .getByLabel("Image (optional)", { exact: true })
     .setInputFiles({ name: "camera.png", mimeType: "image/png", buffer });
   await page.getByRole("button", { name: "Add wish", exact: true }).click();
-  await expect(page).toHaveURL(/\/wishes\/[^/]+\?created=1$/);
+  await expect(page).toHaveURL(/\/wishes\/(?!new$)[^/?]+$/);
   await expect(
     page.getByRole("img", { name: "A new camera", exact: true }),
   ).toBeVisible();
@@ -229,9 +229,9 @@ test("wish image editing uses the wish title when its image description is blank
   });
   await description.fill("   ");
   await page.getByRole("button", { name: "Upload image", exact: true }).click();
-  await expect(page.getByRole("main").getByRole("status")).toHaveText(
-    "Image saved.",
-  );
+  await expect(
+    page.getByRole("status", { name: "Save confirmation" }),
+  ).toHaveText("Image saved.");
   await expect(
     page.getByRole("img", { name: "A camera", exact: true }),
   ).toBeVisible();
@@ -284,6 +284,7 @@ test("list image upload, replacement, removal and revocation work through the UI
     fullPage: true,
   });
   await page.getByRole("link", { name: "List settings", exact: true }).click();
+  page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Hide list", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Show list", exact: true }),
@@ -295,9 +296,9 @@ test("list image upload, replacement, removal and revocation work through the UI
   expect(revoked.headers()["cache-control"]).toContain("no-store");
   await page.goto(`${listUrl}/edit`);
   await page.getByRole("button", { name: "Remove image", exact: true }).click();
-  await expect(page.getByRole("main").getByRole("status")).toHaveText(
-    "Image removed.",
-  );
+  await expect(
+    page.getByRole("status", { name: "Save confirmation" }),
+  ).toHaveText("Image removed.");
   await expect(
     page.getByRole("button", { name: "Upload image", exact: true }),
   ).toBeVisible();

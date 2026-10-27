@@ -75,7 +75,7 @@ export default async function WishPage({
       </Link>
 
       {wish.canManage && (created === "1" || saved === "1") && (
-        <SuccessMessage>
+        <SuccessMessage queryKeys={["created", "saved"]}>
           {created === "1" ? t("Wish added.") : t("Changes saved.")}
         </SuccessMessage>
       )}

@@ -244,6 +244,70 @@
   overflow: hidden;
 }
 
+.card-examples {
+  display: grid;
+  gap: 0.85rem;
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.card-examples legend {
+  padding: 0;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 650;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.example-themes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.example-themes label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.example-themes label:has(:checked) {
+  border-color: var(--focus);
+  background: var(--accent);
+}
+
+.example-themes label:has(:focus-visible) {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.example-themes input {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  accent-color: var(--focus);
+  flex-shrink: 0;
+}
+
+.example-card {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
 .format {
   font-size: 0.8rem;
   color: var(--muted-foreground);
@@ -260,6 +324,7 @@
   background: var(--surface);
   overflow: auto;
   overscroll-behavior: contain;
+  overflow-wrap: anywhere;
 }
 
 .dialog::backdrop {
@@ -278,7 +343,33 @@
   margin: 0;
   font-family: var(--font-fraunces), serif;
   font-size: 1.6rem;
+  min-width: 0;
   font-weight: 500;
+}
+
+@media (width <= 480px) {
+  .dialog {
+    width: calc(100% - 24px);
+    max-height: calc(100dvh - 24px);
+    padding: 12px;
+  }
+
+  .dialog-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.65rem;
+  }
+
+  .dialog-heading h2 {
+    grid-row: 2;
+    grid-column: 1 / -1;
+    font-size: 1.25rem;
+  }
+
+  .dialog-heading .close {
+    grid-row: 1;
+    grid-column: 2;
+  }
 }
 
 .close {

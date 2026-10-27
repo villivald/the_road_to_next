@@ -1,4 +1,5 @@
 "use client";
+import { EyeOff } from "lucide-react";
 import { useActionState, useId } from "react";
 import { ActionFeedback } from "@/components/form/action-feedback";
 import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
@@ -53,6 +54,23 @@ export function ListForm({
         <legend className={styles["visually-hidden"]}>
           {t("List details")}
         </legend>
+
+        {!list && (
+          <div
+            className={formStyles["hidden-notice"]}
+            id={`${prefix}-visibility-help`}
+          >
+            <EyeOff size={22} aria-hidden="true" />
+            <div>
+              <strong>{t("Your new list starts hidden")}</strong>
+              <p>
+                {t(
+                  "Only you and other list admins can see it. When you are ready, choose Show list on the list page.",
+                )}
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className={styles.field}>
           <label htmlFor={`${prefix}-title`}>{t("Title")}</label>
@@ -171,11 +189,6 @@ export function ListForm({
                 </span>
               </span>
             </label>
-            <p id={`${prefix}-visibility-help`} className={styles.muted}>
-              {t(
-                "Your list starts hidden. Only admins can view it until you choose Show list. You can change its audience later in Sharing and members.",
-              )}
-            </p>
           </fieldset>
         )}
 

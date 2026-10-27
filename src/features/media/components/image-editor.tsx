@@ -1,7 +1,5 @@
 "use client";
-import { CircleCheck } from "lucide-react";
 import { type FormEvent, useEffect, useId, useRef, useState } from "react";
-import feedbackStyles from "@/components/form/feedback.module.css";
 import { useSaveConfirmation } from "@/components/form/feedback-provider";
 import shell from "@/components/shell.module.css";
 import { notifyFormSaved } from "@/i18n/form-changes";
@@ -82,11 +80,17 @@ export function ImageEditor({
         body: remove ? undefined : (file as File),
       });
       const result = await response.json();
-      setFeedback({ error: !response.ok, message: result.message });
+      setFeedback(
+        response.ok ? null : { error: true, message: result.message },
+      );
 
       if (response.ok) {
         notifyFormSaved(form);
-        notify(t.message(result.message));
+        const button = (event.nativeEvent as SubmitEvent).submitter;
+        notify(
+          t.message(result.message),
+          button instanceof HTMLElement ? button : null,
+        );
         form.reset();
         router.refresh();
       }
@@ -114,15 +118,8 @@ export function ImageEditor({
         sizes={target.kind === "avatar" ? "112px" : undefined}
       />
       <ImageUploadGuidance kind={target.kind} id={`${id}-help`} />
-      {feedback && (
-        <p
-          ref={feedbackRef}
-          tabIndex={-1}
-          role={feedback.error ? "alert" : "status"}
-          aria-live={feedback.error ? undefined : "off"}
-          className={feedback.error ? shell.error : feedbackStyles.success}
-        >
-          {!feedback.error && <CircleCheck size={21} aria-hidden="true" />}
+      {feedback?.error && (
+        <p ref={feedbackRef} tabIndex={-1} role="alert" className={shell.error}>
           <span>{t.message(feedback.message)}</span>
         </p>
       )}

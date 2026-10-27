@@ -136,3 +136,53 @@ present in the download route's file trace. English/Finnish showcase PNGs match 
 renderer pixel-for-pixel and their QR codes open `https://wishlist.fi/premium`.
 The dependency audit reports zero vulnerabilities. Real-device checks remain the
 previously agreed manual release follow-up.
+
+## List-page usability follow-up (26 October)
+
+New-list forms state prominently that lists start hidden. List managers can now
+show or hide a list directly on its page, with its audience and the reservation
+effect stated beside the control. The existing settings control and server-side
+publication/access rules remain in use.
+Hiding asks for confirmation before ending reservations; showing stays one click.
+
+Visibility is part of the list header's toolbar, alongside the sharing-card and
+settings controls, rather than a separate bordered bar. Its status and action
+sit together, with one contextual explanation below. The action retains a 44px
+minimum tap target and the reservation warning stays visible. Text and controls
+wrap on narrow screens and with enlarged text.
+
+Visibility changes use one temporary confirmation, without inserting a success
+box into the header. See [UI feedback](ui-feedback.md) for message timing,
+dismissal and accessibility behaviour.
+
+Free list managers can preview real Birthday, Christmas and Botanical sharing-card
+examples in English/Finnish. Preview choices do not save a theme, grant access or
+enable downloads. The examples' QR codes open the Premium page; actual downloads
+continue to require a published list and the owner's Premium access.
+Hidden Premium lists retain their own preview without an incorrect upgrade
+prompt. Hidden free lists explain both requirements: show the list and have
+Premium access. The download endpoint still rejects hidden lists.
+
+The four additional sample PNGs use the production renderer. Recreate them with
+`node --import tsx scripts/prepare-sharing-card-examples.ts` from the repository
+root. This performs no database or provider operations. No migration or new
+configuration is needed for these UI changes.
+
+Promo-code entry during onboarding is a separate design decision. Redemption must
+remain verified-email-only and rate-limited. An optional signup field would need
+secure carry-over through verification and must not make an invalid promo block
+account creation. The signup and redemption flows are unchanged in this follow-up.
+
+Final audit: ESLint, Stylelint, Prettier, TypeScript, 167 unit tests, 288 tests with
+database integration enabled and production builds pass. The full 276-case
+Chromium suite passed, followed by 28 checks of the final sharing-card/layout
+fixes. All 34 Firefox/WebKit cases are covered successfully; the six feedback
+cases were rerun after correcting an expiry test that left the pointer hovering
+over the toast.
+
+Visual and accessibility checks cover EN/FI, light/dark, 320px layouts, 200% text,
+keyboard focus, reduced motion, preview images and QR destinations. Real-phone
+and screen-reader testing remain manual follow-ups. The final audit also moved
+download requirements above the preview, reduced narrow-dialog padding and
+fixed the timer for repeated guest-link copies. No remaining blocking issue was
+found. These changes are local, uncommitted and undeployed.

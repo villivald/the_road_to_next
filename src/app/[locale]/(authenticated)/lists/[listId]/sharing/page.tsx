@@ -72,17 +72,19 @@ export default async function SharingPage({
         <p className={styles.description}>{list.title}</p>
       </header>
       {query.changed === "removed" && (
-        <SuccessMessage>
+        <SuccessMessage queryKeys={["changed"]}>
           {t(
             "Member removed. Access through a public list or a guest link is separate.",
           )}
         </SuccessMessage>
       )}
       {query.changed === "revoked" && (
-        <SuccessMessage>{t("Invitation canceled.")}</SuccessMessage>
+        <SuccessMessage queryKeys={["changed"]}>
+          {t("Invitation canceled.")}
+        </SuccessMessage>
       )}
       {query.changed === "transferred" && (
-        <SuccessMessage>
+        <SuccessMessage queryKeys={["changed"]}>
           {t("Ownership transferred. You remain an admin.")}
         </SuccessMessage>
       )}

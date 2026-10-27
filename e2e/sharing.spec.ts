@@ -47,10 +47,10 @@ const invite = async (
 const join = async (page: Page) => {
   await page.getByRole("checkbox", { name: /I want to join/ }).check();
   await page.getByRole("button", { name: "Join list", exact: true }).click();
-  await expect(page).toHaveURL(/\/lists\/shared\?joined=1$/);
-  await expect(page.getByRole("main").getByRole("status")).toContainText(
-    "Invitation accepted",
-  );
+  await expect(page).toHaveURL(/\/lists\/shared$/);
+  await expect(
+    page.getByRole("status", { name: "Save confirmation" }),
+  ).toContainText("Invitation accepted");
 };
 
 const memberCard = (page: Page, username: string) =>
@@ -173,9 +173,9 @@ test("private creation, email invitation, member access, reservation and removal
     ).toBeVisible();
     await page.reload();
     await confirmAction(memberCard(page, "e2e-member"), "Remove member");
-    await expect(page.getByRole("main").getByRole("status")).toContainText(
-      "Member removed",
-    );
+    await expect(
+      page.getByRole("status", { name: "Save confirmation" }),
+    ).toContainText("Member removed");
     await other.reload();
     await expect(
       other.getByRole("heading", { name: "Secret gift", exact: true }),
@@ -316,7 +316,7 @@ test("admin promotion, owner transfer and leaving use current ownership and Prem
       }),
     ).toHaveCount(0);
     await confirmAction(memberCard(page, "e2e-owner"), "Leave list");
-    await expect(page).toHaveURL(/\/lists\/shared\?left=1$/);
+    await expect(page).toHaveURL(/\/lists\/shared$/);
     await page.goto(listUrl);
     await expect(
       page.getByRole("heading", { name: title, exact: true }),
