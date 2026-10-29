@@ -50,32 +50,34 @@ test("new lists explain their hidden state and can be shown from the list page",
     control.getByText("Hidden · Admins only", { exact: true }),
   ).toBeVisible();
   await expect(
-    control.getByRole("button", { name: "Show list", exact: true }),
+    control.getByRole("button", { name: "Publish list", exact: true }),
   ).toBeVisible();
   await expect(control).toContainText(
-    "Showing it makes it public, including in Browse.",
+    "Publishing makes it available to anyone, including in Browse.",
   );
   const bounds = await control.boundingBox();
   expect(bounds?.height).toBeLessThanOrEqual(
     (page.viewportSize()?.width ?? 0) >= 768 ? 80 : 170,
   );
   expect(
-    (await control.getByRole("button", { name: "Show list" }).boundingBox())
+    (await control.getByRole("button", { name: "Publish list" }).boundingBox())
       ?.height,
   ).toBeGreaterThanOrEqual(44);
   await control.screenshot({ path: info.outputPath("compact-visibility.png") });
 
   await page.reload();
   await expect(control).toContainText("Hidden · Admins only");
-  await control.getByRole("button", { name: "Show list", exact: true }).click();
+  await control
+    .getByRole("button", { name: "Publish list", exact: true })
+    .click();
   await expect(
     control.getByRole("button", { name: "Hide list", exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByText("List created. It’s hidden from viewers until you show it."),
+    page.getByText("List created. It stays hidden until you publish it."),
   ).toHaveCount(0);
   await expect(control).toContainText(
-    "Hiding the list ends its active reservations.",
+    "Only list admins can open a hidden list.",
   );
 
   const visitor = await browser.newPage();
@@ -87,25 +89,19 @@ test("new lists explain their hidden state and can be shown from the list page",
     await expect(
       visitor.getByRole("region", { name: "List visibility", exact: true }),
     ).toHaveCount(0);
-    page.once("dialog", (dialog) => dialog.dismiss());
-    await control
-      .getByRole("button", { name: "Hide list", exact: true })
-      .click();
-    await expect(control).toContainText("Visible · Public list");
-    await visitor.reload();
-    await expect(
-      visitor.getByRole("heading", { name: "Ready when I am", exact: true }),
-    ).toBeVisible();
-    page.once("dialog", (dialog) => {
-      expect(dialog.message()).toContain("cannot be restored");
-      return dialog.accept();
+    const nativeDialogs: string[] = [];
+    page.on("dialog", async (dialog) => {
+      nativeDialogs.push(dialog.message());
+      await dialog.dismiss();
     });
     await control
       .getByRole("button", { name: "Hide list", exact: true })
       .click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(
-      control.getByRole("button", { name: "Show list", exact: true }),
+      control.getByRole("button", { name: "Publish list", exact: true }),
     ).toBeVisible();
+    expect(nativeDialogs).toEqual([]);
     await visitor.reload();
     await expect(
       visitor.getByRole("heading", { name: "Ready when I am", exact: true }),
@@ -160,9 +156,11 @@ test("showing a private list preserves its audience and controls fit both langua
     exact: true,
   });
   await expect(control).toContainText(
-    "Showing it keeps access limited to invited people and active guest links.",
+    "Publishing keeps access limited to invited people and active guest links.",
   );
-  await control.getByRole("button", { name: "Show list", exact: true }).click();
+  await control
+    .getByRole("button", { name: "Publish list", exact: true })
+    .click();
   await expect(control).toContainText("Visible · Private list");
   const visitor = await browser.newPage();
   try {
@@ -217,3 +215,126 @@ test("showing a private list preserves its audience and controls fit both langua
     ).toEqual([]);
   }
 });
+
+for (const locale of ["en", "fi"] as const) {
+  test(`${locale}: hiding reserved wishes requires review, cancellation is harmless and new reservations require another review`, async ({
+    page,
+  }, info) => {
+    const db = testPrisma();
+    const listId = "e2e-reserved-hide";
+    try {
+      await db.wishlist.create({
+        data: {
+          id: listId,
+          title: "Reserved gifts",
+          ownerId: "e2e-owner",
+          publication: "PUBLISHED",
+          reservationsEnabled: true,
+          memberships: { create: { userId: "e2e-owner", role: "ADMIN" } },
+          wishes: {
+            create: [
+              { id: "e2e-hide-book", title: "Garden book" },
+              { id: "e2e-hide-cup", title: "Coffee cup" },
+            ],
+          },
+        },
+      });
+      await db.reservation.create({
+        data: {
+          id: "e2e-hide-first",
+          wishId: "e2e-hide-book",
+          userId: "e2e-member",
+        },
+      });
+      await signIn(page);
+      await page.goto(`/${locale}/lists/${listId}`);
+      const hideLabel = locale === "fi" ? "Piilota lista" : "Hide list";
+      const confirmLabel =
+        locale === "fi"
+          ? "Piilota lista ja päätä varaukset"
+          : "Hide list and end reservations";
+      const cancelLabel = locale === "fi" ? "Peruuta" : "Cancel";
+      const trigger = page.getByRole("button", {
+        name: hideLabel,
+        exact: true,
+      });
+      await trigger.click();
+      const dialog = page.getByRole("dialog");
+      await expect(dialog).toBeVisible();
+      await expect(
+        dialog.getByText("Garden book", { exact: true }),
+      ).toBeVisible();
+      await expect(
+        dialog.getByRole("button", { name: cancelLabel, exact: true }),
+      ).toBeFocused();
+      await page.keyboard.press("Escape");
+      await expect(dialog).toHaveCount(0);
+      await expect(trigger).toBeFocused();
+      expect(
+        (
+          await db.reservation.findUniqueOrThrow({
+            where: { id: "e2e-hide-first" },
+          })
+        ).endedAt,
+      ).toBeNull();
+      await trigger.click();
+      await expect(dialog).toBeVisible();
+      await dialog
+        .getByRole("button", { name: cancelLabel, exact: true })
+        .click();
+      await expect(dialog).toHaveCount(0);
+      await expect(trigger).toBeFocused();
+      await trigger.click();
+      await expect(dialog).toBeVisible();
+      await db.reservation.create({
+        data: {
+          id: "e2e-hide-second",
+          wishId: "e2e-hide-cup",
+          userId: "e2e-member",
+        },
+      });
+      await dialog.getByRole("button", { name: confirmLabel }).click();
+      await expect(
+        dialog.getByText("Coffee cup", { exact: true }),
+      ).toBeVisible();
+      expect(
+        await db.reservation.count({
+          where: { wish: { wishlistId: listId }, endedAt: null },
+        }),
+      ).toBe(2);
+      expect(
+        (await db.wishlist.findUniqueOrThrow({ where: { id: listId } }))
+          .publication,
+      ).toBe("PUBLISHED");
+      await page.emulateMedia({ colorScheme: "dark" });
+      await page.setViewportSize({ width: 320, height: 800 });
+      await page.evaluate(() => {
+        document.documentElement.style.fontSize = "200%";
+      });
+      expect(
+        await dialog.evaluate(
+          (element) => element.scrollWidth <= element.clientWidth,
+        ),
+      ).toBe(true);
+      expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+      await dialog.screenshot({
+        path: info.outputPath(`hide-reservations-${locale}.png`),
+      });
+      await dialog.getByRole("button", { name: confirmLabel }).click();
+      await expect(dialog).toHaveCount(0);
+      await expect(
+        page.getByRole("button", {
+          name: locale === "fi" ? "Julkaise lista" : "Publish list",
+          exact: true,
+        }),
+      ).toBeVisible();
+      expect(
+        await db.reservation.count({
+          where: { wish: { wishlistId: listId }, endedAt: null },
+        }),
+      ).toBe(0);
+    } finally {
+      await db.$disconnect();
+    }
+  });
+}

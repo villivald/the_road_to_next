@@ -280,13 +280,13 @@ describe("wish permissions and lifecycle", () => {
 
   it("serializes wish changes with list unpublication", async () => {
     const wish = await createWish("e2e-owner", listId, { title: "A book" });
-    await prisma.reservation.create({
+    const reservation = await prisma.reservation.create({
       data: { wishId: wish.id, userId: "e2e-member" },
     });
 
     await Promise.all([
       transitionWish("e2e-owner", listId, wish.id, "hide"),
-      setWishlistPublication("e2e-owner", listId, "DRAFT"),
+      setWishlistPublication("e2e-owner", listId, "DRAFT", [reservation.id]),
       updateWish("e2e-owner", listId, wish.id, {
         title: "Edited concurrently",
         hidden: true,

@@ -29,7 +29,9 @@ import cardStyles from "./cards.module.css";
 import { ListStatus } from "./list-status";
 import { ProfileBio } from "./profile-bio";
 import { ReservationAvailability } from "./reservation-availability";
+import { WishCard } from "./wish-card";
 import { WishStatus } from "./wish-status";
+import type { WishTone } from "./wish-tones";
 
 type ListItem = Awaited<ReturnType<typeof discoverLists>>["lists"][number] & {
   canManage?: boolean;
@@ -135,16 +137,18 @@ export function CatalogueListCard({
 
 export function CatalogueWishCard({
   wish,
+  tone,
   section = "browse",
   favorite,
 }: {
   wish: WishItem;
+  tone?: WishTone;
   section?: DetailSection;
   favorite?: FavoriteTarget;
 }) {
   const t = useText();
   return (
-    <li className={`${styles["list-card"]} ${cardStyles["browse-card"]}`}>
+    <WishCard tone={tone}>
       <CardMediaLink
         path={navigationPath(wishPath(wish.wishlist.id, wish.id), section)}
         title={wish.title}
@@ -191,7 +195,7 @@ export function CatalogueWishCard({
         favorite={favorite}
         canManage={wish.canManage ?? wish.wishlist.isOwner}
       />
-    </li>
+    </WishCard>
   );
 }
 

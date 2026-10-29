@@ -12,6 +12,13 @@ import { readManagedWishCounts } from "./wish-counts";
 
 export class WishlistError extends Error {}
 
+export type ReservedWish = { id: string; wishTitle: string };
+export class ReservationReviewRequired extends WishlistError {
+  constructor(readonly reservations: ReservedWish[]) {
+    super("Review the reserved wishes before hiding this list.");
+  }
+}
+
 const listFields = {
   image: imageSelection,
   id: true,
@@ -185,20 +192,36 @@ export const setWishlistPublication = async (
   userId: string,
   id: string,
   value: unknown,
+  confirmedReservationIds: readonly string[] = [],
 ) => {
   const publication = publicationSchema.parse(value);
 
-  await prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx) => {
     await lockManagedWishlist(tx, id, userId);
 
+    let endedReservations = 0;
     if (publication === "DRAFT") {
-      await tx.reservation.updateMany({
+      // The same lock serializes new reservations, so a newly reserved wish
+      // cannot slip through between review and the destructive update.
+      const reservations = await tx.reservation.findMany({
+        where: { wish: { wishlistId: id }, endedAt: null },
+        select: { id: true, wish: { select: { title: true } } },
+        orderBy: { id: "asc" },
+      });
+      const confirmed = new Set(confirmedReservationIds);
+      if (reservations.some(({ id }) => !confirmed.has(id)))
+        throw new ReservationReviewRequired(
+          reservations.map(({ id, wish }) => ({ id, wishTitle: wish.title })),
+        );
+      const ended = await tx.reservation.updateMany({
         where: { wish: { wishlistId: id }, endedAt: null },
         data: { endedAt: new Date() },
       });
+      endedReservations = ended.count;
     }
 
     await tx.wishlist.update({ where: { id }, data: { publication } });
+    return { endedReservations };
   });
 };
 

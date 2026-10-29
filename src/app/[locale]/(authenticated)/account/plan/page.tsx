@@ -1,4 +1,5 @@
 import { Gift, Heart, Mail, Sparkles } from "lucide-react";
+import { BackLink } from "@/components/back-link";
 import { LocalTime } from "@/components/local-time";
 import shell from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
@@ -30,7 +31,7 @@ export default async function PlanPage({
 
   return (
     <section className={styles.page}>
-      <Link href={accountProfilePath}>{t("Back to account")}</Link>
+      <BackLink href={accountProfilePath}>{t("Back to account")}</BackLink>
       <div className={styles.section}>
         <h1>{t("Your plan")}</h1>
         <p className={shell.muted}>

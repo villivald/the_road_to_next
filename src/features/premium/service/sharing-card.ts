@@ -3,7 +3,7 @@ import { wishlistIdSchema } from "@/features/wishlist/service/schemas";
 import { prisma } from "@/lib/prisma";
 import { readPremiumAccess } from "./entitlements";
 
-// This is an explicit download by a list manager, never an open image preview.
+// Only explicit previews/downloads by a list manager; never a public image endpoint.
 export const readSharingCard = async (
   userId: string,
   sessionId: string,

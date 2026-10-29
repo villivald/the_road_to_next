@@ -1,8 +1,10 @@
-import { ExternalLink } from "lucide-react";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { CardMedia } from "@/components/cards/card-media";
+import cardStyles from "@/components/cards/cards.module.css";
+import { wishTone } from "@/components/cards/wish-card";
 import styles from "@/components/shell.module.css";
 import { GUEST_COOKIE } from "@/features/guest/http";
 import { readGuestWish } from "@/features/guest/service/access";
@@ -38,11 +40,18 @@ export default async function GuestWishPage({
   if (!wish) notFound();
   return (
     <section className={styles.page}>
-      <a href={localizedPath(guestListPath(listId), t.locale)}>
-        {t("Back to shared list")}
+      <a
+        className={styles["back-link"]}
+        href={localizedPath(guestListPath(listId), t.locale)}
+      >
+        <ArrowLeft size={18} aria-hidden="true" />
+        <span>{t("Back to shared list")}</span>
       </a>
       <p className={styles.notice}>{t("Guest view · Read only")}</p>
-      <div className={styles["wish-detail"]}>
+      <div
+        className={`${styles["wish-detail"]} ${cardStyles.tone}`}
+        data-wish-tone={wishTone(wish.id)}
+      >
         <div className={styles["detail-image"]}>
           {wish.image ? (
             <MediaImage image={wish.image} guestListId={listId} />
@@ -50,12 +59,21 @@ export default async function GuestWishPage({
             <CardMedia image={null} title={wish.title} />
           )}
         </div>
-        <div className={styles["content-stack"]}>
-          <h1>{wish.title}</h1>
-          <p>{formatWishPrice(wish.priceMinor, wish.currency, t.locale)}</p>
-          <WishPriority priority={wish.priority} />
+        <div className={styles["wish-copy"]}>
+          <div className={styles["wish-heading"]}>
+            <h1>{wish.title}</h1>
+            <div className={styles["wish-facts"]}>
+              <p className={styles.price}>
+                {formatWishPrice(wish.priceMinor, wish.currency, t.locale)}
+              </p>
+              <WishPriority priority={wish.priority} />
+            </div>
+          </div>
           {wish.description && (
-            <p className={styles.description}>{wish.description}</p>
+            <div className={styles["wish-note"]}>
+              <p className={styles.eyebrow}>{t("About this wish")}</p>
+              <p className={styles.description}>{wish.description}</p>
+            </div>
           )}
           {wish.externalUrl && (
             <a

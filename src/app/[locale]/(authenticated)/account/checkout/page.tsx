@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
+import { BackLink } from "@/components/back-link";
 import styles from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import billing from "@/features/billing/components/billing.module.css";
 import { PaddleCheckout } from "@/features/billing/components/paddle-checkout";
 import { checkoutDetails } from "@/features/billing/service/checkout";
 import { plans } from "@/features/billing/service/config";
-import { Link } from "@/i18n/navigation";
 import { getText } from "@/i18n/server";
 import { redirect } from "@/i18n/server-navigation";
 
@@ -36,7 +36,7 @@ export default async function CheckoutPage({
             "Checkout could not be loaded. Return to your plan and try again shortly.",
           )}
         </p>
-        <Link href="/account/plan">{t("Back to your plan")}</Link>
+        <BackLink href="/account/plan">{t("Back to your plan")}</BackLink>
       </section>
     );
   }
@@ -46,7 +46,7 @@ export default async function CheckoutPage({
 
   return (
     <section className={billing.checkout}>
-      <Link href="/account/plan">{t("Back to your plan")}</Link>
+      <BackLink href="/account/plan">{t("Back to your plan")}</BackLink>
       <h1>{t("Premium checkout")}</h1>
       <p className={styles.notice}>
         {t(

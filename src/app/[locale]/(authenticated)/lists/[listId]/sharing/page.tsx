@@ -1,6 +1,7 @@
-import { ArrowLeft, Eye, Info, Link2, Mail, Shield, Users } from "lucide-react";
+import { Eye, Info, Link2, Mail, Shield, Users } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { BackLink } from "@/components/back-link";
 import { CopyLink } from "@/components/cards/copy-link";
 import { ListStatus } from "@/components/cards/list-status";
 import { ActionForm } from "@/components/form/action-form";
@@ -64,10 +65,9 @@ export default async function SharingPage({
   return (
     <div className={sharingStyles.page}>
       <header className={sharingStyles.header}>
-        <Link href={listSettingsPath(listId)}>
-          <ArrowLeft size={18} aria-hidden="true" />{" "}
+        <BackLink href={listSettingsPath(listId)}>
           {t("Back to list settings")}
-        </Link>
+        </BackLink>
         <h1>{t("Sharing and members")}</h1>
         <p className={styles.description}>{list.title}</p>
       </header>

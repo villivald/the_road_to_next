@@ -51,6 +51,55 @@ afterAll(async () => {
 });
 
 describe("wishlist management and authorization", () => {
+  it("requires an authorized reservation review even for a direct hide submission", async () => {
+    const list = await createWishlist("e2e-owner", {
+      ...input,
+      reservationsEnabled: true,
+    });
+    await setWishlistPublication("e2e-owner", list.id, "PUBLISHED");
+    const wish = await prisma.wish.create({
+      data: {
+        wishlistId: list.id,
+        title: "Reserved book",
+        reservations: { create: { userId: "e2e-member" } },
+      },
+      include: { reservations: true },
+    });
+    const data = new FormData();
+    data.set("publication", "DRAFT");
+    auth.userId = "e2e-member";
+    const denied = await changePublication(list.id, EMPTY_ACTION_STATE, data);
+    expect(denied.status).toBe("ERROR");
+    expect(denied.reservationReview).toBeUndefined();
+    auth.userId = "e2e-owner";
+    const review = await changePublication(list.id, EMPTY_ACTION_STATE, data);
+    expect(review.status).toBe("REVIEW");
+    expect(review.reservationReview).toEqual([
+      { id: wish.reservations[0].id, wishTitle: "Reserved book" },
+    ]);
+    expect((await readManagedWishlist(list.id, "e2e-owner"))?.publication).toBe(
+      "PUBLISHED",
+    );
+    data.append("confirmedReservation", "another-reservation");
+    expect((await changePublication(list.id, review, data)).status).toBe(
+      "REVIEW",
+    );
+    data.set("confirmedReservation", wish.reservations[0].id);
+    expect((await changePublication(list.id, review, data)).status).toBe(
+      "SUCCESS",
+    );
+    expect((await readManagedWishlist(list.id, "e2e-owner"))?.publication).toBe(
+      "DRAFT",
+    );
+    expect(
+      (
+        await prisma.reservation.findUniqueOrThrow({
+          where: { id: wish.reservations[0].id },
+        })
+      ).endedAt,
+    ).not.toBeNull();
+  });
+
   it("counts available wishes and active reservations without hidden content, history or reserver identities", async () => {
     const list = await createWishlist("e2e-owner", {
       ...input,
@@ -366,8 +415,14 @@ describe("wishlist management and authorization", () => {
       }),
     ).toBe(1);
 
-    await Promise.all([
+    await expect(
       setWishlistPublication("e2e-owner", list.id, "DRAFT"),
+    ).rejects.toThrow("Review the reserved wishes");
+    const reservation = await prisma.reservation.findFirstOrThrow({
+      where: { wishId: wish.id, endedAt: null },
+    });
+    await Promise.all([
+      setWishlistPublication("e2e-owner", list.id, "DRAFT", [reservation.id]),
       updateWishlist("e2e-owner", list.id, {
         ...input,
         title: "Edited concurrently",

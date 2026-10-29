@@ -77,6 +77,18 @@ test("themes persist, show in the list and export a sharing card", async ({
   await expect(
     dialog.getByText("PNG image · 1200 × 800 pixels · QR code included"),
   ).toBeVisible();
+  const preview = dialog.getByRole("img", {
+    name: "Sharing card for Birthday wishes",
+  });
+  await expect(preview).toBeVisible();
+  await expect
+    .poll(() =>
+      preview.evaluate(
+        (image: HTMLImageElement) =>
+          image.complete && image.naturalWidth === 1200,
+      ),
+    )
+    .toBe(true);
   const toolbarDownload = page.waitForEvent("download");
   await dialog
     .getByRole("link", { name: "Download sharing card", exact: true })
@@ -326,4 +338,46 @@ test("premium showcase works in both languages and themes without overflow", asy
     });
     if (viewport) await page.setViewportSize(viewport);
   }
+});
+
+test("Classic sharing-card preview retries a failure and keeps its dialog usable", async ({
+  page,
+}) => {
+  await signIn(page);
+  await page.goto(`/en/lists/${listId}`);
+  let requests = 0;
+  await page.route(
+    `**/api/lists/${listId}/sharing-card?locale=en`,
+    async (route) => {
+      requests += 1;
+      if (requests === 1) await route.fulfill({ status: 503 });
+      else await route.continue();
+    },
+  );
+  const trigger = page.getByRole("button", {
+    name: "Sharing card",
+    exact: true,
+  });
+  await trigger.click();
+  const dialog = page.getByRole("dialog", { name: "Sharing card" });
+  await expect(dialog.getByRole("alert")).toHaveText(
+    "Card unavailable. Check your access and try again.",
+  );
+  await dialog.getByRole("button", { name: "Preview sharing card" }).click();
+  const preview = dialog.getByRole("img", {
+    name: "Sharing card for Birthday wishes",
+  });
+  await expect(preview).toBeVisible();
+  await expect
+    .poll(() =>
+      preview.evaluate(
+        (image: HTMLImageElement) =>
+          image.complete && image.naturalWidth === 1200,
+      ),
+    )
+    .toBe(true);
+  expect(requests).toBe(2);
+  await page.keyboard.press("Escape");
+  await expect(dialog).not.toBeVisible();
+  await expect(trigger).toBeFocused();
 });

@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { navigationPath } from "@/app/_navigation/navigation-path";
 import { CardMedia, CardMediaLink } from "@/components/cards/card-media";
 import cardStyles from "@/components/cards/cards.module.css";
+import { WishCard } from "@/components/cards/wish-card";
 import { WishStatus } from "@/components/cards/wish-status";
+import { createWishTones } from "@/components/cards/wish-tones";
 import { ActionForm } from "@/components/form/action-form";
 import { SuccessMessage } from "@/components/form/success-message";
 import styles from "@/components/shell.module.css";
@@ -53,6 +55,7 @@ export default async function ReservationsPage({
     Number(query.page ?? 1),
   );
 
+  const tones = createWishTones(reservations.map(({ wish }) => wish.id));
   const invitations = await readGroupInvitations(
     user.id,
     Number(query.invitationsPage ?? 1),
@@ -123,7 +126,7 @@ export default async function ReservationsPage({
       {reservations.length ? (
         <ul className={styles["list-grid"]}>
           {reservations.map(({ id, wish, groupEnabled }) => (
-            <li key={id} className={styles["list-card"]}>
+            <WishCard key={id} tone={tones[wish.id]}>
               <CardMediaLink
                 path={navigationPath(
                   wishPath(wish.wishlist.id, wish.id),
@@ -182,7 +185,7 @@ export default async function ReservationsPage({
                   </ActionForm>
                 )}
               </div>
-            </li>
+            </WishCard>
           ))}
         </ul>
       ) : (

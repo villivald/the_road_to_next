@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DetailNavigation } from "@/app/_navigation/navigation-context";
 import { detailSection } from "@/app/_navigation/navigation-path";
+import { BackLink } from "@/components/back-link";
 import { CopyLink } from "@/components/cards/copy-link";
 import { ListStatus } from "@/components/cards/list-status";
 import { SuccessMessage } from "@/components/form/success-message";
@@ -80,7 +81,7 @@ export default async function ListPage({
   return (
     <section className={styles.page}>
       <DetailNavigation section={section} />
-      <Link
+      <BackLink
         href={
           section === "favorites"
             ? favoritesPath
@@ -98,7 +99,7 @@ export default async function ListPage({
             : section === "reservations"
               ? t("View my reservations")
               : t("Back to browse")}
-      </Link>
+      </BackLink>
 
       {list.canManage && (created === "1" || saved === "1") && (
         <SuccessMessage queryKeys={["created", "saved"]}>

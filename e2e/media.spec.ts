@@ -287,7 +287,7 @@ test("list image upload, replacement, removal and revocation work through the UI
   page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Hide list", exact: true }).click();
   await expect(
-    page.getByRole("button", { name: "Show list", exact: true }),
+    page.getByRole("button", { name: "Publish list", exact: true }),
   ).toBeVisible();
   const revoked = await request.get(second, {
     headers: { "If-None-Match": '"old"' },

@@ -501,6 +501,7 @@ test("streamed loading previews reserve space, hide decorative content and respe
       ).toBe(true);
       if (
         path === "/en/lists" ||
+        path.endsWith("/wishes/e2e-loading-wish") ||
         path.endsWith("/new") ||
         path.endsWith("/edit")
       ) {

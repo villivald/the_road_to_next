@@ -38,7 +38,10 @@ test("visibility success keeps the toolbar stable and pauses while keyboard-focu
   await signIn(page);
   await page.goto(path);
   const control = page.getByRole("region", { name: "List visibility" });
-  const show = control.getByRole("button", { name: "Show list", exact: true });
+  const show = control.getByRole("button", {
+    name: "Publish list",
+    exact: true,
+  });
   await expect(show).toBeVisible();
   const header = page.locator("header").filter({
     has: page.getByRole("heading", {
@@ -50,7 +53,7 @@ test("visibility success keeps the toolbar stable and pauses while keyboard-focu
   await page.clock.install();
   await show.click();
   const toast = page.getByRole("status", { name: "Save confirmation" });
-  await expect(toast).toContainText("List is now visible.");
+  await expect(toast).toContainText("List published.");
   await expect(control.getByRole("status")).toHaveCount(0);
   const hide = control.getByRole("button", { name: "Hide list", exact: true });
   await expect(hide).toBeVisible();
@@ -167,7 +170,9 @@ test("navigation clears old confirmations and does not pause the next one", asyn
   await page.goto(path);
   const control = page.getByRole("region", { name: "List visibility" });
   await page.clock.install();
-  await control.getByRole("button", { name: "Show list", exact: true }).click();
+  await control
+    .getByRole("button", { name: "Publish list", exact: true })
+    .click();
   const toast = page.getByRole("status", { name: "Save confirmation" });
   await expect(toast).toBeVisible();
   await toast.getByRole("button", { name: "Dismiss confirmation" }).focus();

@@ -5,8 +5,8 @@ import { changeVisibility } from "@/features/sharing/actions/manage-sharing";
 import { Link } from "@/i18n/navigation";
 import { useText } from "@/i18n/use-text";
 import { guestLinksPath, listPath, sharingPath } from "@/paths";
-import { changePublication } from "../actions/manage-list";
 import settingsStyles from "./list-settings.module.css";
+import { PublicationControl } from "./publication-control";
 
 export function ListSettings({
   list,
@@ -108,31 +108,7 @@ export function ListSettings({
                   : t("Make this list visible to people with access.")}
             </p>
           </div>
-          <ActionForm
-            action={changePublication.bind(null, list.id)}
-            label={visible ? t("Hide list") : t("Show list")}
-            pendingLabel={t("Updating…")}
-            confirmationMessage={
-              visible
-                ? t(
-                    "Hide this list? Active reservations will end and cannot be restored.",
-                  )
-                : undefined
-            }
-            icon={
-              visible ? (
-                <EyeOff size={18} aria-hidden="true" />
-              ) : (
-                <Eye size={18} aria-hidden="true" />
-              )
-            }
-          >
-            <input
-              type="hidden"
-              name="publication"
-              value={visible ? "DRAFT" : "PUBLISHED"}
-            />
-          </ActionForm>
+          <PublicationControl id={list.id} visible={visible} />
         </div>
       </section>
       <section

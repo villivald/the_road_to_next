@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import cardStyles from "@/components/cards/cards.module.css";
 import shell from "@/components/shell.module.css";
 import {
   AccountDetails,
@@ -40,11 +41,21 @@ function LoadingFrame({
   );
 }
 
-function SkeletonCards({ media = true }: { media?: boolean }) {
+function SkeletonCards({
+  media = true,
+  wish = false,
+}: {
+  media?: boolean;
+  wish?: boolean;
+}) {
   return (
     <div className={shell["list-grid"]}>
       {[0, 1, 2].map((index) => (
-        <div key={index} className={shell["list-card"]}>
+        <div
+          key={index}
+          className={`${shell["list-card"]} ${wish ? `${cardStyles.tone} ${cardStyles["wish-card"]}` : ""}`}
+          data-wish-tone={wish ? ["butter", "lilac", "sage"][index] : undefined}
+        >
           {media && <div className={`${styles.block} ${styles.media}`} />}
           <div className={`${styles.block} ${styles.title}`} />
           <div className={`${styles.block} ${styles.line}`} />
@@ -137,13 +148,15 @@ export function DetailSkeleton({ kind = "list" }: { kind?: "list" | "wish" }) {
           <div className={`${styles.block} ${styles.heading}`} />
           <div className={`${styles.block} ${styles.line}`} />
           <div className={`${styles.block} ${styles.toolbar}`} />
-          <SkeletonCards />
+          <SkeletonCards wish />
         </>
       ) : (
         <div className={shell["wish-detail"]}>
           <div className={`${styles.block} ${styles["detail-media"]}`} />
-          <div className={shell["content-stack"]}>
-            <div className={`${styles.block} ${styles.heading}`} />
+          <div className={shell["wish-copy"]}>
+            <div className={shell["wish-heading"]}>
+              <div className={`${styles.block} ${styles.heading}`} />
+            </div>
             <div className={`${styles.block} ${styles.line}`} />
             <div className={`${styles.block} ${styles.title}`} />
             <div className={shell["list-settings"]}>

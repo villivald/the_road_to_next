@@ -19,6 +19,8 @@ import {
 import {
   createWishlist,
   deleteWishlist,
+  ReservationReviewRequired,
+  type ReservedWish,
   setWishlistPublication,
   updateWishlist,
   WishlistError,
@@ -84,16 +86,35 @@ export const updateList = async (
   return toActionState("SUCCESS", "Changes saved.");
 };
 
+export type PublicationState = ActionState & {
+  reservationReview?: ReservedWish[];
+};
+
 export const changePublication = async (
   id: string,
-  _state: ActionState,
+  _state: PublicationState,
   data: FormData,
-) => {
+): Promise<PublicationState> => {
   const { user } = await getAuthOrRedirect();
 
+  let endedReservations = 0;
   try {
-    await setWishlistPublication(user.id, id, data.get("publication"));
+    const confirmed = z
+      .array(z.string().max(200))
+      .max(10000)
+      .parse(data.getAll("confirmedReservation"));
+    ({ endedReservations } = await setWishlistPublication(
+      user.id,
+      id,
+      data.get("publication"),
+      confirmed,
+    ));
   } catch (error) {
+    if (error instanceof ReservationReviewRequired)
+      return {
+        ...toActionState("REVIEW", ""),
+        reservationReview: error.reservations,
+      };
     return actionError(error);
   }
 
@@ -103,7 +124,9 @@ export const changePublication = async (
     "SUCCESS",
     data.get("publication") === "PUBLISHED"
       ? "List is now visible."
-      : "List hidden from viewers. Active reservations have ended.",
+      : endedReservations > 0
+        ? "List hidden from viewers. Active reservations have ended."
+        : "List hidden from viewers.",
   );
 };
 

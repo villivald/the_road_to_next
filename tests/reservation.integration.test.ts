@@ -22,6 +22,7 @@ import {
 import {
   createWishlist,
   deleteWishlist,
+  ReservationReviewRequired,
   setWishlistPublication,
   updateWishlist,
 } from "@/features/wishlist/service/lists";
@@ -309,7 +310,9 @@ describe("reservations", () => {
       );
     }
     if (change === "unpublish") {
-      await setWishlistPublication("e2e-owner", listId, "DRAFT");
+      await setWishlistPublication("e2e-owner", listId, "DRAFT", [
+        await reservationId(),
+      ]);
       await setWishlistPublication("e2e-owner", listId, "PUBLISHED");
     }
     if (change === "archive") {
@@ -367,7 +370,16 @@ describe("reservations", () => {
       reserveWish("e2e-member", listId, wishId),
       mutate(),
     ]);
-    expect(results[1].status).toBe("fulfilled");
+    if (change === "unpublish" && results[1].status === "rejected") {
+      expect(results[1].reason).toBeInstanceOf(ReservationReviewRequired);
+      const review = results[1].reason as ReservationReviewRequired;
+      await setWishlistPublication(
+        "e2e-owner",
+        listId,
+        "DRAFT",
+        review.reservations.map(({ id }) => id),
+      );
+    } else expect(results[1].status).toBe("fulfilled");
     expect(await active()).toHaveLength(0);
   });
 

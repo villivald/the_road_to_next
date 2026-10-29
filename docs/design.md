@@ -14,6 +14,9 @@ Alfa Slab One wordmark remain the brand anchors.
   content columns, buttons, and reading layouts.
 - `src/components/cards/` owns image frames, list stacks, typographic covers,
   ownership markers, statuses, and card actions.
+- The homepage keeps its yellow introduction, with an italic green title accent,
+  three numbered steps, and a clearly labelled example wishlist. Examples are static
+  illustrations, not real users, purchasable products, or interactive wish controls.
 - Marketing pages use a yellow introduction. Account, billing, and management
   screens use quieter paper panels. The botanical illustration is decorative;
   source and rights information lives beside the asset.
@@ -21,9 +24,23 @@ Alfa Slab One wordmark remain the brand anchors.
 ## Layout and interaction
 
 Keep browsing cards in a regular grid with consistent image proportions and aligned
-metadata/actions. Contain product images; rotate only decorative list-stack images.
+metadata/actions. Card thumbnails and decorative list stacks fill their frames with
+`object-fit: cover`; full wish details preserve the original image proportions.
 Missing images use the actual wish/list title as a decorative cover, while the
 normal linked title remains accessible.
+
+Wish cards use the shared `WishCard` wrapper with a thin border and soft butter,
+lilac or sage surface. The visible collection is balanced across all three colours,
+assigned using each wish’s ID to vary the order instead of repeating grid columns.
+Sorting the same collection preserves each wish’s colour; filtering or pagination
+can rebalance it. Colours are decorative, never an identity, priority or availability
+signal.
+Light/dark tokens live in `globals.css`; Premium list artwork and themes are retained.
+Price and priority share a wrapping facts row. Pointer hover gently scales a wish
+image inside its frame; reduced motion disables the effect and keyboard focus keeps
+its existing outline. Cropped thumbnails lead to uncropped images on wish details.
+All explicit back links use the shared left-arrow treatment and retain their
+existing destinations; guest links retain their full-page navigation.
 
 The header separates account tools from primary navigation. Verified accounts have
 four visible mobile shortcuts: Browse, Lists, Reservations, and Favorites. All use
@@ -57,7 +74,12 @@ The one-click heart has an accessible pressed state and uses ink on yellow in bo
 themes. Favorites persist independently of reservations; My reservations shows
 priority and cancellation, without a favorite control.
 
-Wish details use image and information columns. Editors and Account use adjacent
+Wish details use one bordered surface with image and information columns, a grouped
+title/price/priority header, and a labelled note. Detail images use their intrinsic
+proportions with no letterboxing or cropping; missing-image covers keep a 4:3 frame.
+Notes and reservation controls each have a divider only when their section exists; management controls stay separate. Regular and read-only guest details
+share this geometry. The loading preview uses a neutral 4:3 estimate until the image
+dimensions are available. Editors and Account use adjacent
 panels when space allows and stack on smaller screens. Avoid nesting independent
 forms. Keep labels, field help, confirmations, and destructive consequences visible.
 
@@ -95,3 +117,24 @@ uses a debounced keyboard-accessible picker with public avatars or initials and 
 explicit Invite action. Empty invitation sections stay compact; individual and group
 reservation cards share aligned action footers. Consent text aligns at the first line.
 See [group reservations](group-reservations.md) for lifecycle and privacy rules.
+
+Premium sharing-card previews display the actual authorized PNG after the user
+opens the dialog or requests an inline preview. They use the same protected,
+no-store endpoint as downloads, with loading, failure and retry states. The Classic
+card combines its warm paper palette with the existing botanical artwork. Other
+selected themes retain their own artwork. Private cards remain limited to managers
+and their QR codes do not grant access.
+
+Homepage example cards use one larger OpenMoji illustration each (books, a teapot
+and flowers), with attribution on the About
+page and asset provenance in `public/illustrations/openmoji/README.md`.
+
+Publishing uses “Publish list” / “Julkaise lista”, paired with “Hide list” /
+“Piilota lista”. Publishing preserves the configured public/private audience.
+The list page and settings share one publication control. Hiding without active
+reservations completes directly. Otherwise the server returns a review of affected
+wish titles (no reserver identities), displayed in a native modal dialog with
+Cancel initially focused. Escape and Cancel preserve the list and reservations.
+Confirmation rechecks active reservation IDs under the list lock; new reservations
+require a fresh review. Direct submissions also enforce reservation review on the
+server; the interactive dialog requires JavaScript.

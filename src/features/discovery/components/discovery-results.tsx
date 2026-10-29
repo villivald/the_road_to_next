@@ -3,6 +3,7 @@ import {
   CataloguePersonCard,
   CatalogueWishCard,
 } from "@/components/cards/catalogue-cards";
+import { createWishTones } from "@/components/cards/wish-tones";
 import styles from "@/components/shell.module.css";
 import { useText } from "@/i18n/use-text";
 import type {
@@ -28,6 +29,9 @@ export function DiscoveryResults({
 }) {
   const t = useText();
 
+  const tones = createWishTones(
+    "wishes" in result ? result.wishes.map((wish) => wish.id) : [],
+  );
   return (
     <ul
       className={styles["list-grid"]}
@@ -60,6 +64,7 @@ export function DiscoveryResults({
               <CatalogueWishCard
                 key={wish.id}
                 wish={wish}
+                tone={tones[wish.id]}
                 favorite={
                   canFavorite
                     ? {

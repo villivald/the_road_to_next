@@ -13,7 +13,10 @@ import {
   detailSection,
   navigationPath,
 } from "@/app/_navigation/navigation-path";
+import { BackLink } from "@/components/back-link";
 import { CardMedia } from "@/components/cards/card-media";
+import cardStyles from "@/components/cards/cards.module.css";
+import { wishTone } from "@/components/cards/wish-card";
 import { WishStatus } from "@/components/cards/wish-status";
 import { ActionForm } from "@/components/form/action-form";
 import { SuccessMessage } from "@/components/form/success-message";
@@ -67,12 +70,9 @@ export default async function WishPage({
   return (
     <section className={styles.page}>
       <DetailNavigation section={section} />
-      <Link
-        className={styles.description}
-        href={navigationPath(listPath(listId), section)}
-      >
+      <BackLink href={navigationPath(listPath(listId), section)}>
         {t("Back to")} {wish.wishlist.title}
-      </Link>
+      </BackLink>
 
       {wish.canManage && (created === "1" || saved === "1") && (
         <SuccessMessage queryKeys={["created", "saved"]}>
@@ -80,7 +80,10 @@ export default async function WishPage({
         </SuccessMessage>
       )}
 
-      <div className={styles["wish-detail"]}>
+      <div
+        className={`${styles["wish-detail"]} ${cardStyles.tone}`}
+        data-wish-tone={wishTone(wish.id)}
+      >
         <div className={styles["detail-image"]}>
           {wish.image ? (
             <MediaImage image={wish.image} />
@@ -88,10 +91,10 @@ export default async function WishPage({
             <CardMedia image={null} title={wish.title} />
           )}
         </div>
-        <div className={styles["content-stack"]}>
-          <div className={styles["page-heading"]}>
-            <div>
-              <h1>{wish.title}</h1>
+        <div className={styles["wish-copy"]}>
+          <div className={styles["wish-heading"]}>
+            <h1>{wish.title}</h1>
+            <div className={styles["wish-facts"]}>
               <p className={styles.price}>
                 {formatWishPrice(wish.priceMinor, wish.currency, t.locale)}
               </p>
@@ -128,7 +131,10 @@ export default async function WishPage({
             />
           )}
           {wish.description && (
-            <p className={styles.description}>{wish.description}</p>
+            <div className={styles["wish-note"]}>
+              <p className={styles.eyebrow}>{t("About this wish")}</p>
+              <p className={styles.description}>{wish.description}</p>
+            </div>
           )}
 
           {wish.externalUrl && (

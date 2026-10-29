@@ -1,6 +1,7 @@
-import { ArrowLeft, Clock, Eye, Info, Link2 } from "lucide-react";
+import { Clock, Eye, Info, Link2 } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { BackLink } from "@/components/back-link";
 import { ActionForm } from "@/components/form/action-form";
 import { SuccessMessage } from "@/components/form/success-message";
 import { LocalTime } from "@/components/local-time";
@@ -48,10 +49,9 @@ export default async function GuestLinksPage({
   return (
     <div className={sharingStyles.page}>
       <header className={sharingStyles.header}>
-        <Link href={sharingPath(listId)}>
-          <ArrowLeft size={18} aria-hidden="true" />{" "}
+        <BackLink href={sharingPath(listId)}>
           {t("Back to sharing and members")}
-        </Link>
+        </BackLink>
         <h1>{t("Guest links")}</h1>
         <p className={styles.description}>{list.title}</p>
         <p className={styles.muted}>

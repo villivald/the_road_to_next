@@ -61,6 +61,15 @@ const information = (
             <a href="https://openfontlicense.org/">SIL Open Font License</a>.
           </li>
           <li>
+            {t("Unmodified homepage illustrations by")}{" "}
+            <a href="https://openmoji.org/">OpenMoji</a>
+            {t(", licensed under")}{" "}
+            <a href="https://creativecommons.org/licenses/by-sa/4.0/">
+              CC BY-SA 4.0
+            </a>
+            .
+          </li>
+          <li>
             {t("Botanical illustration from")}{" "}
             <a href="https://publicdomainreview.org/collection/hortus-malabaricus-1678-1693/">
               Hortus Malabaricus (1678–1693)

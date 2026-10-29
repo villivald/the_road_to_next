@@ -54,7 +54,7 @@ test("create, validate, edit, publish, unpublish, and confirm deletion", async (
   await page.getByLabel("Title", { exact: true }).fill("Weekend wishes");
   await page.getByRole("button", { name: "Create list", exact: true }).click();
   await expect(page.getByRole("status")).toContainText(
-    "List created. It’s hidden from viewers",
+    "List created. It stays hidden until you publish it.",
   );
   const listUrl = new URL(page.url()).pathname;
 
@@ -72,8 +72,8 @@ test("create, validate, edit, publish, unpublish, and confirm deletion", async (
   await expect(page.getByRole("status")).toContainText("Changes saved");
 
   await page.goto(`${listUrl}/edit`);
-  await page.getByRole("button", { name: "Show list", exact: true }).click();
-  await expect(page.getByRole("status")).toContainText("List is now visible");
+  await page.getByRole("button", { name: "Publish list", exact: true }).click();
+  await expect(page.getByRole("status")).toContainText("List published");
   await expect(page.getByRole("button", { name: "Hide list" })).toBeVisible();
 
   const visitor = await browser.newPage({ baseURL: testOrigin });
@@ -176,7 +176,9 @@ test("draft/private content stays out of direct responses and another account ca
     await page
       .getByRole("link", { name: "List settings", exact: true })
       .click();
-    await page.getByRole("button", { name: "Show list", exact: true }).click();
+    await page
+      .getByRole("button", { name: "Publish list", exact: true })
+      .click();
     await expect(page.getByRole("button", { name: "Hide list" })).toBeVisible();
     await other.goto(listUrl);
     await expect(

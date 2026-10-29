@@ -3,6 +3,8 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { CardMedia } from "@/components/cards/card-media";
 import cardStyles from "@/components/cards/cards.module.css";
+import { WishCard } from "@/components/cards/wish-card";
+import { createWishTones } from "@/components/cards/wish-tones";
 import styles from "@/components/shell.module.css";
 import { GUEST_COOKIE } from "@/features/guest/http";
 import {
@@ -44,6 +46,7 @@ export default async function GuestListPage({
     token,
     (await searchParams).page,
   );
+  const tones = createWishTones(wishes.map((wish) => wish.id));
   return (
     <section className={styles.page}>
       <p className={styles.notice}>
@@ -69,7 +72,7 @@ export default async function GuestListPage({
       {wishes.length ? (
         <ul className={styles["list-grid"]}>
           {wishes.map((wish) => (
-            <li key={wish.id} className={styles["list-card"]}>
+            <WishCard key={wish.id} tone={tones[wish.id]}>
               <a
                 href={localizedPath(guestWishPath(listId, wish.id), t.locale)}
                 className={cardStyles["media-link"]}
@@ -90,9 +93,13 @@ export default async function GuestListPage({
                   {wish.title}
                 </a>
               </h3>
-              <p>{formatWishPrice(wish.priceMinor, wish.currency, t.locale)}</p>
-              <WishPriority priority={wish.priority} />
-            </li>
+              <div className={cardStyles["wish-facts"]}>
+                <p className={styles.price}>
+                  {formatWishPrice(wish.priceMinor, wish.currency, t.locale)}
+                </p>
+                <WishPriority priority={wish.priority} />
+              </div>
+            </WishCard>
           ))}
         </ul>
       ) : (

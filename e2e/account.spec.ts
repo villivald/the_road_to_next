@@ -157,7 +157,9 @@ test("register, publish, reserve, cancel, fulfill and delete without a successor
     await page
       .getByRole("link", { name: "List settings", exact: true })
       .click();
-    await page.getByRole("button", { name: "Show list", exact: true }).click();
+    await page
+      .getByRole("button", { name: "Publish list", exact: true })
+      .click();
     await expect(page.getByRole("button", { name: "Hide list" })).toBeVisible();
     await page.getByRole("link", { name: "Back to list", exact: true }).click();
     await page.getByRole("link", { name: "Add a wish", exact: true }).click();

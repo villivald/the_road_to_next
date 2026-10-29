@@ -239,9 +239,14 @@
   min-width: 0;
 }
 
-.download-preview {
+.card-preparing {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 3 / 2;
+  padding: 1rem;
+  border: 1px solid var(--border);
   border-radius: var(--radius);
-  overflow: hidden;
+  background: var(--muted);
 }
 
 .card-examples {

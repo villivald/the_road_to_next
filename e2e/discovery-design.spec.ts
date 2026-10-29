@@ -22,9 +22,11 @@ const upload = async (
   query: string,
   alt: string,
   color: string,
+  width = 600,
+  height = 450,
 ) => {
   const buffer = await sharp({
-    create: { width: 600, height: 450, channels: 3, background: color },
+    create: { width, height, channels: 3, background: color },
   })
     .png()
     .toBuffer();
@@ -406,5 +408,63 @@ test("footer links and information pages are accessible in both themes", async (
         () => document.documentElement.scrollWidth <= innerWidth,
       ),
     ).toBe(true);
+  }
+});
+
+test("wish images fill thumbnails, details keep their proportions and the grid uses all three colours", async ({
+  page,
+}) => {
+  await signIn(page);
+  await upload(
+    page,
+    `kind=wish&listId=${listId}&wishId=e2e-design-book`,
+    "A portrait book",
+    "#7c9368",
+    450,
+    900,
+  );
+  await upload(
+    page,
+    `kind=wish&listId=${listId}&wishId=e2e-design-cup`,
+    "A landscape cup",
+    "#ffd803",
+    1000,
+    350,
+  );
+  await page.goto(`/en/lists/${listId}`);
+  await expect(
+    page.getByRole("heading", { name: title, exact: true }),
+  ).toBeVisible();
+  const cards = page.locator('li[class*="wish-card"]');
+  await expect(cards).toHaveCount(4);
+  expect(
+    new Set(
+      await cards.evaluateAll((items) =>
+        items.map((item) => getComputedStyle(item).backgroundColor),
+      ),
+    ).size,
+  ).toBe(3);
+  for (const alt of ["A portrait book", "A landscape cup"]) {
+    await expect(page.getByRole("img", { name: alt })).toHaveCSS(
+      "object-fit",
+      "cover",
+    );
+  }
+  for (const [id, alt, ratio] of [
+    ["book", "A portrait book", 0.5],
+    ["cup", "A landscape cup", 1000 / 350],
+  ] as const) {
+    await page.goto(`/en/lists/${listId}/wishes/e2e-design-${id}`);
+    const image = page.getByRole("img", { name: alt });
+    await expectImageLoaded(image);
+    const bounds = await image.boundingBox();
+    expect(bounds!.width / bounds!.height).toBeCloseTo(ratio, 1);
+    const frame = await page.locator('[class*="detail-image"]').boundingBox();
+    expect(Math.abs(frame!.height - bounds!.height)).toBeLessThan(1);
+    if (id === "book")
+      await expect(
+        page.getByText("About this wish", { exact: true }),
+      ).toHaveCount(0);
+    await accessible(page);
   }
 });

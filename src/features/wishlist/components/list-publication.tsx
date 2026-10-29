@@ -1,8 +1,7 @@
 import { Eye, EyeOff, LockKeyhole } from "lucide-react";
-import { ActionForm } from "@/components/form/action-form";
 import { useText } from "@/i18n/use-text";
-import { changePublication } from "../actions/manage-list";
 import styles from "./list-publication.module.css";
+import { PublicationControl } from "./publication-control";
 
 export function ListPublication({
   list,
@@ -48,33 +47,7 @@ export function ListPublication({
                 "Showing it keeps access limited to invited people and active guest links.",
               )}
       </p>
-      <ActionForm
-        successDisplay="toast"
-        action={changePublication.bind(null, list.id)}
-        label={visible ? t("Hide list") : t("Show list")}
-        pendingLabel={t("Updating…")}
-        secondary={visible}
-        confirmationMessage={
-          visible
-            ? t(
-                "Hide this list? Active reservations will end and cannot be restored.",
-              )
-            : undefined
-        }
-        icon={
-          visible ? (
-            <EyeOff size={18} aria-hidden="true" />
-          ) : (
-            <Eye size={18} aria-hidden="true" />
-          )
-        }
-      >
-        <input
-          type="hidden"
-          name="publication"
-          value={visible ? "DRAFT" : "PUBLISHED"}
-        />
-      </ActionForm>
+      <PublicationControl id={list.id} visible={visible} secondary={visible} />
     </section>
   );
 }

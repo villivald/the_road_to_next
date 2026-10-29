@@ -5,7 +5,10 @@ import {
 } from "@/app/_navigation/navigation-path";
 import { CardActions } from "@/components/cards/card-actions";
 import { CardMedia, CardMediaLink } from "@/components/cards/card-media";
+import cardStyles from "@/components/cards/cards.module.css";
+import { WishCard } from "@/components/cards/wish-card";
 import { WishStatus } from "@/components/cards/wish-status";
+import { createWishTones } from "@/components/cards/wish-tones";
 import styles from "@/components/shell.module.css";
 import { readFavoriteIds } from "@/features/favorites/service/favorites";
 import { localizedPath } from "@/i18n/config";
@@ -48,6 +51,7 @@ export async function WishCollection({
       `${listPath(listId)}?${new URLSearchParams({ sort, view, page: String(nextPage) })}`,
       section,
     );
+  const tones = createWishTones(wishes.map((wish) => wish.id));
   const favoriteIds = await readFavoriteIds(
     userId,
     "wish",
@@ -98,7 +102,7 @@ export async function WishCollection({
       {wishes.length ? (
         <ul className={styles["list-grid"]}>
           {wishes.map((wish) => (
-            <li key={wish.id} className={styles["list-card"]}>
+            <WishCard key={wish.id} tone={tones[wish.id]}>
               <CardMediaLink
                 path={navigationPath(wishPath(listId, wish.id), section)}
                 title={wish.title}
@@ -110,10 +114,12 @@ export async function WishCollection({
                   {wish.title}
                 </Link>
               </h3>
-              <p className={styles.price}>
-                {formatWishPrice(wish.priceMinor, wish.currency, t.locale)}
-              </p>
-              <WishPriority priority={wish.priority} />
+              <div className={cardStyles["wish-facts"]}>
+                <p className={styles.price}>
+                  {formatWishPrice(wish.priceMinor, wish.currency, t.locale)}
+                </p>
+                <WishPriority priority={wish.priority} />
+              </div>
               {canManage && (
                 <WishStatus
                   hidden={wish.hidden}
@@ -144,7 +150,7 @@ export async function WishCollection({
                 }
                 canManage={canManage}
               />
-            </li>
+            </WishCard>
           ))}
         </ul>
       ) : (

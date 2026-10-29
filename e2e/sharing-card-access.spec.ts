@@ -42,8 +42,8 @@ for (const premium of [false, true]) {
       await expect(
         dialog.getByText(
           locale === "fi"
-            ? "Näytä lista ennen jakokortin lataamista."
-            : "Show your list before downloading a sharing card.",
+            ? "Julkaise lista ennen jakokortin lataamista."
+            : "Publish your list before downloading a sharing card.",
           { exact: true },
         ),
       ).toBeVisible();

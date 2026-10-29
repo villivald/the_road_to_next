@@ -31,7 +31,7 @@ export async function GET(
     if (!list)
       return new Response(null, { status: 404, headers: privateHeaders });
     await consumeRateLimit("sharing-card", user.id, 20, 3600000);
-    // Load rendering and QR code dependencies only for an authorized download.
+    // Load rendering and QR code dependencies only for an authorized preview or download.
     const { renderSharingCard } =
       await import("@/features/premium/service/render-sharing-card");
     const image = await renderSharingCard(list, locale);

@@ -1,9 +1,10 @@
 # Performance and capacity acceptance — 27 October 2026
 
 The local implementation passes the agreed investigation thresholds in this lab.
-Optional monitoring works on the production build and remains disabled by default.
-Production activation and a beta field-measurement window are still required;
-these results do not establish real-user percentiles or peak concurrent capacity.
+Optional monitoring is disabled by default in code and is now active on
+`wishlist.fi`; see the hosted follow-up below. A beta field-measurement window is
+still required. These results do not establish real-user percentiles or peak
+concurrent capacity.
 No database migration or application SQL change is needed for this implementation.
 
 ## Method and evidence
@@ -125,9 +126,36 @@ Earlier failed/suspension-affected runs remain diagnostic history, not the accep
 result. The final test-only output-directory change makes future runs use their
 UTC date; it does not change application code or the measurements above.
 
-After review, deploy with `PERFORMANCE_MONITORING=1` and
-`PERFORMANCE_SAMPLE_RATE=0.1`. Confirm sanitized server and browser records on that
-deployment, then collect a bounded beta window with adequate samples per group.
-Set the monitoring flag to `0` and redeploy to disable it. No migration, new
-scheduled job or database polling is needed. This task did not deploy or change
-production configuration.
+## Hosted follow-up — 27 October 2026
+
+The implementation is committed as `1622166`. After the owner's rollout, their
+Vercel screenshot shows production server records, including a successful
+`/lists` RSC request with a 70 ms duration. The production deployment's exact SHA
+has not been independently verified; the local commit and observed hosted
+behavior are separate evidence.
+
+A clean Chromium check of `https://wishlist.fi/en` observed the collector with
+sample rate `0.1`. TTFB and FCP browser reports appeared on the third full load;
+both `/api/performance` POSTs returned 204 and no JavaScript errors were recorded.
+The owner subsequently confirmed `source: "field"` records in Vercel. Those
+records may include the synthetic browser check. This verifies hosted report
+delivery, not real-user LCP/INP/CLS acceptance or concurrent capacity. Browser
+sampling is per document, independently of server-request sampling; client
+navigation does not generally select a new browser sample.
+
+Keep `PERFORMANCE_MONITORING=1` and `PERFORMANCE_SAMPLE_RATE=0.1`. Collect bounded
+beta log windows before provider retention expires, with adequate samples per
+route/device/metric group, and keep synthetic checks separate. No sampling
+increase or redeployment is required based on the verified delivery. Set the
+monitoring flag to `0` and redeploy to disable it. No migration, new scheduled job
+or database polling is needed. The agent did not change production configuration
+or deploy during these checks.
+
+The initial export failed because Vercel CLI 54.6.1 rejects literal `--until now`.
+Omit that option to use the current time; summarize only after a successful
+export. Its empty summary did not establish missing telemetry. The database
+SSL-mode warning visible in the owner's screenshot remains an operations
+follow-up; its full message/configuration must be inspected before a change.
+
+Step 6 operations preparation can proceed while field performance acceptance and
+the owner's Neon usage observation remain open.

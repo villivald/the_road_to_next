@@ -20,6 +20,10 @@
   --focus: #326458;
   --shadow: 0 1px 2px #29273108;
   --illustration: #eeebe1;
+  --wish-butter: #f4edca;
+  --wish-lilac: #ede5f2;
+  --wish-sage: #e5eddf;
+  --hero-emphasis: #36513b;
   --footer: var(--background);
   --positive: #345f44;
   --radius: 0.3rem;
@@ -48,6 +52,9 @@
   --focus: #ffd803;
   --shadow: none;
   --illustration: #30352f;
+  --wish-butter: #373629;
+  --wish-lilac: #322e3c;
+  --wish-sage: #2c382e;
   --footer: var(--background);
   --positive: #c1dfc3;
 }

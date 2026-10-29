@@ -50,6 +50,18 @@ const create = (days = 7) =>
     label: "Family",
     days,
   });
+const hideList = async () => {
+  const reservations = await prisma.reservation.findMany({
+    where: { wish: { wishlistId: listId }, endedAt: null },
+    select: { id: true },
+  });
+  return setWishlistPublication(
+    owner.user.id,
+    listId,
+    "DRAFT",
+    reservations.map(({ id }) => id),
+  );
+};
 const imageRequest = (id: string, width?: number) =>
   guestImage(
     new Request(
@@ -179,8 +191,7 @@ describe("guest access", () => {
           where: { id: listId },
           data: { archivedAt: new Date() },
         });
-      if (state === "draft")
-        await setWishlistPublication(owner.user.id, listId, "DRAFT");
+      if (state === "draft") await hideList();
       if (state === "deleted")
         await prisma.wishlist.delete({ where: { id: listId } });
       expect(await resolveGuestLink(link.token)).toBeNull();
@@ -258,7 +269,7 @@ describe("guest access", () => {
 
   it("preserves link expiry on ownership transfer and restores unpublished content only while a link is valid", async () => {
     const link = await create();
-    await setWishlistPublication(owner.user.id, listId, "DRAFT");
+    await hideList();
     expect(await resolveGuestLink(link.token)).toBeNull();
     await setWishlistPublication(owner.user.id, listId, "PUBLISHED");
     await prisma.membership.create({

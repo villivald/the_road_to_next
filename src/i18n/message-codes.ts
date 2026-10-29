@@ -2,6 +2,7 @@ import type { TextKey } from "./text";
 
 // Codes remain stable when presentation copy changes.
 export const messageCodes = {
+  "message.list_hidden_from_viewers": "List hidden from viewers.",
   "message.account_protection_is_temporarily_unavailable_please_try_again_shortly":
     "Account protection is temporarily unavailable. Please try again shortly.",
   "message.please_complete_the_security_check_and_try_again":

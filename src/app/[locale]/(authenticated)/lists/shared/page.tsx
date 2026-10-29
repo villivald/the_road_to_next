@@ -1,6 +1,7 @@
 import { Share2, Users } from "lucide-react";
 import type { Metadata } from "next";
 import { navigationPath } from "@/app/_navigation/navigation-path";
+import { BackLink } from "@/components/back-link";
 import { ListWishCounts } from "@/components/cards/list-wish-counts";
 import { ReservationAvailability } from "@/components/cards/reservation-availability";
 import { ActionForm } from "@/components/form/action-form";
@@ -54,7 +55,7 @@ export default async function SharedListsPage({
   );
   return (
     <section className={styles.page}>
-      <Link href={listsPath}>{t("Back to my lists")}</Link>
+      <BackLink href={listsPath}>{t("Back to my lists")}</BackLink>
       <div className={styles["page-heading"]}>
         <div>
           <h1>{t("Lists shared with you")}</h1>

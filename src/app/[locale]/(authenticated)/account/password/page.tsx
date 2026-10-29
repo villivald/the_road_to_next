@@ -1,6 +1,6 @@
 import { AccountForm } from "@/components/account-form";
 import { AccountPanel } from "@/components/account-panel";
-import { Link } from "@/i18n/navigation";
+import { BackLink } from "@/components/back-link";
 import { useText } from "@/i18n/use-text";
 import { accountProfilePath } from "@/paths";
 
@@ -13,7 +13,9 @@ export default function PasswordPage() {
       description={t(
         "Your current password is required. Changing it signs out your other sessions.",
       )}
-      footer={<Link href={accountProfilePath}>{t("Back to account")}</Link>}
+      footer={
+        <BackLink href={accountProfilePath}>{t("Back to account")}</BackLink>
+      }
     >
       <AccountForm mode="passwordChange" />
     </AccountPanel>

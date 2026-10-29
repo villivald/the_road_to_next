@@ -5,7 +5,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import shell from "@/components/shell.module.css";
 import { Link } from "@/i18n/navigation";
 import { useText } from "@/i18n/use-text";
-import { ListTheme } from "./list-theme";
+import { PersonalSharingCard } from "./personal-sharing-card";
 import styles from "./personalization.module.css";
 import { SharingCardPreview } from "./sharing-card-preview";
 
@@ -33,6 +33,7 @@ export function SharingCardDownload({
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "failed">(
     "idle",
   );
+  const [previewRequested, setPreviewRequested] = useState(false);
   const href = `/api/lists/${encodeURIComponent(listId)}/sharing-card?locale=${t.locale}`;
   useEffect(() => {
     if (status !== "done") return;
@@ -58,12 +59,22 @@ export function SharingCardDownload({
         </p>
       )}
       {premium ? (
-        <div className={styles["download-preview"]}>
-          <ListTheme theme={theme} compact>
-            <span className={styles.kicker}>{t("Wishlist preview")}</span>
-            <strong className={styles["preview-title"]}>{title}</strong>
-          </ListTheme>
-        </div>
+        published &&
+        (previewRequested ? (
+          <PersonalSharingCard
+            key={`${href}:${title}:${theme}`}
+            href={href}
+            title={title}
+          />
+        ) : (
+          <button
+            type="button"
+            className={shell["secondary-button"]}
+            onClick={() => setPreviewRequested(true)}
+          >
+            {t("Preview sharing card")}
+          </button>
+        ))
       ) : (
         <SharingCardPreview />
       )}
@@ -143,7 +154,10 @@ export function SharingCardDownload({
         className={shell["secondary-button"]}
         type="button"
         aria-haspopup="dialog"
-        onClick={() => dialog.current?.showModal()}
+        onClick={() => {
+          setPreviewRequested(true);
+          dialog.current?.showModal();
+        }}
       >
         <QrCode size={18} aria-hidden="true" />
         {t("Sharing card")}
@@ -152,7 +166,10 @@ export function SharingCardDownload({
         ref={dialog}
         className={styles.dialog}
         aria-labelledby={id}
-        onClose={() => trigger.current?.focus()}
+        onClose={() => {
+          setPreviewRequested(false);
+          trigger.current?.focus();
+        }}
       >
         <header className={styles["dialog-heading"]}>
           <h2 id={id}>{t("Sharing card")}</h2>

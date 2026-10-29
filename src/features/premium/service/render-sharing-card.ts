@@ -114,8 +114,8 @@ export async function renderSharingCard(
       ? t("A private wishlist")
       : t("A few things I love");
   const [headingFont, bodyFont] = await fonts;
-  const textLeft = theme === "classic" ? 72 : 320;
-  const textWidth = theme === "classic" ? 720 : 500;
+  const textLeft = 320;
+  const textWidth = 500;
   const widestWord = Math.max(
     1,
     ...title.split(/\s+/u).map((word) => headingFont.getAdvanceWidth(word, 54)),
@@ -162,24 +162,21 @@ export async function renderSharingCard(
     680,
     2,
   );
-  const artwork =
-    theme === "classic"
-      ? null
-      : await sharp(
-          await readFile(
-            path.join(
-              process.cwd(),
-              `public/illustrations/themes/${palette.artwork}`,
-            ),
-          ),
-        )
-          .resize(245, 734)
-          .png()
-          .toBuffer();
+  const artwork = await sharp(
+    await readFile(
+      path.join(
+        process.cwd(),
+        `public/illustrations/themes/${palette.artwork ?? listThemes.botanical.artwork}`,
+      ),
+    ),
+  )
+    .resize(245, 734)
+    .png()
+    .toBuffer();
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800"><rect width="1200" height="800" fill="${palette.paper}"/><rect x="32" y="32" width="1136" height="736" rx="18" fill="none" stroke="${palette.accent}" stroke-width="2"/><path d="M${textLeft} 610H790" stroke="${palette.accent}"/><rect x="842" y="280" width="296" height="296" rx="12" fill="white"/><g fill="${palette.ink}">${brand}${subtitle}${heading}${note}${host}</g></svg>`;
   return sharp(Buffer.from(svg))
     .composite([
-      ...(artwork ? [{ input: artwork, left: 33, top: 33 }] : []),
+      { input: artwork, left: 33, top: 33 },
       { input: qr, left: 850, top: 288 },
     ])
     .png()
