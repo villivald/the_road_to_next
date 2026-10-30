@@ -34,7 +34,10 @@
     "promo": "tsx scripts/promo.ts",
     "invitations:deliver": "tsx scripts/deliver-invitations.ts",
     "emails:deliver": "tsx scripts/deliver-account-emails.ts",
-    "billing:sync": "tsx scripts/reconcile-billing.ts"
+    "billing:sync": "tsx scripts/reconcile-billing.ts",
+    "operations:status": "tsx scripts/operations-status.ts",
+    "operations:backup": "tsx scripts/backup-restore.ts",
+    "operations:recovery-drill": "tsx scripts/recovery-drill.ts"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.2.1",

@@ -3,6 +3,7 @@ import "@/features/notifications/events/maintenance";
 import "@/features/sharing/events/maintenance";
 import "@/features/media/events/maintenance";
 import "@/features/auth/events/maintenance";
+import "@/features/operations/events/failure-alert";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import {
   backgroundEvents,
@@ -21,6 +22,7 @@ const mocks = vi.hoisted(() => ({
   send: vi.fn(),
   deliver: vi.fn(),
   reconcile: vi.fn(),
+  alert: vi.fn(),
   functions: new Map<string, Worker>(),
 }));
 vi.mock("@/lib/inngest", () => ({
@@ -48,6 +50,10 @@ vi.mock("@/features/sharing/service/delivery", () => ({
   deliverInvitations: vi.fn(),
 }));
 vi.mock("@/features/media/service/cleanup", () => ({ cleanupMedia: vi.fn() }));
+vi.mock("@/features/operations/service/failure-alert", () => ({
+  operationsFailureFilter: "known-job-filter",
+  sendOperationsFailureAlert: mocks.alert,
+}));
 
 beforeEach(() => mocks.send.mockResolvedValue({ ids: [] }));
 afterEach(() => {
@@ -157,4 +163,16 @@ it("preserves the successful user operation and logs no provider secrets on trig
   ).resolves.toBeUndefined();
   expect(log).toHaveBeenCalledOnce();
   expect(JSON.stringify(log.mock.calls)).not.toContain("private-provider-key");
+});
+
+it("bounds final-failure alerts and handles them through a durable step without a schedule", async () => {
+  expect(mocks.functions.get("operations-failure-alert")).toMatchObject({
+    triggers: [{ event: "inngest/function.failed", if: "known-job-filter" }],
+    retries: 3,
+    rateLimit: { limit: 1, period: "4h", key: "event.data.function_id" },
+  });
+  const data = { function_id: "wishlist-cleanup-media", run_id: "opaque-run" };
+  mocks.alert.mockResolvedValue({ sent: true });
+  await run("operations-failure-alert", "inngest/function.failed", data);
+  expect(mocks.alert).toHaveBeenCalledExactlyOnceWith(data);
 });

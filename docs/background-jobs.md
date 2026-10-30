@@ -30,6 +30,12 @@ sandbox resource ID when testing reconciliation.
 | `reconcile-paddle-billing` | Saved, verified Paddle event | `*/15 * * * *`           |
 | `cleanup-media`            | None                         | `0 * * * *`              |
 | `expire-auth-data`         | None                         | `0 3 * * *`              |
+| `operations-failure-alert` | Final failure of these jobs  | None                     |
+
+The operations alert is opt-in via `OPERATIONS_ALERT_EMAIL`, limited per failed
+job to one run every four hours and excludes its own failures. It adds no scheduled
+DB activity. See [alert configuration and limits](operations-runbook.md#final-background-job-failure-alerts)
+before enabling it; live delivery still requires verification.
 
 Keep recovery jobs aligned at :00, :15, :30 and :45. Staggering them can leave
 little time for Neon to sleep. Media cleanup keeps its existing eligibility,

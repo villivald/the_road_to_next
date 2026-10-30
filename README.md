@@ -59,7 +59,7 @@ Inngest runs media cleanup hourly; run `npm run media:cleanup` to process one ba
 
 Invite people from a list’s **Sharing and members** page; local invitations arrive in Mailpit. Delivery is attempted immediately; failed sends are recovered through Inngest every 15 minutes, respecting backoff, or run `npm run invitations:deliver` for one batch. Joined lists appear under **My lists → Lists you’ve joined**.
 
-For read-only access without an account, open **List settings → Manage guest links**. The list owner needs Premium to create links; choose **Show list** in List settings, copy the new link, and share it privately. Links expire and can be revoked there.
+For read-only access without an account, open **List settings → Manage guest links**. The list owner needs Premium to create links; choose **Publish list** in List settings, copy the new link, and share it privately. Links expire and can be revoked there.
 
 Stop the local services with `npm run db:rebuild:down`; development database data is retained.
 
@@ -127,6 +127,33 @@ in [account abuse protection](docs/account-abuse-protection.md). Hosted signup,
 recovery requests, and verification resend fail closed without them. The dedicated
 auth-protection suite uses isolated provider fixtures; the ordinary suite retains
 local native-form coverage. No database migration is needed for these controls.
+
+## Operations
+
+Start with the [operations runbook](docs/operations-runbook.md) and
+[Step 6 readiness report](docs/operations-readiness-2026-10-29.md). The runbook
+records environment boundaries, incident/support ownership, deployment rollback,
+backup/media recovery and investigation thresholds. The hosted DB/media backup
+passed an offline local restore; off-device custody, live alert delivery and final
+EN/FI policy decisions remain owner/deployment actions.
+
+```sh
+npm run operations:status -- --host 127.0.0.1 --port 55432 --database wishlist_dev --schema public
+npm run operations:recovery-drill
+```
+
+The first command is read-only and refuses a mismatched database target. Run it
+on demand rather than polling Neon. The drill uses a new disposable Docker
+container and fictional data/media; it does not target an existing database or
+establish hosted backup acceptance. `operations:backup` creates an encrypted real
+DB/media archive and verifies it in a disposable, network-isolated restore; use
+the explicit target/settings arguments in the runbook. Nothing restores over
+production. Docker and GPG are local prerequisites; no package dependency or
+database migration was added.
+
+`OPERATIONS_ALERT_EMAIL` optionally enables bounded final-failure notifications
+for the existing five background jobs after deployment and Inngest sync. It is
+unset by default; provider/inbox delivery requires a controlled hosted check.
 
 Reusable setup, architecture, and migration documentation lives in `docs/` and is
 versioned with the code. Keep per-run acceptance reports, screenshots, and private
