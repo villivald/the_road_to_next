@@ -82,9 +82,9 @@ QR sharing cards for published lists using **Sharing card** beside the list acti
 badge, hidden by default. See [personalization rules and deployment](docs/premium-personalization.md).
 The additive personalization migration must be applied before deploying this feature.
 
-## Subscription testing
+## Billing environments
 
-Local development needs no Paddle setup; promo codes remain available. Hosted sandbox testing follows deployment. After configuration, use **Account → Your plan and promo codes**. Inngest handles billing reconciliation and cancellation retries; `npm run billing:sync` runs one due batch, and `npm run billing:sync -- --status` shows pending issues for the configured database. Real payments are disabled.
+Local development needs no Paddle setup; promo codes remain available. Hosted sandbox testing follows deployment. After configuration, use **Account → Your plan and promo codes**. Inngest handles billing reconciliation and cancellation retries; `npm run billing:sync` runs one due batch, and `npm run billing:sync -- --status` shows pending issues for the configured database. Live checkout requires matching live credentials and `PADDLE_CHECKOUT_ENABLED=1`; leave it paused until provider approval and controlled acceptance. Pausing checkout preserves subscription management and recovery. Use `PADDLE_CHECKOUT_TESTER_IDS` to restrict starting/resuming checkout to agreed app user IDs during controlled acceptance. Keep legacy sandbox credentials under `PADDLE_SANDBOX_*` after switching. See [live rollout and migration ordering](docs/billing-live-rollout.md) before changing production settings.
 
 ## Deployment directory
 
@@ -104,7 +104,7 @@ npm run test:e2e:cross-browser
 npm run test:e2e:auth-protection
 ```
 
-Install Chromium once. Database/browser tests require Docker and use `wishlist_test`, schema `wishlist`, on port 55433 and an isolated inbox on port 8026. Browser tests build the production app and use port 3017. To build separately, run `npm run build`.
+Install Chromium once. Database/browser tests require Docker and use `wishlist_test`, schema `wishlist`, on port 55433 and an isolated inbox on port 8026. Browser tests build the production app and use port 3017. To build separately, run `npm run build`. The isolated live-mode checkout fixture runs with `npm run test:e2e -- --config playwright.billing-live.config.ts`; it uses fake Paddle credentials and responses and makes no real payment.
 
 Run the browser suites sequentially: they share the isolated database and port.
 For dependency updates and scoped overrides, see [dependency maintenance](docs/dependency-maintenance.md).

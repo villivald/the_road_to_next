@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   billingConfig,
+  type BillingEnvironment,
   BillingError,
   type BillingInterval,
   plans,
@@ -86,8 +87,9 @@ export const paddleRequest = async (
   path: string,
   method = "GET",
   body?: unknown,
+  environment?: BillingEnvironment,
 ) => {
-  const config = billingConfig();
+  const config = billingConfig(environment);
   const url = new URL(path, config.origin);
   if (url.origin !== config.origin)
     throw new BillingError("Invalid billing destination.");
@@ -128,11 +130,15 @@ export const paddleRequest = async (
   return responseSchema.parse(await response.json());
 };
 
-export const paddleList = async <T>(path: string, schema: z.ZodType<T>) => {
+export const paddleList = async <T>(
+  path: string,
+  schema: z.ZodType<T>,
+  environment?: BillingEnvironment,
+) => {
   const results: T[] = [];
   let next: string | null = path;
   for (let page = 0; next && page < 20; page++) {
-    const response = await paddleRequest(next);
+    const response = await paddleRequest(next, "GET", undefined, environment);
     results.push(...z.array(schema).parse(response.data));
     next = response.meta?.pagination?.has_more
       ? (response.meta.pagination.next ?? null)
@@ -145,18 +151,43 @@ export const paddleList = async <T>(path: string, schema: z.ZodType<T>) => {
   return results;
 };
 
-export const getTransaction = async (id: string) =>
+export const getTransaction = async (
+  id: string,
+  environment?: BillingEnvironment,
+) =>
   transactionSchema.parse(
     (
       await paddleRequest(
         `/transactions/${encodeURIComponent(id)}?include=adjustments`,
+        "GET",
+        undefined,
+        environment,
       )
     ).data,
   );
-export const getSubscription = async (id: string) =>
+export const getSubscription = async (
+  id: string,
+  environment?: BillingEnvironment,
+) =>
   subscriptionSchema.parse(
-    (await paddleRequest(`/subscriptions/${encodeURIComponent(id)}`)).data,
+    (
+      await paddleRequest(
+        `/subscriptions/${encodeURIComponent(id)}`,
+        "GET",
+        undefined,
+        environment,
+      )
+    ).data,
   );
+
+export const paddleClient = (environment: BillingEnvironment) => ({
+  getTransaction: (id: string) => getTransaction(id, environment),
+  getSubscription: (id: string) => getSubscription(id, environment),
+  paddleRequest: (path: string, method = "GET", body?: unknown) =>
+    paddleRequest(path, method, body, environment),
+  paddleList: <T>(path: string, schema: z.ZodType<T>) =>
+    paddleList(path, schema, environment),
+});
 
 export const validatePrice = async (interval: BillingInterval) => {
   const id = billingConfig().prices[interval];

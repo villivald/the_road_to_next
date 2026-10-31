@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
+import { activeBillingAccountWhere } from "./accounts";
 
 export const readBillingOverview = async (userId: string) => {
   const now = new Date();
   const [account, promoCount] = await Promise.all([
-    prisma.billingAccount.findUnique({
-      where: { userId },
+    prisma.billingAccount.findFirst({
+      where: activeBillingAccountWhere(userId),
       include: {
         subscriptions: {
           orderBy: { updatedAt: "desc" },

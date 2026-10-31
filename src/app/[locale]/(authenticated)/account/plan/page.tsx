@@ -90,7 +90,7 @@ export default async function PlanPage({
           (access.expiresAt ?? access.nextStartsAt)?.toISOString() ?? null
         }
       />
-      <BillingPanel overview={overview} returned={returned} />
+      <BillingPanel userId={user.id} overview={overview} returned={returned} />
       <div className={styles.help}>
         <section className={styles.card} aria-labelledby="promo-heading">
           <h2 id="promo-heading" className={styles.fact}>

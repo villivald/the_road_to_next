@@ -8,6 +8,15 @@ import { createText } from "@/i18n/text";
 
 const contact = <a href="mailto:support@wishlist.fi">support@wishlist.fi</a>;
 const creator = <a href="https://www.villivald.com/">villivald</a>;
+const operatorIdentity = (t: ReturnType<typeof createText>) => {
+  const name = process.env.OPERATOR_LEGAL_NAME?.trim();
+  return (
+    <p>
+      {t("Wishlist is operated personally in Finland.")}
+      {name && <> {t("Service operator: {name}.", { name })}</>}
+    </p>
+  );
+};
 
 const information = (
   t: ReturnType<typeof createText>,
@@ -141,9 +150,10 @@ const information = (
     title: t("Privacy and your data"),
     content: (
       <>
+        {operatorIdentity(t)}
         <p>
           {t(
-            "This page explains the current development preview. For privacy questions or requests about your data, email",
+            "This notice explains how Wishlist handles personal data. For privacy questions or requests about your data, email",
           )}{" "}
           {contact}.
         </p>
@@ -200,22 +210,96 @@ const information = (
         </p>
         <p>
           {t(
-            "The final hosting providers, retention periods, and production privacy notice will be confirmed before public launch.",
+            "Account data is kept while your account exists. Shared content and reservation history can remain with a list after an account is deleted. The app does not automatically purge archived lists or all historical records after a fixed period.",
           )}
+        </p>
+        <h2>{t("Why we process data")}</h2>
+        <p>
+          {t(
+            "We process account, sharing and subscription data to provide the service you request under our contract with you. Security and abuse prevention support our legitimate interest in protecting the service and its users. Some records are retained to meet legal obligations or resolve payment issues. Contact support about the basis for a particular use of your data.",
+          )}
+        </p>
+        <h2>{t("Service providers and payments")}</h2>
+        <p>
+          {t(
+            "Vercel hosts the app and uploaded images; Neon stores app data; Resend delivers account emails; Inngest runs background work; Cloudflare Turnstile helps prevent abuse. Support correspondence is handled through the operator’s email service. These services process the data needed for their functions.",
+          )}
+        </p>
+        <p>
+          {t(
+            "Paddle processes paid checkout, customer and payment records as merchant of record under its own privacy notice. Wishlist stores provider identifiers and subscription/access records, not payment-card details.",
+          )}
+        </p>
+        <ul>
+          <li>
+            <a href="https://vercel.com/legal/privacy-notice">
+              {t("Vercel privacy notice")}
+            </a>
+          </li>
+          <li>
+            <a href="https://neon.com/privacy-policy">
+              {t("Neon privacy notice")}
+            </a>
+          </li>
+          <li>
+            <a href="https://resend.com/legal/privacy-policy">
+              {t("Resend privacy notice")}
+            </a>
+          </li>
+          <li>
+            <a href="https://www.inngest.com/privacy">
+              {t("Inngest privacy notice")}
+            </a>
+          </li>
+          <li>
+            <a href="https://www.cloudflare.com/privacypolicy/">
+              {t("Cloudflare privacy notice")}
+            </a>
+          </li>
+          <li>
+            <a href="https://www.paddle.com/legal/privacy">
+              {t("Paddle privacy notice")}
+            </a>
+          </li>
+        </ul>
+        <p>
+          {t(
+            "Providers can process data outside the European Economic Area. Their notices describe processing locations and international transfers. You can ask support about recipients and the safeguards applicable to your data.",
+          )}
+        </p>
+        <h2>{t("Support, backups and billing history")}</h2>
+        <p>
+          {t(
+            "Encrypted manual backups are kept for up to 30 days, including off-device copies. Data deleted from the live app may remain in a backup until that copy expires. Resolved support correspondence is deleted after 90 days unless longer retention is required by law.",
+          )}
+        </p>
+        <p>
+          {t(
+            "Unlinked billing identifiers and recovery records can remain after account deletion to settle payments, cancellations, refunds and related obligations. The app has no automatic fixed-period purge for all billing history. Provider logs follow their own retention rules. Contact support about records that are no longer needed.",
+          )}
+        </p>
+        <h2>{t("Your data-protection rights")}</h2>
+        <p>
+          {t(
+            "You can request access, correction, erasure, restriction, portability or object to processing where applicable. We may verify your identity and explain any limits that apply, including records required by law. You can complain to Finland’s Office of the Data Protection Ombudsman.",
+          )}
+        </p>
+        <p>
+          <a href="https://tietosuoja.fi/en/home">
+            {t("Office of the Data Protection Ombudsman")}
+          </a>
         </p>
       </>
     ),
   },
   terms: {
-    title: t("Preview terms"),
+    title: t("Terms of use"),
     content: (
       <>
+        {operatorIdentity(t)}
         <p>
-          {t("Wishlist is a development preview by")} {creator}
-          {t(
-            ". These notes describe how to use this preview; production service and purchase terms will be reviewed before public launch. Contact",
-          )}{" "}
-          {contact} {t("with questions.")}
+          {t("These terms cover your use of Wishlist. Contact")} {contact}{" "}
+          {t("with questions.")}
         </p>
         <h2>{t("Use it thoughtfully")}</h2>
         <ul>
@@ -241,16 +325,112 @@ const information = (
             "A reservation helps people coordinate a gift. It does not buy an item, guarantee availability, or create a transaction between users. Product links lead to external websites whose prices and terms may change.",
           )}
         </p>
-        <h2>{t("Premium and the preview")}</h2>
+        <h2>{t("Premium subscriptions")}</h2>
         <p>
           {t(
-            "Current payment testing uses Paddle sandbox; sandbox transactions do not charge money. Real payments are not enabled for this preview. Features and availability may change during development, so keep your own copy of information you need.",
+            "Free features are available without a paid subscription. When paid subscriptions are enabled, Premium is offered monthly or annually through Paddle. The pricing page and checkout show the price, billing interval and applicable taxes before payment. Subscriptions renew automatically until canceled. Paid access follows confirmed payment; promo access follows its stated duration.",
           )}
+        </p>
+        <p>
+          <Link href="/premium">{t("Free and Premium")}</Link>
+        </p>
+        {process.env.PADDLE_ENVIRONMENT === "sandbox" && (
+          <p className={styles.notice}>
+            {t(
+              "Sandbox · Use Paddle test payment details only. No real money is charged.",
+            )}
+          </p>
+        )}
+        <p>
+          {t(
+            "Use Manage subscription in Your plan or the link in your Paddle receipt to cancel renewal. Your paid access lasts until the end of the paid period. Refund and withdrawal requests follow Paddle’s Buyer Terms and Refund Policy, including mandatory consumer rights.",
+          )}
+        </p>
+        <p>
+          <Link href="/refunds">{t("Refunds and cancellations")}</Link> ·{" "}
+          <a href="https://www.paddle.com/legal/buyer-terms">
+            {t("Paddle Buyer Terms")}
+          </a>
         </p>
         <h2>{t("Deleting your account")}</h2>
         <p>
           {t(
             "You can delete your account in settings. Review the deletion summary to see what happens to shared lists and reservations before confirming.",
+          )}
+        </p>
+        <p>
+          {t(
+            "Account deletion does not automatically request a refund. Cancellation is processed through Paddle; contact support if a payment or cancellation remains unresolved.",
+          )}
+        </p>
+        <h2>{t("Availability and your rights")}</h2>
+        <p>
+          {t(
+            "Features and availability can change, and maintenance or faults can interrupt access. Keep your own copy of information you need. Contact support if the service does not work as described. These terms do not limit your mandatory consumer rights.",
+          )}
+        </p>
+      </>
+    ),
+  },
+  refunds: {
+    title: t("Refunds and cancellations"),
+    content: (
+      <>
+        <p>
+          {t(
+            "For paid Premium purchases, Paddle is our merchant of record and handles checkout, payments and receipts.",
+          )}
+        </p>
+        <p>
+          <a href="https://www.paddle.com/legal/buyer-terms">
+            {t("Paddle Buyer Terms")}
+          </a>
+        </p>
+        {process.env.PADDLE_ENVIRONMENT === "sandbox" && (
+          <p className={styles.notice}>
+            {t(
+              "Sandbox · Use Paddle test payment details only. No real money is charged.",
+            )}
+          </p>
+        )}
+        <h2>{t("Cancel renewal")}</h2>
+        <p>
+          {t(
+            "Open Your plan and choose Manage subscription, or use the link in your Paddle receipt. Canceling renewal stops future subscription charges; paid access lasts until the end of the paid period.",
+          )}
+        </p>
+        <p>
+          <Link href="/account/plan">{t("Your plan and promo codes")}</Link>
+        </p>
+        <h2>{t("Request a refund or withdrawal")}</h2>
+        <p>
+          {t(
+            "Use the support link in your Paddle receipt or visit paddle.net. Eligibility and deadlines follow Paddle’s Refund Policy, including country-specific consumer rights. Canceling renewal does not automatically request a refund.",
+          )}
+        </p>
+        <ul>
+          <li>
+            <a href="https://paddle.net/">{t("Paddle payment support")}</a>
+          </li>
+          <li>
+            <a href="https://www.paddle.com/legal/refund-policy">
+              {t("Paddle Refund Policy")}
+            </a>
+          </li>
+        </ul>
+        <p>
+          {t(
+            "A full approved refund removes the Premium access covered by that payment. Other paid or promotional access remains. To stop future charges, also check that renewal is canceled.",
+          )}
+        </p>
+        <p>
+          {t("Nothing on this page limits your mandatory consumer rights.")}
+        </p>
+        <h2>{t("Questions or a problem?")}</h2>
+        <p>
+          {t("For an app problem or help with a charge, email")} {contact}.{" "}
+          {t(
+            "Include your receipt reference if available. Do not send payment-card details.",
           )}
         </p>
       </>
@@ -314,7 +494,10 @@ const information = (
             <Link href="/privacy">{t("Privacy")}</Link>
           </li>
           <li>
-            <Link href="/terms">{t("Preview terms")}</Link>
+            <Link href="/terms">{t("Terms of use")}</Link>
+          </li>
+          <li>
+            <Link href="/refunds">{t("Refunds and cancellations")}</Link>
           </li>
         </ul>
       </>

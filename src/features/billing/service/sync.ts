@@ -7,13 +7,17 @@ import {
 } from "@/lib/background-events";
 import { prisma } from "@/lib/prisma";
 import { queueBilling, withBillingAccount } from "./accounts";
-import { billingConfig, billingEnabled, BillingError } from "./config";
+import {
+  billingConfig,
+  billingEnabled,
+  type BillingEnvironment,
+  billingEnvironment,
+  billingEnvironments,
+  BillingError,
+} from "./config";
 import {
   fullyRefunded,
-  getSubscription,
-  getTransaction,
-  paddleList,
-  paddleRequest,
+  paddleClient,
   type PaddleSubscription,
   type PaddleTransaction,
   transactionPeriod,
@@ -22,14 +26,17 @@ import {
 
 const retryAt = (attempts: number) =>
   new Date(Date.now() + Math.min(60, 2 ** Math.min(attempts, 6)) * 60000);
-const intervalFor = (priceId: string) => {
-  const prices = billingConfig().prices;
+const intervalFor = (priceId: string, environment: BillingEnvironment) => {
+  const prices = billingConfig(environment).prices;
   if (priceId === prices.month) return "month";
   if (priceId === prices.year) return "year";
   throw new BillingError("Unknown subscription price.");
 };
 
-const supportedTransaction = (transaction: PaddleTransaction) => {
+const supportedTransaction = (
+  transaction: PaddleTransaction,
+  environment: BillingEnvironment,
+) => {
   if (
     transaction.currency_code !== "EUR" ||
     transaction.items.length !== 1 ||
@@ -37,15 +44,22 @@ const supportedTransaction = (transaction: PaddleTransaction) => {
   ) {
     throw new BillingError("Unexpected subscription items.");
   }
-  intervalFor(transaction.items[0].price.id);
+  intervalFor(transaction.items[0].price.id, environment);
 };
 
 export const syncBillingAccount = async (id: string) => {
-  if (!billingEnabled()) return false;
+  const target = await prisma.billingAccount.findUnique({
+    where: { id },
+    select: { environment: true },
+  });
+  if (!target || !billingEnabled(target.environment)) return false;
+  const environment = target.environment;
+  const api = paddleClient(environment);
   const claimId = randomUUID();
   const claimed = await prisma.billingAccount.updateMany({
     where: {
       id,
+      environment,
       OR: [{ leaseUntil: null }, { leaseUntil: { lte: new Date() } }],
     },
     data: { claimId, leaseUntil: new Date(Date.now() + 5 * 60000) },
@@ -73,7 +87,7 @@ export const syncBillingAccount = async (id: string) => {
     for (const checkout of account.checkouts) {
       let transaction: PaddleTransaction | undefined;
       if (checkout.transactionId) {
-        transaction = await getTransaction(checkout.transactionId);
+        transaction = await api.getTransaction(checkout.transactionId);
       } else if (checkout.dispatchedAt) {
         // Paddle has no general idempotency keys. Recover a lost POST response by
         // matching our persisted opaque reference; never create another transaction.
@@ -87,7 +101,7 @@ export const syncBillingAccount = async (id: string) => {
           origin: "api",
         });
         const matches = (
-          await paddleList(`/transactions?${query}`, transactionSchema)
+          await api.paddleList(`/transactions?${query}`, transactionSchema)
         ).filter(
           (item) =>
             item.origin === "api" &&
@@ -103,7 +117,7 @@ export const syncBillingAccount = async (id: string) => {
         throw new BillingError("Checkout creation needs reconciliation.");
       if (transaction.customer_id !== account.customerId)
         throw new BillingError("Checkout customer mismatch.");
-      supportedTransaction(transaction);
+      supportedTransaction(transaction, environment);
       if (
         transaction.origin !== "api" ||
         transaction.custom_data?.wishlist_checkout !== checkout.id ||
@@ -115,10 +129,10 @@ export const syncBillingAccount = async (id: string) => {
         (deleting || checkout.cancelRequested) &&
         ["draft", "ready"].includes(transaction.status)
       ) {
-        await paddleRequest(`/transactions/${transaction.id}`, "PATCH", {
+        await api.paddleRequest(`/transactions/${transaction.id}`, "PATCH", {
           status: "canceled",
         });
-        transaction = await getTransaction(transaction.id);
+        transaction = await api.getTransaction(transaction.id);
       }
       transactions.set(transaction.id, transaction);
       checkoutUpdates.push({
@@ -129,7 +143,7 @@ export const syncBillingAccount = async (id: string) => {
       if (transaction.subscription_id)
         subscriptions.set(
           transaction.subscription_id,
-          await getSubscription(transaction.subscription_id),
+          await api.getSubscription(transaction.subscription_id),
         );
     }
 
@@ -137,7 +151,7 @@ export const syncBillingAccount = async (id: string) => {
       if (!subscriptions.has(subscription.id))
         subscriptions.set(
           subscription.id,
-          await getSubscription(subscription.id),
+          await api.getSubscription(subscription.id),
         );
     }
 
@@ -146,12 +160,12 @@ export const syncBillingAccount = async (id: string) => {
       if (subscription.customer_id !== account.customerId)
         throw new BillingError("Subscription customer mismatch.");
       if (deleting && subscription.status !== "canceled") {
-        await paddleRequest(
+        await api.paddleRequest(
           `/subscriptions/${subscription.id}/cancel`,
           "POST",
           { effective_from: "immediately" },
         );
-        subscription = await getSubscription(subscription.id);
+        subscription = await api.getSubscription(subscription.id);
         if (subscription.status !== "canceled")
           throw new BillingError("Subscription cancellation is still pending.");
         subscriptions.set(subscriptionId, subscription);
@@ -162,14 +176,14 @@ export const syncBillingAccount = async (id: string) => {
         status: "completed",
         per_page: "30",
       });
-      for (const item of await paddleList(
+      for (const item of await api.paddleList(
         `/transactions?${query}`,
         transactionSchema,
       )) {
         const period = transactionPeriod(item);
         // Only currently relevant/future periods need refund reconciliation.
         if (!period || new Date(period.ends_at) > new Date()) {
-          transactions.set(item.id, await getTransaction(item.id));
+          transactions.set(item.id, await api.getTransaction(item.id));
         }
       }
     }
@@ -209,7 +223,7 @@ export const syncBillingAccount = async (id: string) => {
           accountId: id,
           customerId: subscription.customer_id,
           status: subscription.status,
-          interval: intervalFor(subscription.items[0].price.id),
+          interval: intervalFor(subscription.items[0].price.id, environment),
           nextBilledAt: subscription.next_billed_at
             ? new Date(subscription.next_billed_at)
             : null,
@@ -221,7 +235,7 @@ export const syncBillingAccount = async (id: string) => {
         };
         if (!existing || existing.updatedAt <= data.updatedAt) {
           await tx.billingSubscription.upsert({
-            where: { id: subscription.id },
+            where: { id: subscription.id, accountId: id },
             create: { id: subscription.id, ...data },
             update: data,
           });
@@ -240,7 +254,7 @@ export const syncBillingAccount = async (id: string) => {
             )
           )
             continue;
-          supportedTransaction(transaction);
+          supportedTransaction(transaction, environment);
           const subscription = subscriptions.get(transaction.subscription_id);
           if (
             !subscription ||
@@ -259,7 +273,7 @@ export const syncBillingAccount = async (id: string) => {
             where: { subscriptionId: subscription.id },
           });
           await tx.billingPayment.upsert({
-            where: { id: transaction.id },
+            where: { id: transaction.id, subscriptionId: subscription.id },
             create: {
               id: transaction.id,
               subscriptionId: subscription.id,
@@ -284,7 +298,12 @@ export const syncBillingAccount = async (id: string) => {
               revokedAt: refunded ? new Date() : null,
             },
           });
-          if (!previousPayments && !refunded && expiresAt > new Date()) {
+          if (
+            environment === billingEnvironment() &&
+            !previousPayments &&
+            !refunded &&
+            expiresAt > new Date()
+          ) {
             const user = await tx.user.findUniqueOrThrow({
               where: { id: current.userId },
             });
@@ -293,7 +312,8 @@ export const syncBillingAccount = async (id: string) => {
                 key: `premium-subscription/${subscription.id}`,
                 premium: {
                   source:
-                    intervalFor(transaction.items[0].price.id) === "year"
+                    intervalFor(transaction.items[0].price.id, environment) ===
+                    "year"
                       ? "year"
                       : "month",
                   startsAt: startsAt.toISOString(),
@@ -336,11 +356,16 @@ export const syncBillingAccount = async (id: string) => {
   }
 };
 
-const resolveEventAccount = async (type: string, resourceId: string) => {
+const resolveEventAccount = async (
+  type: string,
+  resourceId: string,
+  environment: BillingEnvironment,
+) => {
+  const api = paddleClient(environment);
   let checkoutId: string | undefined;
   let subscriptionId: string | null = null;
   if (type.startsWith("subscription.")) {
-    const subscription = await getSubscription(resourceId);
+    const subscription = await api.getSubscription(resourceId);
     checkoutId = subscription.custom_data?.wishlist_checkout;
     subscriptionId = subscription.id;
   } else {
@@ -349,12 +374,12 @@ const resolveEventAccount = async (type: string, resourceId: string) => {
       transactionId = z
         .object({ transaction_id: z.string().regex(/^txn_[a-z0-9]{26}$/) })
         .parse(
-          (await paddleRequest(`/adjustments/${resourceId}`)).data,
+          (await api.paddleRequest(`/adjustments/${resourceId}`)).data,
         ).transaction_id;
     }
-    const transaction = await getTransaction(transactionId);
+    const transaction = await api.getTransaction(transactionId);
     const known = await prisma.billingCheckout.findUnique({
-      where: { transactionId },
+      where: { transactionId, account: { environment } },
     });
     if (known) return known.accountId;
     checkoutId = transaction.custom_data?.wishlist_checkout;
@@ -362,25 +387,31 @@ const resolveEventAccount = async (type: string, resourceId: string) => {
   }
   if (subscriptionId) {
     const subscription = await prisma.billingSubscription.findUnique({
-      where: { id: subscriptionId },
+      where: { id: subscriptionId, account: { environment } },
     });
     if (subscription) return subscription.accountId;
   }
   // Custom data only requests a reconciliation. It never grants access itself.
   const checkout = checkoutId
-    ? await prisma.billingCheckout.findUnique({ where: { id: checkoutId } })
+    ? await prisma.billingCheckout.findUnique({
+        where: { id: checkoutId, account: { environment } },
+      })
     : null;
   return checkout?.accountId ?? null;
 };
 
 export const reconcileBilling = async (eventId?: string) => {
-  if (!billingEnabled()) return { enabled: false, processed: 0, failed: 0 };
+  const environments = billingEnvironments.filter((environment) =>
+    billingEnabled(environment),
+  );
+  if (!environments.length) return { enabled: false, processed: 0, failed: 0 };
   let failed = 0;
   let processed = 0;
   const eventAccounts = new Set<string>();
   const events = await prisma.billingEvent.findMany({
     where: {
       id: eventId,
+      environment: { in: environments },
       processedAt: null,
       nextAttemptAt: { lte: new Date() },
     },
@@ -389,7 +420,11 @@ export const reconcileBilling = async (eventId?: string) => {
   });
   for (const event of events) {
     try {
-      const accountId = await resolveEventAccount(event.type, event.resourceId);
+      const accountId = await resolveEventAccount(
+        event.type,
+        event.resourceId,
+        event.environment,
+      );
       if (accountId) {
         await queueBilling(accountId);
         eventAccounts.add(accountId);
@@ -413,6 +448,7 @@ export const reconcileBilling = async (eventId?: string) => {
     ? [...eventAccounts].map((id) => ({ id }))
     : await prisma.billingAccount.findMany({
         where: {
+          environment: { in: environments },
           nextSyncAt: { lte: new Date() },
           OR: [{ leaseUntil: null }, { leaseUntil: { lte: new Date() } }],
         },
@@ -426,7 +462,10 @@ export const reconcileBilling = async (eventId?: string) => {
   }
   if (!eventId)
     await prisma.billingEvent.deleteMany({
-      where: { processedAt: { lt: new Date(Date.now() - 30 * 86400000) } },
+      where: {
+        environment: { in: environments },
+        processedAt: { lt: new Date(Date.now() - 30 * 86400000) },
+      },
     });
   return { enabled: true, processed, failed };
 };

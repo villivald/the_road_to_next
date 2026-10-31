@@ -12,16 +12,24 @@ import shell from "@/components/shell.module.css";
 import { Link } from "@/i18n/navigation";
 import { getText } from "@/i18n/server";
 import { abandonCheckout, subscribe } from "../actions/manage-billing";
-import { billingEnabled, type BillingInterval, plans } from "../service/config";
+import {
+  billingCheckoutEnabled,
+  billingEnabled,
+  billingEnvironment,
+  type BillingInterval,
+  plans,
+} from "../service/config";
 import type { BillingOverview } from "../service/overview";
 import styles from "./billing.module.css";
 import { BillingRefresh } from "./billing-refresh";
 import { SubscriptionCard } from "./subscription-card";
 
 export async function BillingPanel({
+  userId,
   overview,
   returned = false,
 }: {
+  userId: string;
   overview: BillingOverview;
   returned?: boolean;
 }) {
@@ -29,6 +37,7 @@ export async function BillingPanel({
   const { account, pending, subscriptions, active, paidUntil, hasPromo } =
     overview;
   const enabled = billingEnabled();
+  const checkoutEnabled = billingCheckoutEnabled(userId);
   const confirmedCheckout = subscriptions.some((subscription) =>
     subscription.payments.some(
       (payment) =>
@@ -106,12 +115,13 @@ export async function BillingPanel({
   return (
     <section className={styles.section} aria-labelledby="subscription-heading">
       <h2 id="subscription-heading">{t("Subscription")}</h2>
-      {enabled ? (
+      {enabled && billingEnvironment() === "sandbox" && (
         <p className={styles.sandbox}>
           <FlaskConical size={18} aria-hidden="true" />
           {t("Sandbox billing · Test payments only. No real money is charged.")}
         </p>
-      ) : (
+      )}
+      {!enabled && (
         <p>
           {t(
             "Subscriptions are not available yet. You can still use a promo code.",
@@ -148,7 +158,14 @@ export async function BillingPanel({
           </div>
         </details>
       )}
-      {enabled && !pending && !active && !paidUntil && (
+      {enabled && !checkoutEnabled && (
+        <p>
+          {t(
+            "New subscriptions are temporarily unavailable. Existing subscriptions can still be managed.",
+          )}
+        </p>
+      )}
+      {checkoutEnabled && !pending && !active && !paidUntil && (
         <>
           <p>
             {t(

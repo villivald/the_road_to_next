@@ -31,7 +31,7 @@ model User {
   premiumGrants           PremiumGrant[]
   promoRedemptions        PromoRedemption[]
   sentInvitations         Invitation[]
-  billingAccount          BillingAccount?
+  billingAccounts         BillingAccount[]
   accountEmails           AccountEmail[]
   favoriteLists           FavoriteList[]
   favoriteWishes          FavoriteWish[]
@@ -386,12 +386,18 @@ model PromoRedemption {
   @@index([userId])
 }
 
+enum BillingEnvironment {
+  sandbox
+  live
+}
+
 // Retained without profile data after deletion so late payments can be canceled.
 model BillingAccount {
-  customerId    String?               @unique
+  customerId    String?
+  environment   BillingEnvironment    @default(sandbox)
   id            String                @id @default(cuid())
   createdAt     DateTime              @default(now())
-  userId        String?               @unique
+  userId        String?
   user          User?                 @relation(fields: [userId], references: [id], onDelete: SetNull)
   deletedAt     DateTime?
   nextSyncAt    DateTime              @default(now())
@@ -403,7 +409,9 @@ model BillingAccount {
   checkouts     BillingCheckout[]
   subscriptions BillingSubscription[]
 
-  @@index([nextSyncAt])
+  @@unique([userId, environment])
+  @@unique([customerId, environment])
+  @@index([environment, nextSyncAt])
 }
 
 model BillingCheckout {
@@ -448,15 +456,16 @@ model BillingPayment {
 
 // Only event/resource identifiers are retained; payloads may contain customer PII.
 model BillingEvent {
-  id            String    @id
-  createdAt     DateTime  @default(now())
+  environment   BillingEnvironment @default(sandbox)
+  id            String             @id
+  createdAt     DateTime           @default(now())
   type          String
   resourceId    String
-  nextAttemptAt DateTime  @default(now())
-  attempts      Int       @default(0)
+  nextAttemptAt DateTime           @default(now())
+  attempts      Int                @default(0)
   processedAt   DateTime?
 
-  @@index([processedAt, nextAttemptAt])
+  @@index([environment, processedAt, nextAttemptAt])
 }
 
 enum GroupEmailKind {

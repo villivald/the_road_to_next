@@ -7,7 +7,11 @@ import sharingCardFi from "@/assets/illustrations/premium-sharing-card-fi.png";
 import shell from "@/components/shell.module.css";
 import { getAuth } from "@/features/auth/actions/get-auth";
 import { authReturnPath } from "@/features/auth/utils/return-to";
-import { billingEnabled, plans } from "@/features/billing/service/config";
+import {
+  billingCheckoutEnabled,
+  billingEnvironment,
+  plans,
+} from "@/features/billing/service/config";
 import styles from "@/features/premium/components/personalization.module.css";
 import { PlanBenefits } from "@/features/premium/components/plan-benefits";
 import { PremiumBadge } from "@/features/premium/components/premium-badge";
@@ -215,15 +219,18 @@ export default async function PremiumPage() {
               "Renews automatically until canceled. Cancel renewal in Paddle; paid access continues until its end date.",
             )}
           </p>
-          <p className={shell.notice}>
-            {billingEnabled()
-              ? t(
-                  "Sandbox · Use Paddle test payment details only. No real money is charged.",
-                )
-              : t(
-                  "Subscriptions are not available yet. You can still use a promo code.",
-                )}
-          </p>
+          {(!billingCheckoutEnabled(user?.id) ||
+            billingEnvironment() === "sandbox") && (
+            <p className={shell.notice}>
+              {billingCheckoutEnabled(user?.id)
+                ? t(
+                    "Sandbox · Use Paddle test payment details only. No real money is charged.",
+                  )
+                : t(
+                    "Subscriptions are not available yet. You can still use a promo code.",
+                  )}
+            </p>
+          )}
         </div>
         <details className={shell.disclosure}>
           <summary>{t("Does everyone need Premium?")}</summary>

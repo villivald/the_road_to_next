@@ -1,3 +1,4 @@
+import { billingEnvironment } from "@/features/billing/service/config";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { continuousPremiumUntil } from "./period";
@@ -9,12 +10,19 @@ export const readPremiumAccess = async (
   db: Prisma.TransactionClient = prisma,
 ) => {
   const now = new Date();
+  const environment = billingEnvironment();
   const periods = await db.premiumGrant.findMany({
     where: {
       userId,
       user: { emailVerified: true },
       revokedAt: null,
       expiresAt: { gt: now },
+      OR: [
+        { billingPaymentId: null },
+        ...(environment
+          ? [{ billingPayment: { subscription: { account: { environment } } } }]
+          : []),
+      ],
     },
     select: { startsAt: true, expiresAt: true },
     orderBy: { startsAt: "asc" },

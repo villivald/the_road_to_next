@@ -4,6 +4,19 @@ export const testDatabaseUrl =
 export const testOrigin = "http://127.0.0.1:3017";
 
 export const testEnvironment = {
+  ...Object.fromEntries(
+    ["SANDBOX", "LIVE"].flatMap((environment) =>
+      [
+        "API_KEY",
+        "CLIENT_TOKEN",
+        "WEBHOOK_SECRET",
+        "MONTHLY_PRICE_ID",
+        "ANNUAL_PRICE_ID",
+      ].map((name) => [`PADDLE_${environment}_${name}`, ""]),
+    ),
+  ),
+  PADDLE_CHECKOUT_ENABLED: "",
+  PADDLE_CHECKOUT_TESTER_IDS: "",
   PADDLE_ENVIRONMENT: "sandbox",
   PADDLE_API_KEY: "",
   PADDLE_CLIENT_TOKEN: "",
@@ -23,6 +36,7 @@ export const testEnvironment = {
   RESEND_API_KEY: "re_e2e_not_a_real_key",
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: "",
   TURNSTILE_SECRET_KEY: "",
+  OPERATOR_LEGAL_NAME: "Fixture Operator",
   EMAIL_FROM: "Wishlist Tests <noreply@example.test>",
 };
 

@@ -114,8 +114,9 @@ const deletionImpact = async (tx: Prisma.TransactionClient, userId: string) => {
     orderBy: { id: "asc" },
   });
 
-  const billing = await tx.billingAccount.findUnique({
+  const billing = await tx.billingAccount.findMany({
     where: { userId },
+    orderBy: { id: "asc" },
     select: {
       subscriptions: {
         where: { status: { not: "canceled" } },
@@ -126,8 +127,14 @@ const deletionImpact = async (tx: Prisma.TransactionClient, userId: string) => {
   });
 
   return {
-    subscriptionCount: billing?.subscriptions.length ?? 0,
-    checkoutCount: billing?.checkouts.length ?? 0,
+    subscriptionCount: billing.reduce(
+      (sum, account) => sum + account.subscriptions.length,
+      0,
+    ),
+    checkoutCount: billing.reduce(
+      (sum, account) => sum + account.checkouts.length,
+      0,
+    ),
     outcomes,
     reservationCount: reservations.length,
     membershipCount: memberships.length,
@@ -179,7 +186,7 @@ export const deleteAccount = async (
     throw new AuthError("Incorrect current password");
   }
 
-  const billingId = await prisma.$transaction(
+  const billingIds = await prisma.$transaction(
     async (tx) => {
       // Deletions can transfer to each other. Serialize this rare operation before
       // taking user/list locks; other account and content operations remain concurrent.
@@ -257,16 +264,18 @@ export const deleteAccount = async (
       // Cascades revoke all sessions/tokens/memberships/reservations, while wishes
       // retain their content with a null author. Archiving ends all other reservations.
       await tx.invitation.deleteMany({ where: { email: current.email } });
-      const billing = await tx.billingAccount.findUnique({
+      const billing = await tx.billingAccount.findMany({
         where: { userId },
         select: { id: true },
       });
       await detachBilling(tx, userId);
       await tx.user.delete({ where: { id: userId } });
-      return billing?.id;
+      return billing.map((account) => account.id);
     },
     { timeout: 15_000 },
   );
   // The durable cancellation request survives account deletion and provider outages.
-  if (billingId) await syncBillingAccount(billingId).catch(() => false);
+  await Promise.all(
+    billingIds.map((id) => syncBillingAccount(id).catch(() => false)),
+  );
 };

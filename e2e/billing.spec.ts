@@ -13,7 +13,7 @@ test.beforeEach(async ({ page }) => {
   await page.route("https://cdn.paddle.com/paddle/v2/paddle.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
-      body: `window.Paddle={Environment:{set:()=>{}},Initialize:(options)=>{window.paddleTestEvent=options.eventCallback},Checkout:{open:()=>{document.body.dataset.checkoutOpened='true'}}};`,
+      body: `window.Paddle={Update:()=>{},Environment:{set:()=>{}},Initialize:(options)=>{window.paddleTestEvent=options.eventCallback},Checkout:{open:()=>{document.body.dataset.checkoutOpened='true'}}};`,
     }),
   );
   await page.goto("/en/sign-in");

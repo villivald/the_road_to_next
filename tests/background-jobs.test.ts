@@ -95,7 +95,7 @@ it("does not turn malformed events into unbounded recovery scans", async () => {
 });
 
 it.each(["sandbox", "production", undefined])(
-  "validates simulator IDs inside the actual billing worker (%s)",
+  "retains saved sandbox simulator recovery across active UI environments (%s)",
   async (environment) => {
     vi.stubEnv("PADDLE_ENVIRONMENT", environment);
     const platformId = `evt_${"1".repeat(26)}`;
@@ -111,13 +111,8 @@ it.each(["sandbox", "production", undefined])(
         id: simulatorId,
       },
     );
-    if (environment === "sandbox") {
-      await simulated;
-      expect(mocks.reconcile).toHaveBeenLastCalledWith(simulatorId);
-    } else {
-      await expect(simulated).rejects.toThrow();
-      expect(mocks.reconcile).toHaveBeenCalledOnce();
-    }
+    await simulated;
+    expect(mocks.reconcile).toHaveBeenLastCalledWith(simulatorId);
   },
 );
 

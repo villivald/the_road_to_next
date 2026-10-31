@@ -3,11 +3,17 @@ import { z } from "zod";
 import { consumeRateLimit } from "@/features/auth/service/security";
 import { prisma } from "@/lib/prisma";
 import {
+  activeBillingAccountWhere,
   queueBilling,
   requireBillingUser,
   withBillingAccount,
 } from "./accounts";
-import { billingConfig, BillingError, type BillingInterval } from "./config";
+import {
+  billingCheckoutEnabled,
+  billingConfig,
+  BillingError,
+  type BillingInterval,
+} from "./config";
 import {
   getTransaction,
   paddleList,
@@ -30,14 +36,19 @@ export const startCheckout = async (
   input: unknown,
 ) => {
   const interval = z.enum(["month", "year"]).parse(input);
+  if (!billingCheckoutEnabled(userId))
+    throw new BillingError(
+      "New subscriptions are temporarily unavailable. Existing subscriptions can still be managed.",
+    );
   await consumeRateLimit("billing-checkout", userId, 10, 3600000);
   const priceId = await validatePrice(interval);
+  const { environment } = billingConfig();
   const claimId = randomUUID();
   const prepared = await prisma.$transaction(async (tx) => {
     const user = await requireBillingUser(tx, userId, sessionId);
     const account = await tx.billingAccount.upsert({
-      where: { userId },
-      create: { userId },
+      where: { userId_environment: { userId, environment } },
+      create: { userId, environment },
       update: {},
       include: { subscriptions: true },
     });
@@ -190,7 +201,9 @@ export const startCheckout = async (
 export const discardCheckout = async (userId: string, sessionId: string) => {
   const account = await prisma.$transaction(async (tx) => {
     await requireBillingUser(tx, userId, sessionId);
-    const account = await tx.billingAccount.findUnique({ where: { userId } });
+    const account = await tx.billingAccount.findFirst({
+      where: activeBillingAccountWhere(userId),
+    });
     if (account)
       await tx.billingCheckout.updateMany({
         where: { accountId: account.id, closedAt: null },
@@ -206,24 +219,36 @@ export const checkoutDetails = async (
   checkoutId?: string,
   transactionId?: string,
 ) => {
+  if (!billingCheckoutEnabled(userId))
+    throw new BillingError(
+      "New subscriptions are temporarily unavailable. Existing subscriptions can still be managed.",
+    );
   const checkout = await prisma.billingCheckout.findFirst({
     where: {
       ...(checkoutId
         ? { id: checkoutId }
         : { transactionId: transactionId ?? "invalid" }),
-      account: { userId, deletedAt: null },
+      account: { ...activeBillingAccountWhere(userId), deletedAt: null },
     },
+    include: { account: { select: { customerId: true } } },
   });
   if (!checkout) return null;
   if (checkout.closedAt || checkout.cancelRequested || !checkout.transactionId)
     return { state: "return" as const };
   const transaction = await getTransaction(checkout.transactionId);
+  const customerId = transaction.customer_id;
+  if (
+    !customerId ||
+    !/^ctm_[a-z0-9]{26}$/.test(customerId) ||
+    customerId !== checkout.account.customerId
+  )
+    throw new BillingError("Checkout customer mismatch.");
   if (!["draft", "ready"].includes(transaction.status))
     return { state: "return" as const };
   const stillOpen = await prisma.billingCheckout.count({
     where: {
       id: checkout.id,
-      account: { userId, deletedAt: null },
+      account: { ...activeBillingAccountWhere(userId), deletedAt: null },
       closedAt: null,
       cancelRequested: false,
     },
@@ -233,6 +258,8 @@ export const checkoutDetails = async (
     state: "ready" as const,
     transactionId: checkout.transactionId,
     clientToken: billingConfig().clientToken,
+    environment: billingConfig().environment,
+    customerId,
     interval: checkout.interval as BillingInterval,
   };
 };
@@ -245,7 +272,10 @@ export const portalLink = async (
   const subscription = await prisma.$transaction(async (tx) => {
     await requireBillingUser(tx, userId, sessionId);
     return tx.billingSubscription.findFirst({
-      where: { id: subscriptionId, account: { userId, deletedAt: null } },
+      where: {
+        id: subscriptionId,
+        account: { ...activeBillingAccountWhere(userId), deletedAt: null },
+      },
     });
   });
   if (!subscription) throw new BillingError("Subscription unavailable.");
@@ -275,7 +305,10 @@ export const portalLink = async (
   );
   if (
     url.protocol !== "https:" ||
-    url.hostname !== "sandbox-customer-portal.paddle.com"
+    url.hostname !== billingConfig().portalHostname ||
+    url.username ||
+    url.password ||
+    url.port
   )
     throw new BillingError("Invalid customer portal response.");
   await prisma.$transaction(async (tx) => {

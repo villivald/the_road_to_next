@@ -10,7 +10,10 @@ import { limitSourceRequest } from "@/features/auth/service/request-limit";
 import { consumeRateLimit } from "@/features/auth/service/security";
 import { redirect, revalidatePath } from "@/i18n/server-navigation";
 import { prisma } from "@/lib/prisma";
-import { requireBillingUser } from "../service/accounts";
+import {
+  activeBillingAccountWhere,
+  requireBillingUser,
+} from "../service/accounts";
 import {
   discardCheckout,
   portalLink,
@@ -65,7 +68,9 @@ export const refreshBilling = async (_state: ActionState, _data: FormData) => {
     await consumeRateLimit("billing-refresh", user.id, 30, 3600000);
     const account = await prisma.$transaction(async (tx) => {
       await requireBillingUser(tx, user.id, session.id);
-      return tx.billingAccount.findUnique({ where: { userId: user.id } });
+      return tx.billingAccount.findFirst({
+        where: activeBillingAccountWhere(user.id),
+      });
     });
     if (account && !(await syncBillingAccount(account.id))) {
       const current = await prisma.billingAccount.findUnique({
@@ -104,8 +109,8 @@ export const abandonCheckout = async (_state: ActionState, _data: FormData) => {
   try {
     await limitSourceRequest("billing-discard");
     await discardCheckout(user.id, session.id);
-    const account = await prisma.billingAccount.findUnique({
-      where: { userId: user.id },
+    const account = await prisma.billingAccount.findFirst({
+      where: activeBillingAccountWhere(user.id),
     });
     if (account) await syncBillingAccount(account.id);
     revalidatePath("/account/plan");

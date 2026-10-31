@@ -425,7 +425,7 @@ test("Finnish billing explains the provider language and returns checkout to Fin
   await page.route("https://cdn.paddle.com/paddle/v2/paddle.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
-      body: "window.Paddle={Environment:{set:()=>{}},Initialize:()=>{},Checkout:{open:({settings})=>{document.body.dataset.checkoutLocale=settings.locale;document.body.dataset.checkoutReturn=settings.successUrl}}};",
+      body: "window.Paddle={Update:()=>{},Environment:{set:()=>{}},Initialize:()=>{},Checkout:{open:({settings})=>{document.body.dataset.checkoutLocale=settings.locale;document.body.dataset.checkoutReturn=settings.successUrl}}};",
     }),
   );
   await signIn(page);

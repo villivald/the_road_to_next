@@ -1,6 +1,12 @@
 import { AuthError, lockUser } from "@/features/auth/service/security";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { billingEnvironment } from "./config";
+
+export const activeBillingAccountWhere = (userId: string) => {
+  const environment = billingEnvironment();
+  return { userId, environment: { in: environment ? [environment] : [] } };
+};
 
 export const requireBillingUser = async (
   tx: Prisma.TransactionClient,
@@ -46,21 +52,25 @@ export const detachBilling = async (
   tx: Prisma.TransactionClient,
   userId: string,
 ) => {
-  const account = await tx.billingAccount.findUnique({ where: { userId } });
-  if (!account) return;
-  await tx.$queryRaw`SELECT pg_advisory_xact_lock(8112, hashtext(${account.id}))::text`;
-  await tx.billingAccount.update({
-    where: { id: account.id },
-    data: {
-      deletedAt: new Date(),
-      nextSyncAt: new Date(),
-      revision: { increment: 1 },
-      claimId: null,
-      leaseUntil: null,
-    },
+  const accounts = await tx.billingAccount.findMany({
+    where: { userId },
+    orderBy: { id: "asc" },
   });
-  await tx.billingCheckout.updateMany({
-    where: { accountId: account.id, closedAt: null },
-    data: { cancelRequested: true },
-  });
+  for (const account of accounts) {
+    await tx.$queryRaw`SELECT pg_advisory_xact_lock(8112, hashtext(${account.id}))::text`;
+    await tx.billingAccount.update({
+      where: { id: account.id },
+      data: {
+        deletedAt: new Date(),
+        nextSyncAt: new Date(),
+        revision: { increment: 1 },
+        claimId: null,
+        leaseUntil: null,
+      },
+    });
+    await tx.billingCheckout.updateMany({
+      where: { accountId: account.id, closedAt: null },
+      data: { cancelRequested: true },
+    });
+  }
 };

@@ -1,29 +1,53 @@
 # Public policies — EN/FI operator draft
 
-Reviewed 30 October 2026. **Review draft, not published customer terms.** The service is personally operated in Finland; support contact: support@wishlist.fi.
+Reviewed 31 October 2026. **Review and publication record; the approved website policies are now published.** The service is personally operated in Finland; support contact: support@wishlist.fi.
 Repository drafts use role-based wording. The reviewed website notice should
 identify the operator as required before publication.
-The existing app pages remain the current development-preview notices.
+The owner approved policy-only publication on 31 October. The EN/FI website pages
+are now published; see [deployment evidence](policy-publication-2026-10-31.md).
+Earlier draft passages below are retained as review history; the published website
+is the current customer-facing wording.
 
-Publication requires a decision on retention and backups, confirmation of provider
+Publication still requires archive/billing/provider-log retention review, confirmation of provider
 contracts/regions/international transfer safeguards, and appropriate legal review.
 No legal approval or provider agreement is asserted by this draft. Paid-service
 terms require Step 7's actual live billing arrangements. Review the
 [operations evidence](operations-readiness-2026-10-29.md) before publishing.
 
+## Step 7 refund decision
+
+On 31 October, the owner selected Paddle's standard Buyer Terms and Refund Policy,
+including mandatory consumer rights, without an additional Wishlist money-back
+guarantee. The approved EN/FI `/refunds` page and footer/site-map links are
+implemented locally. It covers cancellation, refund/withdrawal requests, paid-access
+effects and support. Publication is verified separately in the release report; it does not establish
+Paddle account/domain approval.
+
+## Approved manual retention — 31 October
+
+The owner selected a **30-day maximum for encrypted manual backups**, including
+local/off-device copies, and **90 days after resolution for support correspondence**,
+subject to mandatory legal retention. The owner handles expiry manually; no automatic
+backup/mailbox deletion is implemented or claimed. The published EN/FI website
+copy includes these choices, provider disclosures, rights and subscription
+terms. The public operator name is read from `OPERATOR_LEGAL_NAME`; its real value
+is kept in private configuration and appears only on the intended website pages.
+Publication and provider-contract/transfer review remain separate owner actions.
+
 ## Retention review: actual behavior and proposed decisions
 
-| Data                                        | Current implementation                                                                                                                              | Proposed operator decision, not yet enforced                                                                             |
-| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Account/profile/session access              | Account deletion removes user/profile and cascades sessions/tokens/memberships/favorites; avatar becomes eligible for cleanup                       | Preserve this behavior; verify erasure request handling and external support records                                     |
-| Expired auth records                        | Checked on access; expired rate limits, sessions, verification/reset records removed by daily maintenance                                           | Keep current expiry/cleanup; do not promise deletion exactly at expiry                                                   |
-| Wishes/shared lists                         | Deleting a list cascades content; deleting an account can transfer lists to another admin, retain wishes without author, or archive ownerless lists | Decide whether ownerless archives should be purged after 30 days; implement and verify separately before promising it    |
-| Guest links/invitations/reservation history | Expiry/revocation enforced on access; no general scheduled purge of all historical records                                                          | Review a 90-day post-expiry/history retention proposal and required audit/deduplication needs                            |
-| Account email records                       | Sent/canceled bodies cleared; delivery metadata/recipient remain until account deletion; failed bodies may remain for diagnosis                     | Review 30-day diagnostic retention, keeping minimum deduplication state where necessary                                  |
-| Detached image bytes                        | Cleanup after due time, with retry/backoff; attached archived images can remain                                                                     | Adopt archive decision and verify original/variant deletion; do not promise an exact erasure time during outages         |
-| Detached billing records/events             | Account is unlinked; identifiers and recovery state remain for cancellations/reconciliation; no automatic general purge                             | Determine a justified retention period with legal/provider input; preserve unresolved cancellation and refund records    |
-| Runtime logs / support mailbox              | Provider/operator retention; exact current settings unverified                                                                                      | Minimize customer data, record actual retention and access, agree a support-case retention period                        |
-| Backups                                     | Manual encrypted hosted DB/media export passed an isolated offline restore; daily cadence and off-device custody not yet established                | Proposed daily encrypted DB/media backup, seven daily versions; verify expiry, separate key custody and erasure handling |
+| Data                                        | Current implementation                                                                                                                              | Operator decision / remaining review                                                                                                          |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Account/profile/session access              | Account deletion removes user/profile and cascades sessions/tokens/memberships/favorites; avatar becomes eligible for cleanup                       | Preserve this behavior; verify erasure request handling and external support records                                                          |
+| Expired auth records                        | Checked on access; expired rate limits, sessions, verification/reset records removed by daily maintenance                                           | Keep current expiry/cleanup; do not promise deletion exactly at expiry                                                                        |
+| Wishes/shared lists                         | Deleting a list cascades content; deleting an account can transfer lists to another admin, retain wishes without author, or archive ownerless lists | Decide whether ownerless archives should be purged after 30 days; implement and verify separately before promising it                         |
+| Guest links/invitations/reservation history | Expiry/revocation enforced on access; no general scheduled purge of all historical records                                                          | Review a 90-day post-expiry/history retention proposal and required audit/deduplication needs                                                 |
+| Account email records                       | Sent/canceled bodies cleared; delivery metadata/recipient remain until account deletion; failed bodies may remain for diagnosis                     | Review 30-day diagnostic retention, keeping minimum deduplication state where necessary                                                       |
+| Detached image bytes                        | Cleanup after due time, with retry/backoff; attached archived images can remain                                                                     | Adopt archive decision and verify original/variant deletion; do not promise an exact erasure time during outages                              |
+| Detached billing records/events             | Account is unlinked; identifiers and recovery state remain for cancellations/reconciliation; no automatic general purge                             | Determine a justified retention period with legal/provider input; preserve unresolved cancellation and refund records                         |
+| Runtime logs                                | Provider retention/settings; exact current configuration unverified                                                                                 | Review actual retention/access and minimize customer data                                                                                     |
+| Support correspondence                      | Owner-managed mailbox; no app-side automatic deletion                                                                                               | Owner approved deletion 90 days after case resolution on 31 October, except required legal retention; remove operator-controlled trash copies |
+| Encrypted DB/media backups                  | Encrypted manual backup/restore is implemented; no automated expiry                                                                                 | Owner approved 30-day maximum on 31 October; manually delete expired local/off-device copies and set an expiry reminder                       |
 
 Do not add a blanket deletion job from these proposed numbers: retained/shared
 content, payment recovery, deduplication and provider records require different
@@ -70,8 +94,9 @@ wishes and images in the app. Account deletion removes your profile/sign-in
 access, but some shared lists transfer to another admin and wishes can remain
 without your name. Ownerless lists may be archived. Detached payment identifiers
 and recovery records can remain to complete subscription handling. Archived
-content/history, provider logs, support correspondence and backup retention need
-the decisions above before this draft is published. Hiding a list ends active
+content/history and provider-log retention still need the review above. Encrypted
+manual backups, including off-device copies, are kept for up to 30 days. Resolved
+support correspondence is deleted after 90 days unless law requires longer retention. Hiding a list ends active
 reservations; it does not erase the list or all retained records.
 
 **Your requests.** Contact support to ask about your data or request correction,
@@ -125,8 +150,10 @@ toiveita ja kuvia sovelluksessa. Tilin poistaminen poistaa profiilin ja
 kirjautumisoikeuden, mutta yhteisiä listoja voi siirtyä toiselle ylläpitäjälle ja
 toiveita säilyä ilman tekijän nimeä. Omistajattomia listoja voidaan arkistoida.
 Tilistä irrotettuja maksutunnisteita ja palautumistietoja voi säilyä tilausten
-käsittelyä varten. Arkistoidun sisällön, historian, lokien, tukiviestien ja
-varmuuskopioiden säilytysajat on päätettävä ennen tämän luonnoksen julkaisemista.
+käsittelyä varten. Arkistoidun sisällön, historian ja lokien säilytys on vielä
+tarkistettava. Salattuja käsin otettuja varmuuskopioita säilytetään enintään
+30 päivää, myös toisella laitteella. Ratkaistujen tukipyyntöjen viestit poistetaan
+90 päivän kuluttua asian ratkaisemisesta, ellei laki edellytä pidempää säilytystä.
 Listan piilottaminen päättää aktiiviset varaukset; se ei poista listaa tai kaikkia
 siihen liittyviä tietoja.
 
@@ -137,7 +164,7 @@ luovuttamista. Voit saattaa asian tietosuojavaltuutetun käsiteltäväksi.
 Lopullisessa ilmoituksessa on kuvattava tarkistetut käyttötarkoitukset,
 oikeusperusteet, vastaanottajat, säilytysajat, oikeudet ja siirtojen suojatoimet.
 
-## Beta terms — English draft
+## Earlier invited-beta terms — English sandbox record
 
 Wishlist is an invited beta operated by its owner in Finland. Contact
 support@wishlist.fi for help. Features and availability can change; keep your own
@@ -160,7 +187,7 @@ published with the separate live-billing release. No live purchase is offered
 by this draft. Account deletion follows the reviewed impact summary, including
 possible shared-list transfer and archival.
 
-## Betakäytön ehdot — suomenkielinen luonnos
+## Aiemmat betakäytön ehdot — testiympäristön muistiinpano
 
 Wishlist on kutsupohjainen betapalvelu, jota ylläpitää palvelun omistaja Suomessa.
 Tukeen saa yhteyden osoitteessa support@wishlist.fi. Toiminnot ja saatavuus voivat

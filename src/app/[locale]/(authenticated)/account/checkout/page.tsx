@@ -48,11 +48,13 @@ export default async function CheckoutPage({
     <section className={billing.checkout}>
       <BackLink href="/account/plan">{t("Back to your plan")}</BackLink>
       <h1>{t("Premium checkout")}</h1>
-      <p className={styles.notice}>
-        {t(
-          "Sandbox · Use Paddle test payment details only. No real money is charged.",
-        )}
-      </p>
+      {checkout.environment === "sandbox" && (
+        <p className={styles.notice}>
+          {t(
+            "Sandbox · Use Paddle test payment details only. No real money is charged.",
+          )}
+        </p>
+      )}
       <p>
         {t.message(plans[checkout.interval].display)}
         {t(", including applicable tax. Renews automatically until canceled.")}
@@ -65,6 +67,8 @@ export default async function CheckoutPage({
       <PaddleCheckout
         transactionId={checkout.transactionId}
         clientToken={checkout.clientToken}
+        environment={checkout.environment}
+        customerId={checkout.customerId}
       />
       <p>
         {t(

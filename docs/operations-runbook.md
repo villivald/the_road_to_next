@@ -183,7 +183,9 @@ copy. A real hosted DB/media archive passed an offline local restore on 30 Octob
 The owner must still confirm Neon's actual plan/history window and complete off-device
 custody. Proposed cadence: daily backup and before risky migrations, seven daily
 versions, restricted operator access, and keys stored separately in a password
-manager. Cadence/retention are proposals, not an automated scheduler or expiry job.
+manager. Cadence remains a proposal. On 31 October, the owner approved a 30-day
+maximum for encrypted manual backups, including local and off-device copies.
+There is no automated scheduler or expiry job.
 
 ### Repeat the encrypted manual backup
 
@@ -245,7 +247,9 @@ After a successful run:
    not protect against losing the Mac.
 3. Record destination/date and key custody privately. Retain the local working
    copy until the off-device archive and independent key access are verified.
-   Apply the eventual approved retention policy manually; no expiry is automated.
+   Apply the approved 30-day maximum manually to every local/off-device copy,
+   including operator-controlled trash copies. Set an expiry reminder when saving
+   or copying an archive; no expiry is automated.
 
 The encrypted tar contains `database.dump`, a checksummed `manifest.json`, and
 `media/images/`. Standard GPG/tar/PostgreSQL 18 tools can read it independently
@@ -321,3 +325,19 @@ the actual data/backup footprint. Account deletion retains some shared content
 and detached billing records; do not promise total immediate erasure. Consult the
 applicable policy and legal review before answering statutory deadlines, breach
 notification or contested erasure questions.
+
+## Support-case retention — owner approved 31 October
+
+Keep resolved support correspondence for 90 days after resolution, except when
+longer retention is required by law. Record the closure date and an expiry reminder.
+Manually remove expired cases and operator-controlled trash copies; the app does
+not automate the support mailbox. Do not confuse support-case deletion with
+Paddle’s payment-record obligations or an unresolved cancellation/refund.
+
+## Policy-only production release — 31 October
+
+The approved EN/FI policies are published in `dpl_crr3BoXzzfDd1ivc6dvdxkmZgatv`,
+from baseline `2ef0dea` plus the isolated policy patch. This supersedes the dated
+production deployment reference above. Sandbox billing and the original schema
+are preserved; the live billing migration/code remain held. See
+[publication evidence](policy-publication-2026-10-31.md).

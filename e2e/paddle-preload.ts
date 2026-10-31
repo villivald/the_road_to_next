@@ -1,13 +1,33 @@
 import { appendFile, mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { assertTestDatabase } from "./environment";
-import { emptyPaddleState, paddleFixtureResponse } from "./paddle-fixture";
+import {
+  emptyPaddleState,
+  livePaddleEnvironment,
+  paddleEnvironment,
+  paddleFixtureResponse,
+} from "./paddle-fixture";
 import { readPaddleState, writePaddleState } from "./paddle-state";
 
 // Loaded only by Playwright's server command, never by the application or build.
 assertTestDatabase(process.env);
+const fixtureEnvironment =
+  process.env.PADDLE_ENVIRONMENT === "live"
+    ? livePaddleEnvironment
+    : paddleEnvironment;
+if (
+  !Object.entries(fixtureEnvironment).every(
+    ([key, value]) => process.env[key] === value,
+  )
+)
+  throw new Error(
+    "Browser billing fixtures require fake Paddle credentials only",
+  );
 await mkdir(resolve(".local"), { recursive: true });
-await writePaddleState(emptyPaddleState());
+await writePaddleState({
+  ...emptyPaddleState(),
+  environment: fixtureEnvironment,
+});
 const eventsPath = resolve(".local/background-events-test.jsonl");
 await writeFile(eventsPath, "");
 const originalFetch = globalThis.fetch;
@@ -24,7 +44,11 @@ globalThis.fetch = async (input, init) => {
     await appendFile(eventsPath, `${String(init?.body)}\n`);
     return Response.json({ status: 200, ids: [] });
   }
-  if (url.origin !== "https://sandbox-api.paddle.com")
+  if (
+    !["https://sandbox-api.paddle.com", "https://api.paddle.com"].includes(
+      url.origin,
+    )
+  )
     return originalFetch(input, init);
   const response = pending.then(async () => {
     const state = await readPaddleState();

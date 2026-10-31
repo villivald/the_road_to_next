@@ -5,7 +5,11 @@ import {
   publishBackgroundEvents,
 } from "@/lib/background-events";
 import { prisma } from "@/lib/prisma";
-import { billingConfig } from "./config";
+import {
+  billingConfig,
+  type BillingEnvironment,
+  billingEnvironment,
+} from "./config";
 import { billingEventIdSchema } from "./event-id";
 
 export const validSignature = (
@@ -37,12 +41,13 @@ export const acceptWebhook = async (
   signature: string,
   notify: (id: string) => void | Promise<void> = (id) =>
     publishBackgroundEvents(backgroundEvents.billing, [id]),
+  environment: BillingEnvironment | null = billingEnvironment(),
 ) => {
-  if (!validSignature(body, signature, billingConfig().webhookSecret))
-    return 401;
+  const config = billingConfig(environment);
+  if (!validSignature(body, signature, config.webhookSecret)) return 401;
   const parsed = z
     .object({
-      event_id: billingEventIdSchema(),
+      event_id: billingEventIdSchema(config.environment),
       event_type: z.string(),
       data: z.object({ id: z.string() }),
     })
@@ -59,8 +64,8 @@ export const acceptWebhook = async (
   if (!prefix) return 200;
   if (!new RegExp(`^${prefix}_[a-z0-9]{26}$`).test(data.id)) return 400;
   const event = await prisma.billingEvent.upsert({
-    where: { id },
-    create: { id, type, resourceId: data.id },
+    where: { id, environment: config.environment },
+    create: { id, environment: config.environment, type, resourceId: data.id },
     update: {},
     select: { processedAt: true },
   });

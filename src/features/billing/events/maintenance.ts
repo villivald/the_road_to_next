@@ -15,7 +15,10 @@ export const billingMaintenance = inngest.createFunction(
       reconcileBilling(
         event.name === "inngest/scheduled.timer"
           ? undefined
-          : z.object({ id: billingEventIdSchema() }).parse(event.data).id,
+          : // The signed receiver validates the environment's namespace. Pending
+            // sandbox rows remain recoverable after the active UI switches to live.
+            z.object({ id: billingEventIdSchema("sandbox") }).parse(event.data)
+              .id,
       ),
     ),
 );

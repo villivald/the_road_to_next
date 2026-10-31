@@ -51,6 +51,7 @@ export default async function Footer() {
           <Link href="/accessibility">{t("Accessibility")}</Link>
           <Link href="/privacy">{t("Privacy")}</Link>
           <Link href="/terms">{t("Terms")}</Link>
+          <Link href="/refunds">{t("Refunds and cancellations")}</Link>
         </nav>
         <div className={styles.bottom}>
           <p>

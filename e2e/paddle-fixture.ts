@@ -12,12 +12,25 @@ export const paddleEnvironment = {
   PADDLE_ANNUAL_PRICE_ID: `pri_${"y".repeat(26)}`,
 };
 
+export const livePaddleEnvironment = {
+  ...paddleEnvironment,
+  PADDLE_ENVIRONMENT: "live",
+  PADDLE_CHECKOUT_ENABLED: "1",
+  PADDLE_API_KEY: "pdl_live_apikey_fixture_only",
+  PADDLE_CLIENT_TOKEN: "live_fixture_only",
+  PADDLE_WEBHOOK_SECRET: "live-fixture-signing-secret",
+  PADDLE_MONTHLY_PRICE_ID: `pri_${"l".repeat(26)}`,
+  PADDLE_ANNUAL_PRICE_ID: `pri_${"a".repeat(26)}`,
+};
+
 type Customer = {
   id: string;
   email: string;
   custom_data: { wishlist_account: string };
 };
 export type PaddleState = {
+  idNamespace?: string;
+  environment?: typeof paddleEnvironment;
   customers: Customer[];
   transactions: PaddleTransaction[];
   subscriptions: PaddleSubscription[];
@@ -33,17 +46,22 @@ export const emptyPaddleState = (): PaddleState => ({
   loseCreateResponse: false,
   createCount: 0,
 });
-const id = (prefix: string, value: number) =>
-  `${prefix}_${String(value).padStart(26, "0")}`;
+const id = (prefix: string, value: number, namespace = "0") =>
+  `${prefix}_${namespace}${String(value).padStart(25, "0")}`;
 
 export const completePayment = (state: PaddleState, transactionId: string) => {
   const transaction = state.transactions.find(
     (item) => item.id === transactionId,
   )!;
   const annual =
-    transaction.items[0].price.id === paddleEnvironment.PADDLE_ANNUAL_PRICE_ID;
+    transaction.items[0].price.id ===
+    (state.environment ?? paddleEnvironment).PADDLE_ANNUAL_PRICE_ID;
   transaction.status = "completed";
-  transaction.subscription_id = id("sub", state.subscriptions.length + 1);
+  transaction.subscription_id = id(
+    "sub",
+    state.subscriptions.length + 1,
+    state.idNamespace,
+  );
   transaction.billing_period = {
     starts_at: new Date(Date.now() - 1000).toISOString(),
     ends_at: new Date(
@@ -71,6 +89,11 @@ export const paddleFixtureResponse = (
   const method = init?.method ?? "GET";
   const data = init?.body ? JSON.parse(String(init.body)) : {};
   const path = url.pathname;
+  const environment = state.environment ?? paddleEnvironment;
+  const portal =
+    url.origin === "https://api.paddle.com"
+      ? "customer-portal.paddle.com"
+      : "sandbox-customer-portal.paddle.com";
   const response = (value: unknown) =>
     Response.json({
       data: value,
@@ -78,7 +101,7 @@ export const paddleFixtureResponse = (
     });
   if (state.fail) return new Response(null, { status: 503 });
   if (path.startsWith("/prices/")) {
-    const annual = path.endsWith(paddleEnvironment.PADDLE_ANNUAL_PRICE_ID);
+    const annual = path.endsWith(environment.PADDLE_ANNUAL_PRICE_ID);
     return response({
       id: path.split("/").at(-1),
       status: "active",
@@ -97,7 +120,7 @@ export const paddleFixtureResponse = (
     );
   if (path === "/customers" && method === "POST") {
     const customer = {
-      id: id("ctm", state.customers.length + 1),
+      id: id("ctm", state.customers.length + 1, state.idNamespace),
       ...data,
     } as Customer;
     state.customers.push(customer);
@@ -107,12 +130,12 @@ export const paddleFixtureResponse = (
     return response({
       urls: {
         general: {
-          overview: "https://sandbox-customer-portal.paddle.com/cpl_fixture",
+          overview: `https://${portal}/cpl_fixture`,
         },
         subscriptions: (data.subscription_ids ?? []).map(
           (subscriptionId: string) => ({
             id: subscriptionId,
-            view_subscription: `https://sandbox-customer-portal.paddle.com/cpl_fixture?action=view_subscription&subscription_id=${subscriptionId}`,
+            view_subscription: `https://${portal}/cpl_fixture?action=view_subscription&subscription_id=${subscriptionId}`,
           }),
         ),
       },
@@ -120,7 +143,7 @@ export const paddleFixtureResponse = (
   if (path === "/transactions" && method === "POST") {
     state.createCount++;
     const transaction: PaddleTransaction = {
-      id: id("txn", state.transactions.length + 1),
+      id: id("txn", state.transactions.length + 1, state.idNamespace),
       status: "draft",
       origin: "api",
       customer_id: data.customer_id,
@@ -137,7 +160,7 @@ export const paddleFixtureResponse = (
       details: {
         totals: {
           total:
-            data.items[0].price_id === paddleEnvironment.PADDLE_ANNUAL_PRICE_ID
+            data.items[0].price_id === environment.PADDLE_ANNUAL_PRICE_ID
               ? "1500"
               : "200",
         },

@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import styles from "@/components/shell.module.css";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useText } from "@/i18n/use-text";
+import type { BillingEnvironment } from "../service/config";
 
 type PaddleEvent = {
   name: string;
@@ -16,9 +17,11 @@ type PaddleClient = {
   Environment: { set: (environment: "sandbox") => void };
   Initialize: (options: {
     token: string;
+    pwCustomer: { id: string };
     eventCallback: (event: PaddleEvent) => void;
     checkout: { settings: Record<string, unknown> };
   }) => void;
+  Update: (options: { pwCustomer: { id: string } }) => void;
   Checkout: {
     open: (options: {
       transactionId: string;
@@ -33,9 +36,13 @@ const listeners = new Set<(event: PaddleEvent) => void>();
 export function PaddleCheckout({
   transactionId,
   clientToken,
+  environment,
+  customerId,
 }: {
   transactionId: string;
   clientToken: string;
+  environment: BillingEnvironment;
+  customerId: string;
 }) {
   const t = useText();
   const router = useRouter();
@@ -90,10 +97,13 @@ export function PaddleCheckout({
     try {
       const client = paddle();
       if (!client) throw new Error("Unavailable");
-      if (initializedToken !== clientToken) {
-        client.Environment.set("sandbox");
+      if (initializedToken && initializedToken !== clientToken)
+        throw new Error("Reload checkout after billing configuration changes");
+      if (!initializedToken) {
+        if (environment === "sandbox") client.Environment.set("sandbox");
         client.Initialize({
           token: clientToken,
+          pwCustomer: { id: customerId },
           eventCallback: (event) =>
             listeners.forEach((listener) => listener(event)),
           checkout: {
@@ -107,6 +117,8 @@ export function PaddleCheckout({
           },
         });
         initializedToken = clientToken;
+      } else {
+        client.Update({ pwCustomer: { id: customerId } });
       }
       setReady(true);
     } catch {

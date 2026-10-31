@@ -8,6 +8,7 @@ import {
   it,
   vi,
 } from "vitest";
+import { POST as POSTLive } from "@/app/api/paddle/live/webhook/route";
 import { POST } from "@/app/api/paddle/webhook/route";
 import {
   deleteAccount,
@@ -20,6 +21,7 @@ import {
   portalLink,
   startCheckout,
 } from "@/features/billing/service/checkout";
+import { readBillingOverview } from "@/features/billing/service/overview";
 import {
   reconcileBilling,
   syncBillingAccount,
@@ -34,6 +36,7 @@ import { assertTestDatabase } from "../e2e/environment";
 import {
   completePayment,
   emptyPaddleState,
+  livePaddleEnvironment as liveEnvironment,
   paddleEnvironment,
   paddleFixtureResponse,
   type PaddleState,
@@ -87,6 +90,303 @@ const paid = async () => {
   expect(await syncBillingAccount(result.checkout.accountId)).toBe(true);
   return result;
 };
+
+const useLive = () => {
+  const live = {
+    ...emptyPaddleState(),
+    idNamespace: "l",
+    environment: liveEnvironment,
+  };
+  Object.entries(paddleEnvironment)
+    .filter(([key]) => key !== "PADDLE_ENVIRONMENT")
+    .forEach(([key, value]) =>
+      vi.stubEnv(key.replace("PADDLE_", "PADDLE_SANDBOX_"), value),
+    );
+  Object.entries(liveEnvironment).forEach(([key, value]) =>
+    vi.stubEnv(key, value),
+  );
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (input: string | URL, init?: RequestInit) => {
+      const url = new URL(String(input));
+      const sandbox = url.origin === "https://sandbox-api.paddle.com";
+      if (!sandbox && url.origin !== "https://api.paddle.com")
+        throw new Error("Unexpected provider host");
+      expect(new Headers(init?.headers).get("Authorization")).toBe(
+        `Bearer ${sandbox ? paddleEnvironment.PADDLE_API_KEY : liveEnvironment.PADDLE_API_KEY}`,
+      );
+      return paddleFixtureResponse(sandbox ? state : live, url, init);
+    }),
+  );
+  return live;
+};
+
+describe("Paddle live environment isolation", () => {
+  it("restricts starting and resuming live checkout to configured testers", async () => {
+    useLive();
+    const { user, session } = await login();
+    vi.stubEnv("PADDLE_CHECKOUT_TESTER_IDS", "other-tester");
+    await expect(startCheckout(user.id, session.id, "month")).rejects.toThrow(
+      "temporarily unavailable",
+    );
+    expect(await prisma.billingAccount.count()).toBe(0);
+    vi.stubEnv("PADDLE_CHECKOUT_TESTER_IDS", ` other-tester, ${user.id} `);
+    const checkoutId = await startCheckout(user.id, session.id, "month");
+    expect(await checkoutDetails(user.id, checkoutId)).not.toBeNull();
+    vi.stubEnv("PADDLE_CHECKOUT_TESTER_IDS", "other-tester");
+    await expect(checkoutDetails(user.id, checkoutId)).rejects.toThrow(
+      "temporarily unavailable",
+    );
+  });
+
+  it("accepts a live HTTP webhook only from an allowed edge source with the live signature", async () => {
+    useLive();
+    vi.stubEnv("VERCEL", "1");
+    const providerFetch = globalThis.fetch;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: string | URL, init?: RequestInit) =>
+        String(input) === "https://api.paddle.com/ips"
+          ? Response.json({ data: { ipv4_cidrs: ["192.0.2.50/32"] } })
+          : providerFetch(input, init),
+      ),
+    );
+    const id = `evt_${"l".repeat(26)}`;
+    const body = JSON.stringify({
+      event_id: id,
+      event_type: "transaction.completed",
+      data: { id: `txn_${"l".repeat(26)}` },
+    });
+    const timestamp = Math.floor(Date.now() / 1000);
+    const request = (address: string, secret: string) =>
+      new Request(`${process.env.APP_URL}/api/paddle/live/webhook`, {
+        method: "POST",
+        body,
+        headers: {
+          "x-vercel-forwarded-for": address,
+          "paddle-signature": `ts=${timestamp};h1=${createHmac("sha256", secret).update(`${timestamp}:${body}`).digest("hex")}`,
+        },
+      });
+    expect(
+      (
+        await POSTLive(
+          request("192.0.2.51", liveEnvironment.PADDLE_WEBHOOK_SECRET),
+        )
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await POSTLive(
+          request("192.0.2.50", paddleEnvironment.PADDLE_WEBHOOK_SECRET),
+        )
+      ).status,
+    ).toBe(401);
+    expect(await prisma.billingEvent.count()).toBe(0);
+    expect(
+      (
+        await POSTLive(
+          request("192.0.2.50", liveEnvironment.PADDLE_WEBHOOK_SECRET),
+        )
+      ).status,
+    ).toBe(200);
+    expect(
+      await prisma.billingEvent.findUniqueOrThrow({ where: { id } }),
+    ).toMatchObject({ environment: "live", processedAt: null });
+    expect(postResponse.callbacks).toHaveLength(1);
+  });
+
+  it("fails closed when a live provider resource collides with sandbox history", async () => {
+    const sandbox = await paid();
+    const sourceSubscription = state.subscriptions[0].id;
+    const live = useLive();
+    const current = await begin();
+    completePayment(live, current.checkout.transactionId!);
+    live.subscriptions[0].id = sourceSubscription;
+    live.transactions[0].subscription_id = sourceSubscription;
+    expect(await syncBillingAccount(current.checkout.accountId)).toBe(false);
+    expect((await readPremiumAccess(current.user.id)).plan).toBe("FREE");
+    expect(await prisma.billingPayment.count()).toBe(1);
+    expect(
+      await prisma.billingSubscription.findUniqueOrThrow({
+        where: { id: sourceSubscription },
+      }),
+    ).toMatchObject({ accountId: sandbox.checkout.accountId });
+  });
+
+  it("preserves sandbox history while separating live checkout, portal, access and refunds", async () => {
+    const sandbox = await paid();
+    const live = useLive();
+    expect((await readPremiumAccess(sandbox.user.id)).plan).toBe("FREE");
+    expect((await readBillingOverview(sandbox.user.id)).account).toBeNull();
+    expect(
+      await checkoutDetails(sandbox.user.id, sandbox.checkout.id),
+    ).toBeNull();
+    await expect(
+      portalLink(
+        sandbox.user.id,
+        sandbox.session.id,
+        state.subscriptions[0].id,
+      ),
+    ).rejects.toThrow();
+    const result = await begin();
+    expect(
+      await prisma.billingAccount.count({ where: { userId: result.user.id } }),
+    ).toBe(2);
+    expect(
+      await checkoutDetails(result.user.id, result.checkout.id),
+    ).toMatchObject({
+      environment: "live",
+      customerId: live.customers[0].id,
+    });
+    completePayment(live, result.checkout.transactionId!);
+    expect(await syncBillingAccount(result.checkout.accountId)).toBe(true);
+    expect((await readPremiumAccess(result.user.id)).plan).toBe("PREMIUM");
+    expect(
+      new URL(
+        await portalLink(
+          result.user.id,
+          result.session.id,
+          live.subscriptions[0].id,
+        ),
+      ).hostname,
+    ).toBe("customer-portal.paddle.com");
+    live.transactions[0].adjustments = [
+      { action: "refund", status: "approved", totals: { total: "200" } },
+    ];
+    expect(await syncBillingAccount(result.checkout.accountId)).toBe(true);
+    expect((await readPremiumAccess(result.user.id)).plan).toBe("FREE");
+    expect(await prisma.billingPayment.count()).toBe(2);
+    expect(
+      (
+        await prisma.billingAccount.findUniqueOrThrow({
+          where: { id: sandbox.checkout.accountId },
+        })
+      ).environment,
+    ).toBe("sandbox");
+  });
+
+  it("keeps active non-billing Premium grants when the active billing environment changes", async () => {
+    const { user } = await login();
+    await prisma.premiumGrant.create({
+      data: {
+        userId: user.id,
+        startsAt: new Date(Date.now() - 1000),
+        expiresAt: new Date(Date.now() + 86400000),
+      },
+    });
+    useLive();
+    expect((await readPremiumAccess(user.id)).plan).toBe("PREMIUM");
+    vi.stubEnv("PADDLE_ENVIRONMENT", "");
+    expect((await readPremiumAccess(user.id)).plan).toBe("PREMIUM");
+  });
+
+  it("pauses new live checkouts while preserving paid access, recovery and customer management", async () => {
+    const live = useLive();
+    const result = await begin();
+    completePayment(live, result.checkout.transactionId!);
+    expect(await syncBillingAccount(result.checkout.accountId)).toBe(true);
+    vi.stubEnv("PADDLE_CHECKOUT_ENABLED", "0");
+    await expect(
+      startCheckout(result.user.id, result.session.id, "year"),
+    ).rejects.toThrow("temporarily unavailable");
+    expect((await readPremiumAccess(result.user.id)).plan).toBe("PREMIUM");
+    expect(await syncBillingAccount(result.checkout.accountId)).toBe(true);
+    expect(
+      await portalLink(
+        result.user.id,
+        result.session.id,
+        live.subscriptions[0].id,
+      ),
+    ).toContain("https://customer-portal.paddle.com/");
+  });
+
+  it("recovers a saved sandbox event with sandbox credentials after the UI switches to live", async () => {
+    const sandbox = await begin();
+    completePayment(state, sandbox.checkout.transactionId!);
+    await event(sandbox.checkout.transactionId!);
+    useLive();
+    expect((await reconcileBilling()).failed).toBe(0);
+    expect(
+      (await prisma.billingEvent.findFirstOrThrow()).processedAt,
+    ).not.toBeNull();
+    expect(await prisma.billingPayment.count()).toBe(1);
+    expect((await readPremiumAccess(sandbox.user.id)).plan).toBe("FREE");
+    expect(
+      await prisma.billingAccount.count({ where: { environment: "live" } }),
+    ).toBe(0);
+  });
+
+  it("does not process a legacy environment when its own credentials are missing", async () => {
+    const sandbox = await begin();
+    completePayment(state, sandbox.checkout.transactionId!);
+    await event(sandbox.checkout.transactionId!);
+    useLive();
+    vi.stubEnv("PADDLE_SANDBOX_API_KEY", "");
+    expect(await syncBillingAccount(sandbox.checkout.accountId)).toBe(false);
+    await reconcileBilling();
+    expect(
+      (await prisma.billingEvent.findFirstOrThrow()).processedAt,
+    ).toBeNull();
+    expect(await prisma.billingPayment.count()).toBe(0);
+  });
+
+  it("cancels both environments after account deletion without mixing credentials", async () => {
+    await paid();
+    const live = useLive();
+    const result = await begin();
+    completePayment(live, result.checkout.transactionId!);
+    expect(await syncBillingAccount(result.checkout.accountId)).toBe(true);
+    const impact = await readDeletionImpact(result.user.id);
+    expect(impact.subscriptionCount).toBe(2);
+    await deleteAccount(result.user.id, result.session.id, {
+      password: accounts.owner.password,
+      confirmation: "DELETE",
+      impactToken: impact.impactToken,
+    });
+    expect(state.subscriptions[0].status).toBe("canceled");
+    expect(live.subscriptions[0].status).toBe("canceled");
+    expect(
+      await prisma.billingAccount.count({
+        where: { userId: null, deletedAt: { not: null } },
+      }),
+    ).toBe(2);
+  });
+
+  it("rejects live simulator events and sandbox signatures on the live receiver", async () => {
+    useLive();
+    const signed = (prefix: string, secret: string) => {
+      const body = Buffer.from(
+        JSON.stringify({
+          event_id: `${prefix}_${"1".repeat(26)}`,
+          event_type: "transaction.completed",
+          data: { id: `txn_${"1".repeat(26)}` },
+        }),
+      );
+      const ts = Math.floor(Date.now() / 1000);
+      return {
+        body,
+        signature: `ts=${ts};h1=${createHmac("sha256", secret).update(`${ts}:`).update(body).digest("hex")}`,
+      };
+    };
+    const wrong = signed("evt", paddleEnvironment.PADDLE_WEBHOOK_SECRET);
+    expect(
+      await acceptWebhook(wrong.body, wrong.signature, () => {}, "live"),
+    ).toBe(401);
+    const simulated = signed(
+      "ntfsimevt",
+      liveEnvironment.PADDLE_WEBHOOK_SECRET,
+    );
+    expect(
+      await acceptWebhook(
+        simulated.body,
+        simulated.signature,
+        () => {},
+        "live",
+      ),
+    ).toBe(400);
+    expect(await prisma.billingEvent.count()).toBe(0);
+  });
+});
 const event = async (
   resourceId: string,
   type = "transaction.completed",
@@ -113,7 +413,7 @@ const event = async (
   if (throughRoute)
     return (
       await POST(
-        new Request("http://localhost/api/paddle/webhook", {
+        new Request(`${process.env.APP_URL}/api/paddle/webhook`, {
           method: "POST",
           headers: { "paddle-signature": header },
           body: body.toString("utf8"),
@@ -452,7 +752,7 @@ describe("Paddle subscriptions", () => {
   });
   it("rejects unsigned and oversized webhook requests", async () => {
     const request = (body: string) =>
-      new Request("http://localhost/api/paddle/webhook", {
+      new Request(`${process.env.APP_URL}/api/paddle/webhook`, {
         method: "POST",
         body,
       });
@@ -534,7 +834,7 @@ describe("Paddle subscriptions", () => {
     expect(
       (
         await POST(
-          new Request("http://localhost/api/paddle/webhook", {
+          new Request(`${process.env.APP_URL}/api/paddle/webhook`, {
             method: "POST",
             body: JSON.stringify({
               event_id: `ntfsimevt_${"1".repeat(26)}`,

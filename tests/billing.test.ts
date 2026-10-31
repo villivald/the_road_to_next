@@ -1,6 +1,7 @@
 import { createHmac } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  billingCheckoutEnabled,
   billingConfig,
   billingEnabled,
 } from "@/features/billing/service/config";
@@ -28,7 +29,7 @@ const configure = () =>
   );
 
 describe("Paddle boundaries", () => {
-  it("requires sandbox configuration and rejects live credentials", () => {
+  it("rejects mismatched or unspecified environment credentials", () => {
     configure();
     expect(billingConfig().origin).toBe("https://sandbox-api.paddle.com");
     vi.stubEnv("PADDLE_ENVIRONMENT", "live");
@@ -37,6 +38,48 @@ describe("Paddle boundaries", () => {
     vi.stubEnv("PADDLE_API_KEY", "pdl_live_apikey_secret");
     expect(billingEnabled()).toBe(false);
   });
+  it("accepts matching live settings and preserves explicitly configured sandbox recovery", () => {
+    configure();
+    Object.entries(paddleEnvironment)
+      .filter(([key]) => key !== "PADDLE_ENVIRONMENT")
+      .forEach(([key, value]) =>
+        vi.stubEnv(key.replace("PADDLE_", "PADDLE_SANDBOX_"), value),
+      );
+    vi.stubEnv("PADDLE_ENVIRONMENT", "live");
+    vi.stubEnv("PADDLE_API_KEY", "pdl_live_apikey_fixture_only");
+    vi.stubEnv("PADDLE_CLIENT_TOKEN", "live_fixture_only");
+    expect(billingConfig()).toMatchObject({
+      environment: "live",
+      origin: "https://api.paddle.com",
+      portalHostname: "customer-portal.paddle.com",
+    });
+    expect(billingConfig("sandbox")).toMatchObject({
+      environment: "sandbox",
+      origin: "https://sandbox-api.paddle.com",
+      apiKey: paddleEnvironment.PADDLE_API_KEY,
+    });
+    expect(billingCheckoutEnabled()).toBe(false);
+    vi.stubEnv("PADDLE_CHECKOUT_ENABLED", "1");
+    expect(billingCheckoutEnabled()).toBe(true);
+    vi.stubEnv("PADDLE_CHECKOUT_TESTER_IDS", " tester-a, tester-b ");
+    expect(billingCheckoutEnabled()).toBe(false);
+    expect(billingCheckoutEnabled("other-user")).toBe(false);
+    expect(billingCheckoutEnabled("tester-b")).toBe(true);
+    vi.stubEnv("PADDLE_CHECKOUT_TESTER_IDS", "");
+    vi.stubEnv("PADDLE_CHECKOUT_ENABLED", "0");
+    expect(billingEnabled()).toBe(true);
+    expect(billingCheckoutEnabled()).toBe(false);
+    vi.stubEnv("PADDLE_ENVIRONMENT", "");
+    expect(billingEnabled()).toBe(false);
+  });
+  it.each(["", "production", "test"])(
+    "requires an explicit supported mode (%s)",
+    (environment) => {
+      configure();
+      vi.stubEnv("PADDLE_ENVIRONMENT", environment);
+      expect(billingEnabled()).toBe(false);
+    },
+  );
   it("validates raw bytes, timestamp, and multiple rotating signature hashes", () => {
     const body = Buffer.from('{"example":true}');
     const timestamp = Math.floor(Date.now() / 1000);
