@@ -1,13 +1,20 @@
 # Live billing rollout — Step 7
 
 Started 30 October 2026 from `2ef0dea`; updated 1 November 2026.
-Step 6 is closed on the owner's confirmation. Step 7 is **in progress**.
+Step 6 is closed on the owner's confirmation. Step 7 implementation and controlled live acceptance are **complete**. Opening
+checkout to the selected audience is a Step 8 release decision; it remains owner-only.
 The approved policy-only release was published on 31 October; see
 [publication evidence](policy-publication-2026-10-31.md). The production billing
 migration and paused live-mode deployment were completed on 1 November; see the
 [executed release](billing-live-deployment-2026-11-01.md). The owner subsequently
 activated the webhook and approved [owner-only checkout](billing-live-owner-checkout-2026-11-01.md).
 No payment or refund has been performed by the release tooling.
+Current verified application: commit `21cd304` in READY production deployment
+`dpl_BDbjqtApUr83pbNTzZbXhqcEm7Yz`. The deployed refund clarification and owner
+restart check passed; see [final acceptance](billing-refunds-resubscription-2026-11-01.md).
+Four new cancellation notifications were delivered and processed, with no new
+checkout/payment. All 22 account-related events are processed.
+
 Ownership is recorded by role; personal names and credentials stay out of these documents.
 
 ## Verified provider work
@@ -30,6 +37,11 @@ Both environments use EUR 2/month and EUR 15/year, tax included (`internal`),
 quantity exactly one, no trial and standard digital-goods tax classification.
 Live API reads and both public language versions confirm the intended pricing.
 No discount mapping was needed. Sandbox catalogue/settings were preserved.
+
+**Pricing follow-up, 1 November:** the app now has a local €3/month revision,
+with €15/year retained. It is not deployed and the provider catalog still has
+€2/month. Follow the [pricing rollout sequence](billing-pricing-2026-11-01.md)
+before pushing this revision; the €2 acceptance records below remain historical.
 
 The live client token is named **Wishlist live checkout**. The new notification
 setting is `ntfset_01m67c29qfzqy7vsnq2ks4awy5`, pointing to
@@ -224,10 +236,12 @@ enabling a tester does not authorize a payment.
    null next billing date, processed update and continued grant were verified.
    The pending refund preserved access; its subsequent approval revoked the paid
    grant and all 16 related events were processed. The live lifecycle acceptance
-   passed. A local UI/re-subscription follow-up remains to review and deploy;
-   deliberate live retry recovery has not been exercised. Complete the agreed tester
-   checkout/access/portal/cancellation/refund checks with `PADDLE_CHECKOUT_ENABLED=1`
-   and a nonempty tester allowlist. Other users remain unable to start/resume checkout.
+   passed. The UI/re-subscription follow-up is deployed as `21cd304`; the owner
+   completed its explicit restart action. The old contract is terminally canceled,
+   four new notifications were processed and no replacement payment was created.
+   All 22 account-related events are processed. Deliberate live retry recovery has
+   not been exercised. Preserve `PADDLE_CHECKOUT_ENABLED=1` and the nonempty owner
+   allowlist until the Step 8 audience decision.
 6. **Open sales:** only after approval and acceptance, deploy the intentional
    `PADDLE_CHECKOUT_ENABLED=1` configuration and remove the tester restriction for
    the agreed audience. Monitor billing

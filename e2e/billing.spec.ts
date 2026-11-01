@@ -203,6 +203,12 @@ test("a canceled subscription allows a different plan only after paid access exp
   state.subscriptions[0].updated_at = new Date().toISOString();
   await save(state);
   await refresh(page);
+  const canceledCard = page.getByRole("article").filter({
+    has: page.getByRole("heading", { name: "Monthly subscription" }),
+  });
+  await expect(
+    canceledCard.getByText("€3 / month", { exact: true }),
+  ).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: "Choose annual", exact: true }),
   ).toHaveCount(0);
@@ -324,7 +330,7 @@ test("refunds remove paid access and provider outages have recoverable feedback"
   ).toContainText("unavailable");
   state.fail = false;
   state.transactions[0].adjustments = [
-    { action: "refund", status: "approved", totals: { total: "200" } },
+    { action: "refund", status: "approved", totals: { total: "300" } },
   ];
   await save(state);
   await refresh(page);
@@ -362,7 +368,7 @@ for (const locale of ["en", "fi"] as const) {
       {
         action: "refund",
         status: "pending_approval",
-        totals: { total: "200" },
+        totals: { total: "300" },
       },
     ];
     await save(state);
@@ -609,8 +615,10 @@ test("subscription controls fit a 320px dark layout and work with the keyboard",
 test("plan choices are accessible in English and Finnish at desktop and narrow dark widths", async ({
   page,
 }, info) => {
+  await expect(page.getByText("€3 / month", { exact: true })).toBeVisible();
+  await expect(page.getByText("€15 / year", { exact: true })).toBeVisible();
   await expect(
-    page.getByText("Save €9 a year compared with monthly billing."),
+    page.getByText("Save €21 a year compared with monthly billing."),
   ).toBeVisible();
   expect(
     (await new AxeBuilder({ page }).include("main").analyze()).violations,
@@ -623,8 +631,10 @@ test("plan choices are accessible in English and Finnish at desktop and narrow d
   await page.setViewportSize({ width: 320, height: 740 });
   await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
   await page.goto("/fi/account/plan");
+  await expect(page.getByText("3 € / kuukausi", { exact: true })).toBeVisible();
+  await expect(page.getByText("15 € / vuosi", { exact: true })).toBeVisible();
   await expect(
-    page.getByText("Säästät 9 € vuodessa kuukausitilaukseen verrattuna."),
+    page.getByText("Säästät 21 € vuodessa kuukausitilaukseen verrattuna."),
   ).toBeVisible();
   expect(
     await page.evaluate(

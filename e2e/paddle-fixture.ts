@@ -105,7 +105,7 @@ export const paddleFixtureResponse = (
     return response({
       id: path.split("/").at(-1),
       status: "active",
-      unit_price: { amount: annual ? "1500" : "200", currency_code: "EUR" },
+      unit_price: { amount: annual ? "1500" : "300", currency_code: "EUR" },
       billing_cycle: { interval: annual ? "year" : "month", frequency: 1 },
       trial_period: null,
       tax_mode: "internal",
@@ -162,7 +162,7 @@ export const paddleFixtureResponse = (
           total:
             data.items[0].price_id === environment.PADDLE_ANNUAL_PRICE_ID
               ? "1500"
-              : "200",
+              : "300",
         },
       },
       adjustments: [],

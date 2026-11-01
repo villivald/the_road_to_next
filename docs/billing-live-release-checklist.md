@@ -8,9 +8,9 @@ handover handbook remains deferred.
 
 | Item                              | Evidence / decision                                                                                                                     |
 | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Local implementation commit       | `123d396`; includes the reviewed follow-up fixes, committed by the owner without pushing                                                |
+| Application commit                | `21cd304`; refund clarity and safe re-subscription, committed and pushed by the owner                                                   |
 | Review follow-up                  | Badge/queued-guide environment filtering and paused/restricted checkout UI are deployed                                                 |
-| Production                        | Owner-only live checkout: `dpl_Hy2FigjVj8mye4EVyEfjNSpgudaT`, READY; verified 1 November                                                |
+| Production                        | Owner-only live checkout: `dpl_BDbjqtApUr83pbNTzZbXhqcEm7Yz`, READY; verified 1 November                                                |
 | Public policies                   | Approved EN/FI Terms, Privacy and Refunds pages remain public                                                                           |
 | Paddle domain / default link      | `wishlist.fi` approved; Apple Pay verified; `https://wishlist.fi/en/account/checkout` configured                                        |
 | Paddle onboarding                 | Live MCP recheck 31 October: `completed`; both `account_setup` and `automated_review` completed                                         |
@@ -19,8 +19,11 @@ handover handbook remains deferred.
 | Backup custody                    | Owner confirmed the existing backup ready and checked on 1 November; a fresh capture was explicitly waived for this direct release      |
 | Maintenance window / charged test | Owner explicitly skipped maintenance for this release; owner payment, cancellation and approved EUR 2 refund/access revocation verified |
 
-The reviewed commit has been deployed by CLI; no Git push was made. The production
-schema is now compatible with `123d396`. See the [initial deployment](billing-live-deployment-2026-11-01.md) and
+The initial compatible release was deployed by CLI. The owner subsequently
+pushed `21cd304`, which deployed through Git and passed public/signed-in review.
+The final explicit restart check passed with no replacement payment. Step 7
+controlled acceptance is complete; the Step 8 audience decision remains pending.
+The production schema is compatible with this application. See the [initial deployment](billing-live-deployment-2026-11-01.md) and
 [current owner-only checkout](billing-live-owner-checkout-2026-11-01.md).
 
 ## Configuration to apply at cutover
@@ -164,6 +167,7 @@ checkout without adding a second charged purchase.
 | Portal and cancellation | Passed 1 November: owner used the portal; cancellation is scheduled for 1 December, next billing date is null in Paddle and app, the update event is processed, and the existing paid grant remains active.                             |
 | Full refund             | Passed 1 November: EUR 2 refund approved, cumulative amount covers the full payment, update event processed and payment-backed grant revoked. Pending approval had correctly preserved access. A refund does not itself cancel renewal. |
 | Other access            | Existing manual/promo grants keep their original dates and remain independent. If the owner has promo access, validate revocation of the payment-backed grant rather than expecting the entire account to become Free.                  |
+| Restart after refund    | Passed 1 November: old subscription terminally canceled in Paddle and app, four new notifications delivered/processed, no replacement checkout/transaction/payment.                                                                     |
 | Public sales            | Only after approval and all acceptance results: remove tester restriction intentionally, keep checkout enabled, verify EN/FI and monitor jobs/webhooks/access.                                                                          |
 
 Keep payment/customer IDs, private portal URLs and raw provider/customer data in

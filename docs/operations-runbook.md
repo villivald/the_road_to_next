@@ -27,14 +27,18 @@ see [the evidence and decisions](operations-readiness-2026-10-29.md).
 | Domain and inbound support | `wishlist.fi`, `support@wishlist.fi`                                                | Service owner; inbound receipt passed on 20 October; owner reconfirmed handling on 29 October                                         |
 
 Confirmed production deployment on 1 November:
-`dpl_Hy2FigjVj8mye4EVyEfjNSpgudaT`, READY, from reviewed commit `123d396`.
+`dpl_BDbjqtApUr83pbNTzZbXhqcEm7Yz`, READY, from pushed commit `21cd304`.
 The billing-environment migration is applied; checkout is enabled only for the
 owner tester and the live Paddle notification is active. Genuine unpaid draft
 delivery and processing passed without an unpaid grant. The subsequent owner
 EUR 2 payment passed with one matching active grant and all 13 events processed.
 Renewal cancellation also passed, with no next billing date and continued paid
 access through the scheduled end date. The EUR 2 refund is approved; its payment is marked refunded and grant revoked,
-with all 16 related events processed. The local UI/re-subscription follow-up is tested and awaiting review/deployment; opening sales remains a separate decision. The six Inngest handlers are authenticated
+with all 16 original lifecycle events processed. The deployed restart flow was
+subsequently accepted: the old contract is terminally canceled, no replacement
+payment was created and all 22 account-related events are processed. Step 7
+controlled acceptance is complete; opening checkout to the selected Step 8
+audience remains a separate decision. The six Inngest handlers are authenticated
 and registered through the canonical serve URL. See the
 [initial deployment evidence](billing-live-deployment-2026-11-01.md) and
 [current owner-only limits](billing-live-owner-checkout-2026-11-01.md).

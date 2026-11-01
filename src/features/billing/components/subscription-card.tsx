@@ -73,12 +73,14 @@ export async function SubscriptionCard({
               ? t("Annual subscription")
               : t("Monthly subscription")}
           </h3>
-          <p className={styles.meta}>
-            {t.message(
-              plans[subscription.interval === "year" ? "year" : "month"]
-                .display,
-            )}
-          </p>
+          {!canceled && (
+            <p className={styles.meta}>
+              {t.message(
+                plans[subscription.interval === "year" ? "year" : "month"]
+                  .display,
+              )}
+            </p>
+          )}
         </div>
         <p
           className={styles.status}

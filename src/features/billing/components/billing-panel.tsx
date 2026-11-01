@@ -201,7 +201,7 @@ export async function BillingPanel({
                 </p>
                 <p className={styles.meta}>
                   {interval === "year"
-                    ? t("Save €9 a year compared with monthly billing.")
+                    ? t("Save €21 a year compared with monthly billing.")
                     : t("Pay monthly, with no annual commitment.")}
                 </p>
                 <p className={styles.fact}>

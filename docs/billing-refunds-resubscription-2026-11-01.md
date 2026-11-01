@@ -1,5 +1,18 @@
 # Refund clarity and re-subscription — 1 November 2026
 
+**Post-push checkpoint:** the owner committed and pushed these changes as
+`21cd304137260c2c2d858baf89fee2c10871d183`. They are now READY on `wishlist.fi` in
+deployment `dpl_BDbjqtApUr83pbNTzZbXhqcEm7Yz`. Read-only review at 13:13–13:14 UTC
+passed 20 public EN/FI checks, verified the six authenticated Inngest handlers and
+reconfirmed the approved refund, revoked grant and all 16 processed events. The
+signed-in English plan page visibly shows the corrected copy, neutral refund,
+buyer-support links and consent-gated restart control. Checkout remains owner-only.
+The bounded deployment error-log review contained only the expected unsigned
+Inngest probe rejection. The owner still needs to submit the explicit restart
+action and stop at plan choices; no new purchase is required. No financial action
+was performed during this review. The preparation/deployment boundary below is
+historical; the restart action is the remaining hosted acceptance check.
+
 The owner reported **Full refund issued** and a contradictory plan page: current
 access correctly said Free, but the subscription card still promised remaining
 paid access and styled the completed refund as an error. The owner requested
@@ -114,3 +127,35 @@ performed by these checks.
 References checked 1 November 2026:
 [Paddle buyer refund route](https://www.paddle.com/help/manage/your-customers/buyers-refunds),
 [subscription cancellation semantics](https://developer.paddle.com/api-reference/subscriptions/cancel-subscription/).
+
+## Final restart acceptance — passed
+
+The owner submitted the consent-gated restart action on the deployed app and
+reported reaching the plan choices. Read-only verification at 13:20–13:22 UTC
+confirmed:
+
+- Paddle's old subscription is terminally `canceled`, with no next billing date
+  or scheduled change. Its cancellation timestamp is 13:19:15 UTC on 1 November.
+- The local subscription mirrors that terminal state. The owner remains on Free;
+  the original refunded payment and revoked grant are retained unchanged.
+- Four genuine new notifications (`subscription.updated`, `subscription.canceled`,
+  `transaction.canceled`, `transaction.updated`) were delivered on their first
+  attempts with HTTP 200 and marked processed in the live event ledger.
+- No replacement provider transaction or local checkout was created after the
+  preceding review. There is still one original payment and one revoked
+  payment-backed grant, with one original Premium guide.
+- The additional canceled transaction belongs to Paddle's earlier unpaid
+  payment-method-change flow; it is not a new charge. Including that flow's two
+  earlier events, all 22 account-related events are processed.
+
+Private evidence: `restart-acceptance-provider.json`,
+`restart-acceptance-verification.json` and `check-restart-acceptance.mjs` under
+`.local/billing-live/2026-11-01/`. The owner performed the contract action; the
+agent's checks were read-only. No second live purchase was needed.
+
+Step 7 implementation and controlled live acceptance are complete. Step 8 now
+chooses the release audience and records release/handover readiness. Checkout
+remains owner-only until a separate audience/activation decision; no allowlist,
+provider settings or deployment was changed by this acceptance check. Real
+renewal timing and deliberate production replay/outage testing remain unexercised;
+sandbox/integration coverage is retained. The complete handbook remains deferred.

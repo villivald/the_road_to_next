@@ -3,7 +3,7 @@ import { AuthError } from "@/features/auth/service/security";
 export class BillingError extends AuthError {}
 
 export const plans = {
-  month: { label: "Monthly", amount: "200", display: "€2 / month" },
+  month: { label: "Monthly", amount: "300", display: "€3 / month" },
   year: { label: "Annual", amount: "1500", display: "€15 / year" },
 } as const;
 export type BillingInterval = keyof typeof plans;

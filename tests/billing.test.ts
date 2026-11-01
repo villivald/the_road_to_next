@@ -10,6 +10,7 @@ import {
   paddleRequest,
   PaddleRequestError,
   transactionSchema,
+  validatePrice,
 } from "@/features/billing/service/paddle";
 import { validSignature } from "@/features/billing/service/webhook";
 import {
@@ -29,6 +30,33 @@ const configure = () =>
   );
 
 describe("Paddle boundaries", () => {
+  it.each(["month", "year"] as const)(
+    "accepts the configured %s catalog price",
+    async (interval) => {
+      configure();
+      vi.stubGlobal("fetch", async (input: string) =>
+        paddleFixtureResponse(emptyPaddleState(), new URL(input)),
+      );
+      await expect(validatePrice(interval)).resolves.toBe(
+        billingConfig().prices[interval],
+      );
+    },
+  );
+  it("blocks checkout when Paddle still charges the old monthly amount", async () => {
+    configure();
+    vi.stubGlobal("fetch", async (input: string) => {
+      const response = paddleFixtureResponse(
+        emptyPaddleState(),
+        new URL(input),
+      );
+      const body = await response.json();
+      body.data.unit_price.amount = "200";
+      return Response.json(body);
+    });
+    await expect(validatePrice("month")).rejects.toThrow(
+      "The subscription price is not configured correctly.",
+    );
+  });
   it("rejects mismatched or unspecified environment credentials", () => {
     configure();
     expect(billingConfig().origin).toBe("https://sandbox-api.paddle.com");
@@ -174,43 +202,48 @@ describe("Paddle boundaries", () => {
       );
     },
   );
-  it("handles partial, pending, full, cumulative and reversed refunds independently", async () => {
-    const state = emptyPaddleState();
-    const response = paddleFixtureResponse(
-      state,
-      new URL("https://sandbox-api.paddle.com/transactions"),
-      {
-        method: "POST",
-        body: JSON.stringify({
-          customer_id: "ctm_test",
-          custom_data: { wishlist_checkout: "test" },
-          currency_code: "EUR",
-          items: [
-            {
-              price_id: paddleEnvironment.PADDLE_MONTHLY_PRICE_ID,
-              quantity: 1,
-            },
-          ],
-        }),
-      },
-    );
-    const transaction = transactionSchema.parse((await response.json()).data);
-    const refund = (amount: string, status = "approved") => ({
-      action: "refund",
-      status,
-      totals: { total: amount },
-    });
-    transaction.adjustments = [refund("200", "pending_approval")];
-    expect(fullyRefunded(transaction)).toBe(false);
-    transaction.adjustments = [refund("100")];
-    expect(fullyRefunded(transaction)).toBe(false);
-    transaction.adjustments.push(refund("100"));
-    expect(fullyRefunded(transaction)).toBe(true);
-    transaction.adjustments = [
-      { ...refund("200", "reversed"), action: "chargeback" },
-      { ...refund("200"), action: "chargeback_reverse" },
-      refund("200"),
-    ];
-    expect(fullyRefunded(transaction)).toBe(true);
-  });
+  it.each(["200", "300"])(
+    "handles refunds for historical and current payment totals (%s)",
+    async (total) => {
+      const state = emptyPaddleState();
+      const response = paddleFixtureResponse(
+        state,
+        new URL("https://sandbox-api.paddle.com/transactions"),
+        {
+          method: "POST",
+          body: JSON.stringify({
+            customer_id: "ctm_test",
+            custom_data: { wishlist_checkout: "test" },
+            currency_code: "EUR",
+            items: [
+              {
+                price_id: paddleEnvironment.PADDLE_MONTHLY_PRICE_ID,
+                quantity: 1,
+              },
+            ],
+          }),
+        },
+      );
+      const transaction = transactionSchema.parse((await response.json()).data);
+      transaction.details!.totals.total = total;
+      const partial = String(Number(total) / 2);
+      const refund = (amount: string, status = "approved") => ({
+        action: "refund",
+        status,
+        totals: { total: amount },
+      });
+      transaction.adjustments = [refund(total, "pending_approval")];
+      expect(fullyRefunded(transaction)).toBe(false);
+      transaction.adjustments = [refund(partial)];
+      expect(fullyRefunded(transaction)).toBe(false);
+      transaction.adjustments.push(refund(partial));
+      expect(fullyRefunded(transaction)).toBe(true);
+      transaction.adjustments = [
+        { ...refund(total, "reversed"), action: "chargeback" },
+        { ...refund(total), action: "chargeback_reverse" },
+        refund(total),
+      ];
+      expect(fullyRefunded(transaction)).toBe(true);
+    },
+  );
 });

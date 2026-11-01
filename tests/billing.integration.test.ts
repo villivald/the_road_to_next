@@ -104,7 +104,7 @@ const refundedAndEnding = async () => {
   subscription.next_billed_at = null;
   subscription.updated_at = new Date().toISOString();
   state.transactions[0].adjustments = [
-    { action: "refund", status: "approved", totals: { total: "200" } },
+    { action: "refund", status: "approved", totals: { total: "300" } },
   ];
   await syncBillingAccount(result.checkout.accountId);
   return { ...result, subscription };
@@ -361,7 +361,7 @@ describe("Paddle live environment isolation", () => {
       ).hostname,
     ).toBe("customer-portal.paddle.com");
     live.transactions[0].adjustments = [
-      { action: "refund", status: "approved", totals: { total: "200" } },
+      { action: "refund", status: "approved", totals: { total: "300" } },
     ];
     expect(await syncBillingAccount(result.checkout.accountId)).toBe(true);
     expect((await readPremiumAccess(result.user.id)).plan).toBe("FREE");
@@ -734,14 +734,14 @@ describe("Paddle subscriptions", () => {
     const promo = await redeemPromo(user.id, session.id, code.code);
     expect(promo.expiresAt.getTime()).toBe(paidUntil.getTime() + 5 * 86400000);
     state.transactions[0].adjustments = [
-      { action: "refund", status: "approved", totals: { total: "100" } },
+      { action: "refund", status: "approved", totals: { total: "150" } },
     ];
     await syncBillingAccount(checkout.accountId);
     expect((await readPremiumAccess(user.id)).plan).toBe("PREMIUM");
     state.transactions[0].adjustments.push({
       action: "refund",
       status: "approved",
-      totals: { total: "100" },
+      totals: { total: "150" },
     });
     await syncBillingAccount(checkout.accountId);
     expect(await readPremiumAccess(user.id)).toMatchObject({
