@@ -1,42 +1,51 @@
 # Wishlist operations runbook
 
-Reviewed 31 October 2026. Owner: **Service owner, Finland**. Support and incident
+Reviewed 1 November 2026. Owner: **Service owner, Finland**. Support and incident
 contact: **support@wishlist.fi**, handled by the owner (owner-confirmed). No secondary
 responder is appointed. This is an owner-operated beta, without a 24/7 response SLA.
 
 Step 6 implementation includes on-demand status, a fictional recovery drill,
 encrypted manual backup with an offline verified restore, and an opt-in final-job
-failure alert. Off-device backup/key custody and deployed alert delivery remain
-open. The approved EN/FI policies were published on 31 October; see the
+failure alert. The owner reported the existing backup ready and checked on
+1 November; ongoing off-device/key custody remains an operator responsibility.
+Deployed alert delivery remains unverified. The approved EN/FI policies were published on 31 October; see the
 [policy-only release](policy-publication-2026-10-31.md).
 Permanent Preview infrastructure is deferred by the owner;
 see [the evidence and decisions](operations-readiness-2026-10-29.md).
 
 ## Environments and ownership
 
-| Service                    | Purpose and confirmed target                                                        | Operational owner / evidence                                                                                            |
-| -------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Vercel                     | `wishlist.fi`, the linked Vercel team, repository root, Node 24                     | Service owner; linked-project inspection on 29 October                                                                  |
-| Neon                       | PostgreSQL; existing runtime uses a pooled connection, migrations use `DIRECT_URL`  | Service owner is the accountable app owner; provider account access, plan and recovery window need console confirmation |
-| Vercel Blob                | Private original images and responsive variants                                     | Service owner; `arn1`, private; hosted-object archive and offline checksum restore passed on 30 October                 |
-| Resend                     | Transactional account, invitation and group messages                                | Service owner; earlier hosted delivery evidence, current sending-domain settings need recheck                           |
-| Inngest                    | Email/billing recovery, immediate events, media/auth maintenance and failure alerts | Service owner; five existing jobs plus one opt-in alert handler; deployed Cloud configuration/delivery need recheck     |
-| Paddle                     | Production remains sandbox; live candidate prepared locally                         | Service owner; live activation is held under the [Step 7 release checklist](billing-live-release-checklist.md)          |
-| Cloudflare Turnstile       | Signup/recovery/resend abuse protection                                             | Service owner; production variable names are configured; keys must match allowed domains                                |
-| Domain and inbound support | `wishlist.fi`, `support@wishlist.fi`                                                | Service owner; inbound receipt passed on 20 October; owner reconfirmed handling on 29 October                           |
+| Service                    | Purpose and confirmed target                                                        | Operational owner / evidence                                                                                                          |
+| -------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Vercel                     | `wishlist.fi`, the linked Vercel team, repository root, Node 24                     | Service owner; linked-project inspection on 29 October                                                                                |
+| Neon                       | PostgreSQL; existing runtime uses a pooled connection, migrations use `DIRECT_URL`  | Service owner is the accountable app owner; provider account access, plan and recovery window need console confirmation               |
+| Vercel Blob                | Private original images and responsive variants                                     | Service owner; `arn1`, private; hosted-object archive and offline checksum restore passed on 30 October                               |
+| Resend                     | Transactional account, invitation and group messages                                | Service owner; earlier hosted delivery evidence, current sending-domain settings need recheck                                         |
+| Inngest                    | Email/billing recovery, immediate events, media/auth maintenance and failure alerts | Service owner; five existing jobs plus one opt-in alert handler; deployed Cloud configuration/delivery need recheck                   |
+| Paddle                     | Production has owner-only live checkout; legacy sandbox recovery retained           | Service owner; real-event acceptance and opening sales remain under the [Step 7 release checklist](billing-live-release-checklist.md) |
+| Cloudflare Turnstile       | Signup/recovery/resend abuse protection                                             | Service owner; production variable names are configured; keys must match allowed domains                                              |
+| Domain and inbound support | `wishlist.fi`, `support@wishlist.fi`                                                | Service owner; inbound receipt passed on 20 October; owner reconfirmed handling on 29 October                                         |
 
-Confirmed production deployment on 31 October:
-`dpl_crr3BoXzzfDd1ivc6dvdxkmZgatv`, READY. It was built from baseline `2ef0dea`
-plus the isolated approved policy patch. The complete live-billing implementation
-in local commit `4ef8a24` has not been deployed. These are dated observations, not
-permanent deployment identifiers.
+Confirmed production deployment on 1 November:
+`dpl_Hy2FigjVj8mye4EVyEfjNSpgudaT`, READY, from reviewed commit `123d396`.
+The billing-environment migration is applied; checkout is enabled only for the
+owner tester and the live Paddle notification is active. Genuine unpaid draft
+delivery and processing passed without an unpaid grant. The subsequent owner
+EUR 2 payment passed with one matching active grant and all 13 events processed.
+Renewal cancellation also passed, with no next billing date and continued paid
+access through the scheduled end date. The EUR 2 refund is approved; its payment is marked refunded and grant revoked,
+with all 16 related events processed. The local UI/re-subscription follow-up is tested and awaiting review/deployment; opening sales remains a separate decision. The six Inngest handlers are authenticated
+and registered through the canonical serve URL. See the
+[initial deployment evidence](billing-live-deployment-2026-11-01.md) and
+[current owner-only limits](billing-live-owner-checkout-2026-11-01.md).
+These are dated observations, not permanent deployment identifiers.
 
 | Environment       | Database / media / delivery boundary                                                                                                                                                                |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Local development | `wishlist_dev`, port 55432; local media and Mailpit; `.env.local` overrides `.env`                                                                                                                  |
 | Automated tests   | `wishlist_test`, port 55433, schema `wishlist`; test-only media/inbox and provider fixtures                                                                                                         |
 | Recovery drill    | A new disposable PostgreSQL container, two fixture databases, local fixture media; no hosted providers                                                                                              |
-| Production        | Hosted Neon and private Blob, real transactional delivery, Inngest Cloud, Paddle sandbox                                                                                                            |
+| Production        | Hosted Neon and private Blob, real transactional delivery, Inngest Cloud, Paddle owner-only live checkout with sandbox recovery retained                                                            |
 | Vercel Preview    | **Not approved as staging.** The default database entry and Blob store are shared with Production, with no branch-specific database override listed. Preview also has separate Inngest key entries. |
 
 The owner chose to defer a permanent Preview database/store on 29 October.
@@ -71,9 +80,9 @@ export of deployed settings. Details and limits are in the readiness report.
 
 The application normalizes Neon `sslmode=require` to `verify-full` in memory
 for both runtime and Prisma CLI configuration. It preserves other parameters and
-explicit compatibility settings. The runtime/CLI connection files match the
-source of the 31 October policy-only deployment, which inherited this committed
-fix. Continue checking runtime connectivity and absence of the old alias warning
+explicit compatibility settings. This committed fix is included in the 1 November
+paused live-mode deployment. Production migration TLS checks and database-backed
+hosted browsing passed. Continue checking runtime connectivity and absence of the old alias warning
 after releases; source/deployment evidence does not replace that runtime check.
 No environment edit or database migration is required for this TLS normalization.
 
@@ -173,12 +182,12 @@ configuration. Inngest app synchronization and current secrets must agree with
 the selected code. Roll forward with a corrective migration when that is safer
 than restoring data. [Vercel rollback documentation](https://vercel.com/docs/deployments/rollback)
 
-The Step 7 billing migration is a specific exception to routine code rollback:
+The applied Step 7 billing migration is a specific exception to routine code rollback:
 it removes uniqueness constraints required by the old billing code. Keep the
-live candidate local until the coordinated maintenance/backup/migration/deployment
-window in the [release checklist](billing-live-release-checklist.md). After that
-migration, use a compatible build or forward fix; do not roll back blindly to
-the older policy-only deployment.
+application schema-compatible when using the [release checklist](billing-live-release-checklist.md).
+The owner selected direct deployment without maintenance/fresh backup on 1 November.
+Use a compatible build or forward fix; do not roll back blindly to the older
+policy-only deployment.
 
 ## Database and media recovery
 
@@ -193,8 +202,9 @@ restore Blob, Inngest, Resend or Paddle state.
 
 The owner chose encrypted manual Mac backups initially and will keep an off-device
 copy. A real hosted DB/media archive passed an offline local restore on 30 October.
-The owner must still confirm Neon's actual plan/history window and complete off-device
-custody. Proposed cadence: daily backup and before risky migrations, seven daily
+The owner reported the existing backup ready and checked on 1 November. Neon's
+actual plan/history window and continued off-device/key custody remain operator
+responsibilities. Proposed cadence: daily backup and before risky migrations, seven daily
 versions, restricted operator access, and keys stored separately in a password
 manager. Cadence remains a proposal. On 31 October, the owner approved a 30-day
 maximum for encrypted manual backups, including local and off-device copies.

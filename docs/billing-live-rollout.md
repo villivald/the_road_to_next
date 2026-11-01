@@ -1,10 +1,13 @@
 # Live billing rollout — Step 7
 
-Started 30 October 2026 from `2ef0dea`; updated 31 October 2026.
+Started 30 October 2026 from `2ef0dea`; updated 1 November 2026.
 Step 6 is closed on the owner's confirmation. Step 7 is **in progress**.
 The approved policy-only release was published on 31 October; see
-[publication evidence](policy-publication-2026-10-31.md). No billing migration, live
-billing deployment, real payment or refund has been performed.
+[publication evidence](policy-publication-2026-10-31.md). The production billing
+migration and paused live-mode deployment were completed on 1 November; see the
+[executed release](billing-live-deployment-2026-11-01.md). The owner subsequently
+activated the webhook and approved [owner-only checkout](billing-live-owner-checkout-2026-11-01.md).
+No payment or refund has been performed by the release tooling.
 Ownership is recorded by role; personal names and credentials stay out of these documents.
 
 ## Verified provider work
@@ -30,7 +33,8 @@ No discount mapping was needed. Sandbox catalogue/settings were preserved.
 
 The live client token is named **Wishlist live checkout**. The new notification
 setting is `ntfset_01m67c29qfzqy7vsnq2ks4awy5`, pointing to
-`https://wishlist.fi/api/paddle/live/webhook`. It is **inactive**, uses platform
+`https://wishlist.fi/api/paddle/live/webhook`. It was created inactive and was activated by the owner on 1 November, confirmed
+through the live MCP. It uses platform
 traffic and subscribes to 21 transaction/subscription/adjustment event types.
 Sensitive fields are not requested. The existing sandbox destination remains at
 `https://wishlist.fi/api/paddle/webhook`.
@@ -43,7 +47,8 @@ and catalogue checks. Its required permissions are `customer.write`, `price.read
 The consolidated settings are in ignored `.env.paddle-live.local`, mode 600.
 They include primary live settings and the original `PADDLE_SANDBOX_*` recovery
 settings. `PADDLE_CHECKOUT_ENABLED=0` keeps new sales paused. This file is a private
-rollout candidate; it does not replace `.env.local` or change hosted variables.
+rollout configuration; it does not replace `.env.local`. The selected billing
+settings were deliberately applied to Production during the 1 November release.
 Do not print it, paste it into chat, commit it or use it as a policy-only release's
 complete environment. Temporary duplicate credential captures were removed.
 
@@ -94,14 +99,14 @@ acceptance of this fence remains a release check.
 
 Public HTTP findings updated after the verified policy-only publication:
 
-| URL                          | Current production finding                                         | Required work                                                 |
-| ---------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------- |
-| `/en`, `/fi`                 | 200; clear product description and homepage support email          | Recheck during release smoke test                             |
-| `/en/premium`, `/fi/premium` | 200; EUR 2/15 matches live; current copy discusses sandbox testing | Review final paid availability notices at cutover             |
-| `/en/terms`, `/fi/terms`     | 200; approved Terms of use published                               | Published copy; keep aligned with actual billing availability |
-| `/en/privacy`, `/fi/privacy` | 200; approved privacy notice published                             | Published notice; continue provider and retention review      |
-| `/en/refunds`, `/fi/refunds` | 200 after the approved policy-only publication                     | Published EN/FI page with footer/site-map links               |
-| `www.wishlist.fi`            | Resolves and redirects to `https://wishlist.fi/en`                 | Approve additional checkout hosts only if actually used       |
+| URL                          | Current production finding                                            | Required work                                                 |
+| ---------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------- |
+| `/en`, `/fi`                 | 200; clear product description and homepage support email             | Recheck during release smoke test                             |
+| `/en/premium`, `/fi/premium` | 200; EUR 2/15 matches live; checkout-paused notice, no sandbox notice | Complete tester acceptance before opening sales               |
+| `/en/terms`, `/fi/terms`     | 200; approved Terms of use published                                  | Published copy; keep aligned with actual billing availability |
+| `/en/privacy`, `/fi/privacy` | 200; approved privacy notice published                                | Published notice; continue provider and retention review      |
+| `/en/refunds`, `/fi/refunds` | 200 after the approved policy-only publication                        | Published EN/FI page with footer/site-map links               |
+| `www.wishlist.fi`            | Resolves and redirects to `https://wishlist.fi/en`                    | Approve additional checkout hosts only if actually used       |
 
 The owner selected Paddle's standard Buyer Terms and Refund Policy, including
 mandatory consumer rights, without an additional Wishlist money-back guarantee.
@@ -142,9 +147,9 @@ were reconfirmed in the same read-only audit.
 After confirming domain approval and the existing null setting, the authorized
 live default payment link was set and read back successfully as
 `https://wishlist.fi/en/account/checkout`. This configuration change does not enable
-live payments in the app. The live webhook remains inactive and the production
-app remains on its policy-only sandbox release. No billing migration or financial
-test was performed.
+live payments in the app. The live webhook is now active. Production was
+subsequently migrated and deployed in live mode with checkout paused on 1 November.
+No financial test was performed.
 
 These are observed gaps and fixes, informed by Paddle's current guidance; this audit
 does not certify legal completeness or make a provider approval decision.
@@ -176,53 +181,51 @@ schema. It is intended for review, not an instruction to deploy the entire worki
 
 ## Preparation before the coordinated release
 
-Paddle approval is now confirmed. The remaining work is the local follow-up
-commit, backup/key custody and a coordinated maintenance/migration/deployment
-window, followed by separately agreed live financial acceptance. Provider
-verification does not apply the application migration or deploy its code.
+Preparation is complete and reviewed commit `123d396` is deployed. The owner
+confirmed the existing backup ready/checked and explicitly requested proceeding
+without maintenance or a fresh capture for this release. That instruction
+supersedes the normal release checklist's maintenance/fresh-backup sequence for
+this execution; no skipped action is reported as performed.
 
-Work that can proceed now:
-
-- Commit the reviewed follow-up fixes and updated release documents locally.
-  Final billing review and the affected checks have passed.
-  Keep these local until the coordinated release: pushing the entire branch can
-  trigger deployment before the production schema is ready. Permanent/shared
-  Preview infrastructure remains deferred.
-- Record candidate source/migration hashes and confirm the configuration mapping,
-  tester account, maintenance window and payment/refund acceptance checklist.
-  Choosing a test method does not authorize taking a payment.
-- Check backup tooling, target identifiers, restore procedure and off-device/key
-  custody. Take a fresh verified backup near the actual migration, rather than
-  treating an older preparation snapshot as the cutover backup.
-- Run affected checks when code changes. Previously passed unchanged suites do
-  not need repeated runs merely because the provider's verification status changed.
-
-Continue holding the live billing deployment/environment switch, coordinated
-production billing migration, live webhook activation and charged acceptance/public
-sales until the remaining release gates are satisfied. The published
-policy-only sandbox release stays in place during preparation.
+Production now uses live settings with owner-only checkout enabled, the tester
+restriction and legacy sandbox recovery. The migration matches the successful
+local drill. Both candidate and public hosted checks passed, and Inngest registered
+the six current handlers through the canonical production route. See the executed
+release above. Permanent Preview infrastructure remains deferred. Genuine unpaid draft delivery and processing passed on 1 November; the owner’s EUR 2 payment, matching Premium grant and all 13 live events also passed. Renewal cancellation also passed. The EUR 2 refund is now approved, with its payment marked refunded and grant revoked; all 16 related events are processed. Local UI/re-subscription follow-up and opening sales remain pending;
+enabling a tester does not authorize a payment.
 
 ## Remaining release order
 
 1. **Policy preparation — published:** the owner-approved EN/FI pages are live in
    the isolated policy-only release, with sandbox billing preserved. See the
-   publication report. Do not switch hosted variables to the private live candidate.
+   publication report. These policies were preserved in the paused live deployment.
 2. **Provider approval — completed:** the live MCP confirms overall onboarding,
    account setup and automated review are all `completed`. Domain approval, Apple
    Pay registration, the catalogue and live default payment link were reconfirmed.
-   The live webhook remains inactive until its compatible route is deployed.
-3. **Review the cutover:** agree a maintenance window, tester restriction and the
-   controlled real transaction/refund method. A zero-total test does not prove a
-   charged payment/refund lifecycle. No real financial operation is authorized yet.
-4. **Back up, migrate and deploy together:** build/review the candidate first, make
-   a fresh verified backup and prevent old billing/deployment/job traffic during
-   cutover. Confirm the intended production database host/name before any migration.
-   Apply `20261030000100_billing_environments` and activate the compatible build in
-   that coordinated window. No production execution has happened in this step.
+   The compatible route is deployed and its live destination is active.
+3. **Cutover decision — executed:** the owner selected direct release without
+   maintenance/fresh capture, after confirming the existing backup checked. The
+   existing verified owner account is allowlisted. The owner completed the EUR 2 monthly payment, verified against provider and
+   local records. The owner also canceled renewal, verified with the matching end date and
+   continued paid access. The owner requested the EUR 2 refund; its pending-approval event and continued
+   access were verified. The subsequent approved refund and grant revocation passed; no refund
+   mutation has been authorized for the release tooling.
+4. **Migration and paused deployment — complete:** migration
+   `20261030000100_billing_environments` is applied and reviewed commit `123d396`
+   is live as `dpl_AwQyVR889D9ng62oPnUtwSZbqVqR`. All 17 migration checksums and
+   preserved row counts were verified. Checkout was subsequently enabled only for the owner tester.
 5. **Wire and verify:** use matching primary live settings plus legacy sandbox
-   recovery settings, with checkout paused. Enable the prepared notification
-   destination only once its route is deployed; verify the source fence, signature,
-   durable receipt, job processing and retry recovery. Complete the agreed tester
+   recovery settings; these are configured. Checkout is enabled only for the owner tester. Inngest's six
+   handlers are registered and the destination is active. Genuine unpaid draft
+   delivery passed with HTTP 200, one durable live event processed and no
+   payment-backed grant. The subsequent EUR 2 payment, active subscription and
+   single payment-backed grant were verified, with all 13 live events processed.
+   The owner subsequently canceled renewal; the scheduled 1 December end date,
+   null next billing date, processed update and continued grant were verified.
+   The pending refund preserved access; its subsequent approval revoked the paid
+   grant and all 16 related events were processed. The live lifecycle acceptance
+   passed. A local UI/re-subscription follow-up remains to review and deploy;
+   deliberate live retry recovery has not been exercised. Complete the agreed tester
    checkout/access/portal/cancellation/refund checks with `PADDLE_CHECKOUT_ENABLED=1`
    and a nonempty tester allowlist. Other users remain unable to start/resume checkout.
 6. **Open sales:** only after approval and acceptance, deploy the intentional
@@ -252,8 +255,9 @@ reproduced both before the fixes. A shared environment filter now covers access,
 badges and queued guides, preserving manual/promo grants. The review also corrected
 the resume-checkout UI for paused/restricted users.
 
-The follow-up changes are uncommitted. No dependency or migration change was
-needed. The full check passed with 217 unit cases; the isolated integration suite
+The follow-up changes were committed as `123d396` and deployed on 1 November.
+No dependency or additional migration change was needed. The full check passed
+with 217 unit cases; the isolated integration suite
 passed 307 cases. The live-mode browser suite passed 12 cases, including EN/FI
 non-tester attempts to resume a pending checkout. The affected sandbox billing
 and localization browser suite passed all 38 cases. Both browser runs built the
@@ -263,11 +267,13 @@ At that review checkpoint the live MCP still reported onboarding
 `action_required` at `automated_review`. A later 31 October re-evaluation confirms
 onboarding and both steps are now **`completed`**; domain approval/default link
 are intact and the live notification remains inactive. A Vercel inspection
-confirms the same READY policy-only production deployment. These reviews made no
-production setting, database, deployment or financial change.
+confirmed the same READY policy-only production deployment before release. Those
+review checkpoints made no production changes; the separate 1 November release
+record supersedes their deployment status.
 
 The owner chose the existing verified Wishlist account as the sole live tester,
-and confirmed off-device backup/key custody is not yet complete. The accepted
+and on 31 October reported backup/key custody not yet complete. On 1 November the
+owner confirmed the existing backup ready and checked. The accepted
 30 October archive is present, its SHA-256 still matches the offline restore
 report, and its separate key file has mode 600. No fresh hosted backup or source
 database query was performed during this review.
@@ -278,13 +284,17 @@ proposed EUR 2 monthly test/cancellation/refund and evidence needed before publi
 sales. A static bilingual maintenance artifact was prepared locally, with no
 runtime functions or secrets. Light/dark accessibility and 320px/doubled-text
 layout checks passed; its hosted routing/deployment acceptance remains a release
-check. Nothing was uploaded. Provider approval is now satisfied. The follow-up
-local commit, fresh cutover backup and off-device/key custody, exact private
-tester ID, maintenance window and financial authorization remain release actions.
-The code/worksheet matched the successful test checkpoint before updating these
-status documents, so unchanged suites were not repeated. If release work starts
-next, prioritize off-device custody of the fresh cutover archive; a separate copy
-of the older preparation archive is optional.
+check. That maintenance artifact was not uploaded or deployed. The application
+release used the owner's direct-release instruction instead. The follow-up commit,
+private tester selection, production migration and paused live deployment are now
+complete. The code matched the successful test checkpoint, so unchanged local
+suites were not repeated; cloud build, migration and hosted checks ran against
+the actual release. The subsequent owner-only unpaid checkout verified genuine
+live-event delivery and processing. The subsequent owner payment also passed,
+including its subscription, grant and single guide. Renewal cancellation also
+passed without prematurely revoking paid access. The owner refund request preserved access while pending; its subsequent approval
+and grant revocation also passed. The local UI/re-subscription follow-up and
+opening sales remain pending.
 
 Sources checked 30–31 October 2026:
 [Paddle go-live checklist](https://developer.paddle.com/build/go-live-checklist/),

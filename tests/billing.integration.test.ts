@@ -22,6 +22,7 @@ import {
   startCheckout,
 } from "@/features/billing/service/checkout";
 import { readBillingOverview } from "@/features/billing/service/overview";
+import { prepareResubscription } from "@/features/billing/service/resubscribe";
 import {
   reconcileBilling,
   syncBillingAccount,
@@ -92,6 +93,21 @@ const paid = async () => {
   completePayment(state, result.checkout.transactionId!);
   expect(await syncBillingAccount(result.checkout.accountId)).toBe(true);
   return result;
+};
+const refundedAndEnding = async () => {
+  const result = await paid();
+  const subscription = state.subscriptions[0];
+  subscription.scheduled_change = {
+    action: "cancel",
+    effective_at: state.transactions[0].billing_period!.ends_at,
+  };
+  subscription.next_billed_at = null;
+  subscription.updated_at = new Date().toISOString();
+  state.transactions[0].adjustments = [
+    { action: "refund", status: "approved", totals: { total: "200" } },
+  ];
+  await syncBillingAccount(result.checkout.accountId);
+  return { ...result, subscription };
 };
 
 const useLive = () => {
@@ -737,6 +753,159 @@ describe("Paddle subscriptions", () => {
         where: { promoRedemptionId: { not: null }, revokedAt: null },
       }),
     ).toBe(1);
+  });
+  it("ends a refunded subscription explicitly, preserves promo grants, and permits a fresh checkout", async () => {
+    const { user, session, subscription } = await refundedAndEnding();
+    const promo = await issuePromo({
+      label: "restart-promo",
+      durationDays: 5,
+      validForDays: 7,
+      maxRedemptions: 1,
+    });
+    await redeemPromo(user.id, session.id, promo.code);
+    const originalGrants = await prisma.premiumGrant.findMany({
+      orderBy: { id: "asc" },
+    });
+    await prepareResubscription(user.id, session.id, subscription.id);
+    expect(subscription.status).toBe("canceled");
+    expect((await readBillingOverview(user.id)).active).toBe(false);
+    expect(
+      await prisma.premiumGrant.findMany({ orderBy: { id: "asc" } }),
+    ).toEqual(originalGrants);
+    expect((await readPremiumAccess(user.id)).plan).toBe("PREMIUM");
+    expect(state.createCount).toBe(1);
+    const checkoutId = await startCheckout(user.id, session.id, "year");
+    const next = await prisma.billingCheckout.findUniqueOrThrow({
+      where: { id: checkoutId },
+    });
+    completePayment(state, next.transactionId!);
+    await syncBillingAccount(next.accountId);
+    expect(state.createCount).toBe(2);
+    expect(await prisma.billingPayment.count()).toBe(2);
+    expect(
+      await prisma.premiumGrant.count({
+        where: { billingPaymentId: { not: null }, revokedAt: null },
+      }),
+    ).toBe(1);
+  });
+  it.each([
+    "pending refund",
+    "partial refund",
+    "renewal still on",
+    "unseen payment",
+    "invalid session",
+    "other owner",
+    "paused checkout",
+    "other environment",
+  ])(
+    "does not cancel or create payments when restart is unsafe: %s",
+    async (scenario) => {
+      const { user, session, subscription, checkout } =
+        await refundedAndEnding();
+      let userId = user.id;
+      let sessionId = session.id;
+      if (scenario === "pending refund")
+        state.transactions[0].adjustments![0].status = "pending_approval";
+      if (scenario === "partial refund")
+        state.transactions[0].adjustments![0].totals.total = "100";
+      if (scenario === "renewal still on") subscription.scheduled_change = null;
+      if (scenario === "unseen payment")
+        state.transactions.push({
+          ...state.transactions[0],
+          id: `txn_${"n".repeat(26)}`,
+          adjustments: [],
+        });
+      if (scenario === "invalid session") sessionId = "expired-session";
+      if (scenario === "other owner") {
+        const other = await authenticate(
+          accounts.member.email,
+          accounts.member.password,
+        );
+        userId = other.user.id;
+        sessionId = other.session.id;
+      }
+      if (scenario === "paused checkout")
+        vi.stubEnv("PADDLE_CHECKOUT_ENABLED", "0");
+      if (scenario === "other environment") useLive();
+      // Provider-only changes deliberately leave the local refund/cancel snapshot stale.
+      await expect(
+        prepareResubscription(userId, sessionId, subscription.id),
+      ).rejects.toThrow();
+      expect(subscription.status).toBe("active");
+      expect(state.createCount).toBe(1);
+      expect(await prisma.billingPayment.count()).toBe(1);
+      expect(
+        (
+          await prisma.billingAccount.findUniqueOrThrow({
+            where: { id: checkout.accountId },
+          })
+        ).claimId,
+      ).toBeNull();
+    },
+  );
+  it("recovers a lost cancellation response without issuing another cancel or payment", async () => {
+    const { user, session, subscription } = await refundedAndEnding();
+    let cancelCalls = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: string | URL, init?: RequestInit) => {
+        const url = new URL(String(input));
+        const response = paddleFixtureResponse(state, url, init);
+        if (url.pathname.endsWith("/cancel")) {
+          cancelCalls++;
+          return new Response(null, { status: 503 });
+        }
+        return response;
+      }),
+    );
+    await expect(
+      prepareResubscription(user.id, session.id, subscription.id),
+    ).rejects.toThrow();
+    expect(subscription.status).toBe("canceled");
+    await prepareResubscription(user.id, session.id, subscription.id);
+    expect(cancelCalls).toBe(1);
+    expect(state.createCount).toBe(1);
+    expect((await readBillingOverview(user.id)).active).toBe(false);
+  });
+  it("serializes repeated restart requests and preserves another billing worker's lease", async () => {
+    const { user, session, subscription, checkout } = await refundedAndEnding();
+    await prisma.billingAccount.update({
+      where: { id: checkout.accountId },
+      data: {
+        claimId: "existing-worker",
+        leaseUntil: new Date(Date.now() + 60000),
+      },
+    });
+    await expect(
+      prepareResubscription(user.id, session.id, subscription.id),
+    ).rejects.toThrow("Billing is updating");
+    expect(
+      (
+        await prisma.billingAccount.findUniqueOrThrow({
+          where: { id: checkout.accountId },
+        })
+      ).claimId,
+    ).toBe("existing-worker");
+    expect(subscription.status).toBe("active");
+    await prisma.billingAccount.update({
+      where: { id: checkout.accountId },
+      data: { claimId: null, leaseUntil: null },
+    });
+    const results = await Promise.allSettled([
+      prepareResubscription(user.id, session.id, subscription.id),
+      prepareResubscription(user.id, session.id, subscription.id),
+    ]);
+    expect(results.some((result) => result.status === "fulfilled")).toBe(true);
+    expect(
+      vi
+        .mocked(fetch)
+        .mock.calls.filter(
+          ([input, init]) =>
+            String(input).endsWith("/cancel") && init?.method === "POST",
+        ),
+    ).toHaveLength(1);
+    expect(subscription.status).toBe("canceled");
+    expect(state.createCount).toBe(1);
   });
   it("scheduled cancellation preserves paid access; past-due renewals grant no extra period", async () => {
     const { user, checkout } = await paid();

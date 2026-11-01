@@ -19,6 +19,7 @@ import {
   portalLink,
   startCheckout,
 } from "../service/checkout";
+import { prepareResubscription } from "../service/resubscribe";
 import { syncBillingAccount } from "../service/sync";
 
 export const subscribe = async (
@@ -59,6 +60,27 @@ export const manageSubscription = async (
     return authActionError(error);
   }
   return await redirect(url);
+};
+
+export const restartSubscription = async (
+  id: string,
+  _state: ActionState,
+  data: FormData,
+) => {
+  const { user, session } = await getAuthOrRedirect();
+  try {
+    await limitSourceRequest("billing-resubscribe");
+    if (data.get("confirm") !== "yes")
+      return toActionState(
+        "ERROR",
+        "Confirm ending the refunded subscription.",
+      );
+    await prepareResubscription(user.id, session.id, id);
+  } catch (error) {
+    return authActionError(error);
+  }
+  revalidatePath("/account/plan");
+  return await redirect("/account/plan#subscription-heading");
 };
 
 export const refreshBilling = async (_state: ActionState, _data: FormData) => {

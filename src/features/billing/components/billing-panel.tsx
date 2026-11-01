@@ -143,10 +143,15 @@ export async function BillingPanel({
           key={subscription.id}
           subscription={subscription}
           enabled={enabled}
+          checkoutEnabled={checkoutEnabled}
         />
       ))}
       {!current.length && previous[0] && (
-        <SubscriptionCard subscription={previous[0]} enabled={enabled} />
+        <SubscriptionCard
+          subscription={previous[0]}
+          enabled={enabled}
+          checkoutEnabled={checkoutEnabled}
+        />
       )}
       {previous.length > (current.length ? 0 : 1) && (
         <details className={shell.disclosure}>
@@ -157,6 +162,7 @@ export async function BillingPanel({
                 key={subscription.id}
                 subscription={subscription}
                 enabled={enabled}
+                checkoutEnabled={checkoutEnabled}
               />
             ))}
           </div>

@@ -1,31 +1,32 @@
 # Live billing release checklist
 
-Prepared 31 October 2026. Owner: **Service owner**. This is the Step 7 release
+Prepared 31 October; updated 1 November 2026. Owner: **Service owner**. This is the Step 7 release
 worksheet, not authorization to migrate, deploy or take a payment. The complete
 handover handbook remains deferred.
 
 ## Current checkpoint
 
-| Item                              | Evidence / decision                                                                                                                        |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Local implementation commit       | `4ef8a24`; committed by the owner without pushing                                                                                          |
-| Review follow-up                  | Environment filtering for public Premium badges and queued Premium guides; paused/restricted checkout UI; changes remain uncommitted       |
-| Production                        | Policy-only deployment `dpl_crr3BoXzzfDd1ivc6dvdxkmZgatv`, READY, rechecked 31 October                                                     |
-| Public policies                   | Approved EN/FI Terms, Privacy and Refunds pages published; billing remains sandbox                                                         |
-| Paddle domain / default link      | `wishlist.fi` approved; Apple Pay verified; `https://wishlist.fi/en/account/checkout` configured                                           |
-| Paddle onboarding                 | Live MCP recheck 31 October: `completed`; both `account_setup` and `automated_review` completed                                            |
-| Live notification                 | Existing `ntfset_01m67c29qfzqy7vsnq2ks4awy5`, inactive, platform events, `/api/paddle/live/webhook`                                        |
-| Controlled tester                 | Owner selected the existing verified Wishlist account; resolve its exact app user ID privately before configuring the allowlist            |
-| Backup custody                    | Latest accepted archive is present and its encrypted-file SHA-256 matches; owner confirmed off-device copy/key custody is not yet complete |
-| Maintenance window / charged test | Not selected or authorized; agree these at the release decision                                                                            |
+| Item                              | Evidence / decision                                                                                                                     |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Local implementation commit       | `123d396`; includes the reviewed follow-up fixes, committed by the owner without pushing                                                |
+| Review follow-up                  | Badge/queued-guide environment filtering and paused/restricted checkout UI are deployed                                                 |
+| Production                        | Owner-only live checkout: `dpl_Hy2FigjVj8mye4EVyEfjNSpgudaT`, READY; verified 1 November                                                |
+| Public policies                   | Approved EN/FI Terms, Privacy and Refunds pages remain public                                                                           |
+| Paddle domain / default link      | `wishlist.fi` approved; Apple Pay verified; `https://wishlist.fi/en/account/checkout` configured                                        |
+| Paddle onboarding                 | Live MCP recheck 31 October: `completed`; both `account_setup` and `automated_review` completed                                         |
+| Live notification                 | Existing `ntfset_01m67c29qfzqy7vsnq2ks4awy5`, active, platform events, `/api/paddle/live/webhook`                                       |
+| Controlled tester                 | Existing verified owner account is configured privately in the Production allowlist                                                     |
+| Backup custody                    | Owner confirmed the existing backup ready and checked on 1 November; a fresh capture was explicitly waived for this direct release      |
+| Maintenance window / charged test | Owner explicitly skipped maintenance for this release; owner payment, cancellation and approved EUR 2 refund/access revocation verified |
 
-The owner can make a local follow-up commit after reviewing the fixes. Keep it
-local: pushing can trigger automatic deployment before the schema is compatible.
-Record the final clean commit SHA and recheck the reviewed file hashes at cutover.
+The reviewed commit has been deployed by CLI; no Git push was made. The production
+schema is now compatible with `123d396`. See the [initial deployment](billing-live-deployment-2026-11-01.md) and
+[current owner-only checkout](billing-live-owner-checkout-2026-11-01.md).
 
 ## Configuration to apply at cutover
 
-These are future production settings, not a request to change hosted variables now.
+Production now matches the controlled-acceptance column, following the owner’s
+explicit approval. The public-sales column remains a future release decision.
 
 | Setting                                                     | Initial live candidate                          | Controlled acceptance | Public sales                                            |
 | ----------------------------------------------------------- | ----------------------------------------------- | --------------------- | ------------------------------------------------------- |
@@ -46,6 +47,12 @@ The live catalogue mapping is in [the rollout record](billing-live-rollout.md).
 No new product, price, token or notification destination is needed.
 
 ## Backup custody before migration
+
+**Executed release exception, 1 November:** the owner confirmed the existing
+backup ready and checked and explicitly requested proceeding without maintenance
+or a fresh capture. The direct production migration/deployment is complete.
+The preparation guidance below remains the normal procedure for future releases;
+it is not evidence that a fresh capture occurred in this one.
 
 Paddle approval is now confirmed. If the coordinated release is next, prioritize
 copying its **fresh verified cutover backup** off-device and storing that key
@@ -75,9 +82,14 @@ No fresh backup or source database access was performed during this review.
 
 ## Maintenance and deployment sequence
 
-Provider approval is satisfied. The remaining local follow-up commit and owner
-backup-custody action are still pending; production has not switched to live.
-The earlier verification-support email is no longer needed for this resolved issue.
+Provider approval, the follow-up commit and the direct production migration/deployment
+are complete. The owner explicitly waived the maintenance/fresh-capture portions
+of the sequence below for this release. The application has subsequently advanced to owner-only checkout, and the live
+notification is active. Genuine unpaid draft delivery and processing passed;
+the owner’s EUR 2 payment and matching Premium grant also passed. Renewal cancellation also passed. The EUR 2 refund is approved and its grant is revoked; all 16 related events
+are processed. The local presentation/re-subscription follow-up is tested and ready for review;
+opening sales remains a separate decision. See the records above.
+The earlier verification-support email is no longer needed for the resolved issue.
 
 The migration removes the old account uniqueness constraints. A checkout pause
 alone cannot make old application code compatible, and the old deployment does
@@ -128,26 +140,31 @@ After migration, recovery must use the compatible application or a forward fix;
 the old policy-only build is not a safe rollback target. Do not restore an older
 database over subsequent paid activity without reconciliation.
 
-## Proposed controlled acceptance
+## Controlled acceptance
 
-The proposed financial test is **one monthly EUR 2 subscription, cancellation of
-renewal, then a full refund request**. This is a proposal for the owner's review;
-no payment, cancellation or refund is authorized by choosing a tester account.
+The controlled test is **one monthly EUR 2 subscription, cancellation of
+renewal, then a full refund request**. The owner completed the payment on
+1 November; the provider, local payment/grant and all 13 live events were verified.
+Renewal cancellation was subsequently verified, including its 1 December end date
+and continued paid access. The full-amount EUR 2 refund is now approved; the payment is marked refunded and
+its grant revoked, with all 16 related events processed. The earlier pending
+request correctly preserved access. Public sales remain restricted; tester selection does not authorize
+financial mutations by the release tooling.
 Confirm the actual checkout total, payer and refund method immediately before
 any financial operation. Annual pricing can be checked against the API and
 checkout without adding a second charged purchase.
 
-| Check                   | Expected result / evidence                                                                                                                                                                                             |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Tester boundary         | Signed-out and other accounts cannot start/resume checkout; owner can. Existing subscription management/recovery still works.                                                                                          |
-| Checkout                | Approved real domain; live token/customer; EUR 2 monthly, tax included, clear renewal terms; no sandbox notice.                                                                                                        |
-| Draft delivery          | Provider notification succeeds, one durable live event is reconciled; no entitlement from an unpaid transaction.                                                                                                       |
-| Paid transaction        | One completed payment, one linked payment/grant; Premium dates match the provider billing period. Browser success alone is insufficient.                                                                               |
-| Duplicates and recovery | Repeated notification/reconciliation does not create a second payment, grant or Premium guide. Inspect provider logs and durable state; do not deliberately break production.                                          |
-| Portal and cancellation | Owner's portal opens; confirmed renewal cancellation is mirrored with its effective date; paid access continues until its end unless fully refunded.                                                                   |
-| Full refund             | Request references the same transaction. Pending approval is not a refund success; wait for approved full adjustment and matching grant revocation. A refund does not itself cancel renewal.                           |
-| Other access            | Existing manual/promo grants keep their original dates and remain independent. If the owner has promo access, validate revocation of the payment-backed grant rather than expecting the entire account to become Free. |
-| Public sales            | Only after approval and all acceptance results: remove tester restriction intentionally, keep checkout enabled, verify EN/FI and monitor jobs/webhooks/access.                                                         |
+| Check                   | Expected result / evidence                                                                                                                                                                                                              |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tester boundary         | Signed-out and other accounts cannot start/resume checkout; owner can. Existing subscription management/recovery still works.                                                                                                           |
+| Checkout                | Approved real domain; live token/customer; EUR 2 monthly, tax included, clear renewal terms; no sandbox notice.                                                                                                                         |
+| Draft delivery          | Passed 1 November: first-attempt HTTP 200 for `transaction.created`, one live event processed, zero payment rows or payment-backed grants; see owner-only evidence.                                                                     |
+| Paid transaction        | Passed 1 November: EUR 2 captured, active monthly subscription, one linked payment/grant with matching 1 November–1 December dates, all 13 events processed and one guide marked sent. Browser success alone is insufficient.           |
+| Duplicates and recovery | Repeated notification/reconciliation does not create a second payment, grant or Premium guide. Inspect provider logs and durable state; do not deliberately break production.                                                           |
+| Portal and cancellation | Passed 1 November: owner used the portal; cancellation is scheduled for 1 December, next billing date is null in Paddle and app, the update event is processed, and the existing paid grant remains active.                             |
+| Full refund             | Passed 1 November: EUR 2 refund approved, cumulative amount covers the full payment, update event processed and payment-backed grant revoked. Pending approval had correctly preserved access. A refund does not itself cancel renewal. |
+| Other access            | Existing manual/promo grants keep their original dates and remain independent. If the owner has promo access, validate revocation of the payment-backed grant rather than expecting the entire account to become Free.                  |
+| Public sales            | Only after approval and all acceptance results: remove tester restriction intentionally, keep checkout enabled, verify EN/FI and monitor jobs/webhooks/access.                                                                          |
 
 Keep payment/customer IDs, private portal URLs and raw provider/customer data in
 ignored evidence only. Do not delete financial history to make the account look

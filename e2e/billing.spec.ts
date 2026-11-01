@@ -1,5 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { createRequire } from "node:module";
+import type { TextKey } from "../src/i18n/text";
 import { completePayment, emptyPaddleState } from "./paddle-fixture";
 import {
   readPaddleState as providerState,
@@ -329,7 +331,241 @@ test("refunds remove paid access and provider outages have recoverable feedback"
   await expect(
     page.getByRole("heading", { name: "Free", exact: true }),
   ).toBeVisible();
+  await expect(
+    page.getByText(
+      "A refund does not cancel automatic renewal. You can manage renewal in Paddle.",
+      { exact: false },
+    ),
+  ).toBeVisible();
 });
+
+for (const locale of ["en", "fi"] as const) {
+  test(`refunded canceled renewal explains access and offers buyer support in ${locale}`, async ({
+    page,
+  }, info) => {
+    const messages = createRequire(import.meta.url)(
+      `../src/i18n/messages/${locale}.json`,
+    ) as Record<TextKey, string>;
+    const t = (key: TextKey) => messages[key];
+    await choose(page);
+    const state = await providerState();
+    const transaction = state.transactions[0];
+    completePayment(state, transaction.id);
+    const subscription = state.subscriptions[0];
+    subscription.scheduled_change = {
+      action: "cancel",
+      effective_at: transaction.billing_period!.ends_at,
+    };
+    subscription.next_billed_at = null;
+    subscription.updated_at = new Date().toISOString();
+    transaction.adjustments = [
+      {
+        action: "refund",
+        status: "pending_approval",
+        totals: { total: "200" },
+      },
+    ];
+    await save(state);
+    await page.goto("/en/account/plan");
+    await refresh(page);
+    await expect(
+      page.getByRole("heading", { name: "Premium", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(
+        "This subscription will not renew. Your remaining paid access stays available.",
+        { exact: true },
+      ),
+    ).toBeVisible();
+
+    transaction.adjustments[0].status = "approved";
+    await save(state);
+    await refresh(page);
+    await page.goto(`/${locale}/account/plan`);
+    await expect(
+      page.getByRole("heading", { name: t("Free"), exact: true }),
+    ).toBeVisible();
+    const card = page.getByRole("article").filter({
+      has: page.getByRole("heading", {
+        name: t("Monthly subscription"),
+        exact: true,
+      }),
+    });
+    await expect(
+      card.getByText(
+        t(
+          "This subscription will not renew. No paid access remains from this subscription.",
+        ),
+        { exact: true },
+      ),
+    ).toBeVisible();
+    await expect(
+      card.getByText(t("Cancellation takes effect on"), { exact: true }),
+    ).toBeVisible();
+    await expect(
+      card.getByText(
+        t(
+          "This subscription will not renew. Your remaining paid access stays available.",
+        ),
+        { exact: true },
+      ),
+    ).toHaveCount(0);
+    await expect(
+      card.getByText(
+        t(
+          "A refund does not cancel automatic renewal. You can manage renewal in Paddle.",
+        ),
+        { exact: false },
+      ),
+    ).toHaveCount(0);
+    const refundMessage = card.locator("p").filter({
+      hasText: t(
+        "A payment was fully refunded. Access from that payment was removed.",
+      ),
+    });
+    await expect(refundMessage).toBeVisible();
+    await expect(refundMessage).not.toHaveAttribute("data-tone", "attention");
+    const request = card.getByRole("link", {
+      name: t("Request a refund"),
+      exact: true,
+    });
+    await expect(request).toHaveAttribute("href", "https://paddle.net/");
+    await expect(
+      page
+        .getByRole("region", { name: t("Billing help"), exact: true })
+        .getByRole("link", { name: t("Request a refund"), exact: true }),
+    ).toHaveAttribute("href", "https://paddle.net/");
+    await expect(
+      page.getByText(
+        t(
+          "Paddle reviews refund requests. To stop future charges, cancel renewal separately.",
+        ),
+        { exact: true },
+      ),
+    ).toBeVisible();
+
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    for (const [theme, width] of [
+      ["light", 1280],
+      ["dark", 320],
+    ] as const) {
+      await page.evaluate((value) => {
+        localStorage.setItem("theme", value);
+      }, theme);
+      await page.reload();
+      await page.setViewportSize({ width, height: 800 });
+      await request.focus();
+      await expect(request).toBeFocused();
+      expect(
+        await request.evaluate(
+          (element) => getComputedStyle(element).outlineStyle,
+        ),
+      ).not.toBe("none");
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      expect(
+        (await new AxeBuilder({ page }).include("main").analyze()).violations,
+      ).toEqual([]);
+      await page.screenshot({
+        path: info.outputPath(`billing-refunded-${locale}-${theme}.png`),
+        fullPage: true,
+        scale: "css",
+      });
+    }
+    await page.addStyleTag({ content: "html { font-size: 200%; }" });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: info.outputPath(`billing-refunded-${locale}-200-percent.png`),
+      fullPage: true,
+      scale: "css",
+    });
+
+    const restart = card.getByRole("button", {
+      name: t("Start a new subscription"),
+      exact: true,
+    });
+    await expect(restart).toBeDisabled();
+    await card
+      .getByRole("checkbox", {
+        name: t(
+          "I want to end this refunded subscription immediately and choose a new plan.",
+        ),
+        exact: true,
+      })
+      .check();
+    await restart.click();
+    await expect(page).toHaveURL(/account\/plan#subscription-heading$/);
+    await billingSettled(page, locale);
+    await expect(
+      page.getByRole("button", {
+        name: t("Choose {value0}").replace(
+          "{value0}",
+          t("Monthly").toLowerCase(),
+        ),
+        exact: true,
+      }),
+    ).toBeVisible();
+    expect((await providerState()).createCount).toBe(1);
+    expect((await providerState()).subscriptions[0].status).toBe("canceled");
+    await expect(
+      card.getByText(
+        t(
+          "Renewal has stopped. No paid access remains from this subscription.",
+        ),
+        { exact: true },
+      ),
+    ).toBeVisible();
+    await expect(
+      card.getByText(
+        t(
+          "Renewal has stopped. Any remaining paid time stays available until it expires.",
+        ),
+        { exact: true },
+      ),
+    ).toHaveCount(0);
+    await page.route("https://paddle.net/", (route) =>
+      route.fulfill({
+        body: "<h1>Paddle buyer support fixture</h1>",
+        contentType: "text/html",
+      }),
+    );
+    await request.focus();
+    await page.keyboard.press("Enter");
+    await expect(
+      page.getByRole("heading", { name: "Paddle buyer support fixture" }),
+    ).toBeVisible();
+    await page.goto(`/${locale}/refunds`);
+    await expect(
+      page.getByRole("link", { name: t("Request a refund"), exact: true }),
+    ).toHaveAttribute("href", "https://paddle.net/");
+    await expect(
+      page
+        .locator("article")
+        .getByRole("link", { name: "support@wishlist.fi", exact: true }),
+    ).toHaveAttribute("href", "mailto:support@wishlist.fi");
+    await page.goto("/en/account/plan");
+    await choose(page, "annual");
+    const restarted = await providerState();
+    expect(restarted.createCount).toBe(2);
+    expect(restarted.subscriptions[0].status).toBe("canceled");
+    completePayment(restarted, restarted.transactions[1].id);
+    await save(restarted);
+    await page.goto("/en/account/plan?checkout=returned");
+    await expect(
+      page.getByRole("heading", { name: "Premium", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Annual subscription", exact: true }),
+    ).toBeVisible();
+  });
+}
 
 test("subscription controls fit a 320px dark layout and work with the keyboard", async ({
   page,

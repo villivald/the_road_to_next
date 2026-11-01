@@ -76,9 +76,11 @@ on 31 October confirms **onboarding `completed`**, including `account_setup` and
 `automated_review`. The verification mismatch is resolved. No identity documents
 or verification-session links are stored in this record.
 
-The live billing candidate and reviewed migration await the remaining local
-follow-up commit, fresh verified/off-device backup and coordinated cutover, then
-the agreed controlled payment/refund acceptance. Provider verification is complete.
-See the [current release checklist](billing-live-release-checklist.md). Do not deploy
-the entire uncommitted working tree as a policy update. The final handover handbook
-remains deferred.
+On 1 November, reviewed commit `123d396` and its billing migration were deployed
+in live mode with checkout paused, following the owner's explicit direct-release
+instruction. The policies in this publication record were preserved. See the
+[executed deployment](billing-live-deployment-2026-11-01.md) and
+[current release checklist](billing-live-release-checklist.md).
+The owner subsequently activated the live notification and approved
+[owner-only checkout](billing-live-owner-checkout-2026-11-01.md). Genuine event
+processing passed for the unpaid draft and subsequent owner EUR 2 payment. Renewal cancellation also passed. The EUR 2 refund is approved and the paid grant revoked; all 16 related events are processed. A local UI/re-subscription follow-up and opening sales remain pending. The final handover handbook remains deferred.

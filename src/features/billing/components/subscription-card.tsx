@@ -9,8 +9,12 @@ import {
 } from "lucide-react";
 import { ActionForm } from "@/components/form/action-form";
 import { LocalTime } from "@/components/local-time";
+import shell from "@/components/shell.module.css";
 import { getText } from "@/i18n/server";
-import { manageSubscription } from "../actions/manage-billing";
+import {
+  manageSubscription,
+  restartSubscription,
+} from "../actions/manage-billing";
 import { plans } from "../service/config";
 import type { BillingOverview } from "../service/overview";
 import styles from "./billing.module.css";
@@ -20,9 +24,11 @@ type Subscription = BillingOverview["subscriptions"][number];
 export async function SubscriptionCard({
   subscription,
   enabled,
+  checkoutEnabled,
 }: {
   subscription: Subscription;
   enabled: boolean;
+  checkoutEnabled: boolean;
 }) {
   const t = await getText();
   const canceled = subscription.status === "canceled";
@@ -99,7 +105,11 @@ export async function SubscriptionCard({
         </div>
         {ending ? (
           <div>
-            <dt>{t("Subscription ends on")}</dt>
+            <dt>
+              {paidUntil
+                ? t("Subscription ends on")
+                : t("Cancellation takes effect on")}
+            </dt>
             <dd>
               <LocalTime
                 value={subscription.cancelAt!.toISOString()}
@@ -129,16 +139,24 @@ export async function SubscriptionCard({
       </dl>
       {ending && (
         <p>
-          {t(
-            "This subscription will not renew. Your remaining paid access stays available.",
-          )}
+          {paidUntil
+            ? t(
+                "This subscription will not renew. Your remaining paid access stays available.",
+              )
+            : t(
+                "This subscription will not renew. No paid access remains from this subscription.",
+              )}
         </p>
       )}
       {canceled && (
         <p>
-          {t(
-            "Renewal has stopped. Any remaining paid time stays available until it expires.",
-          )}
+          {paidUntil
+            ? t(
+                "Renewal has stopped. Any remaining paid time stays available until it expires.",
+              )
+            : t(
+                "Renewal has stopped. No paid access remains from this subscription.",
+              )}
         </p>
       )}
       {paused && (
@@ -157,11 +175,21 @@ export async function SubscriptionCard({
         </p>
       )}
       {refunded && (
-        <p className={styles.message} data-tone="attention">
-          <CircleAlert size={18} aria-hidden="true" />
-          {t(
-            "A payment was fully refunded. Access from that payment was removed. A refund does not cancel automatic renewal or remove promo access.",
-          )}
+        <p className={styles.message}>
+          <CircleCheck size={18} aria-hidden="true" />
+          <span>
+            {t(
+              "A payment was fully refunded. Access from that payment was removed.",
+            )}
+            {!ending && !canceled && (
+              <>
+                {" "}
+                {t(
+                  "A refund does not cancel automatic renewal. You can manage renewal in Paddle.",
+                )}
+              </>
+            )}
+          </span>
         </p>
       )}
       <div className={styles.actions}>
@@ -176,11 +204,42 @@ export async function SubscriptionCard({
             {null}
           </ActionForm>
         )}
+        <a href="https://paddle.net/" className={shell["secondary-button"]}>
+          <ExternalLink size={17} aria-hidden="true" />
+          {t("Request a refund")}
+        </a>
       </div>
+      {checkoutEnabled && ending && refunded && !paidUntil && (
+        <section
+          className={styles.sync}
+          aria-labelledby={`restart-${subscription.id}`}
+        >
+          <h4 id={`restart-${subscription.id}`}>{t("Subscribe again")}</h4>
+          <p>
+            {t(
+              "End this refunded subscription now, then choose a new plan. A new payment requires a separate checkout confirmation.",
+            )}
+          </p>
+          <ActionForm
+            action={restartSubscription.bind(null, subscription.id)}
+            label={t("Start a new subscription")}
+            pendingLabel={t("Preparing plan choices…")}
+            secondary
+            requireConfirmation
+          >
+            <label className={shell["checkbox-label"]}>
+              <input name="confirm" type="checkbox" value="yes" required />
+              {t(
+                "I want to end this refunded subscription immediately and choose a new plan.",
+              )}
+            </label>
+          </ActionForm>
+        </section>
+      )}
       <p className={`${styles.meta} ${styles.fact}`}>
         <CreditCard size={16} aria-hidden="true" />
         {t(
-          "Payment methods, receipts, refunds, and renewal settings are managed in Paddle.",
+          "Use Manage subscription for payment methods, receipts and renewal settings. Refund requests go to Paddle Buyer Support.",
         )}
       </p>
     </article>

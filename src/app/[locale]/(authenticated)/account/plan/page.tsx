@@ -1,4 +1,4 @@
-import { Gift, Heart, Mail, Sparkles } from "lucide-react";
+import { ExternalLink, Gift, Heart, Mail, Sparkles } from "lucide-react";
 import { BackLink } from "@/components/back-link";
 import { LocalTime } from "@/components/local-time";
 import shell from "@/components/shell.module.css";
@@ -134,6 +134,17 @@ export default async function PlanPage({
       </div>
       <section className={styles.card} aria-labelledby="billing-help-heading">
         <h2 id="billing-help-heading">{t("Billing help")}</h2>
+        <p>
+          {t(
+            "Paddle reviews refund requests. To stop future charges, cancel renewal separately.",
+          )}
+        </p>
+        <div className={styles.actions}>
+          <a href="https://paddle.net/" className={shell["secondary-button"]}>
+            <ExternalLink size={17} aria-hidden="true" />
+            {t("Request a refund")}
+          </a>
+        </div>
         <details className={shell.disclosure}>
           <summary>{t("Canceling or changing a plan")}</summary>
           <p>
@@ -146,7 +157,7 @@ export default async function PlanPage({
           <summary>{t("Receipts and refunds")}</summary>
           <p>
             {t(
-              "Use Manage subscription to find your payment history in Paddle. Request refunds through Paddle. A full approved refund removes access from that payment; partial refunds preserve it. Refunds do not stop renewal or remove promo access.",
+              "Use Manage subscription to find your payment history in Paddle. For a refund, use Request a refund to contact Paddle Buyer Support. A full approved refund removes access from that payment; partial refunds and separate promo access are unaffected.",
             )}
           </p>
         </details>

@@ -410,7 +410,7 @@ const information = (
         </p>
         <ul>
           <li>
-            <a href="https://paddle.net/">{t("Paddle payment support")}</a>
+            <a href="https://paddle.net/">{t("Request a refund")}</a>
           </li>
           <li>
             <a href="https://www.paddle.com/legal/refund-policy">
