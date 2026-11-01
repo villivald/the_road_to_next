@@ -5,24 +5,33 @@ import { continuousPremiumUntil } from "./period";
 
 export class PremiumError extends Error {}
 
-export const readPremiumAccess = async (
-  userId: string,
-  db: Prisma.TransactionClient = prisma,
-) => {
-  const now = new Date();
-  const environment = billingEnvironment();
-  const periods = await db.premiumGrant.findMany({
-    where: {
-      userId,
-      user: { emailVerified: true },
-      revokedAt: null,
-      expiresAt: { gt: now },
+// Use the same environment boundary for access, public badges and queued guides.
+// Promo/manual grants remain eligible even when billing is not configured.
+export const premiumGrantEnvironmentWhere =
+  (): Prisma.PremiumGrantWhereInput => {
+    const environment = billingEnvironment();
+    return {
       OR: [
         { billingPaymentId: null },
         ...(environment
           ? [{ billingPayment: { subscription: { account: { environment } } } }]
           : []),
       ],
+    };
+  };
+
+export const readPremiumAccess = async (
+  userId: string,
+  db: Prisma.TransactionClient = prisma,
+) => {
+  const now = new Date();
+  const periods = await db.premiumGrant.findMany({
+    where: {
+      ...premiumGrantEnvironmentWhere(),
+      userId,
+      user: { emailVerified: true },
+      revokedAt: null,
+      expiresAt: { gt: now },
     },
     select: { startsAt: true, expiresAt: true },
     orderBy: { startsAt: "asc" },

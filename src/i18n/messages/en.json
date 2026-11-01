@@ -825,6 +825,7 @@
   "Continue your checkout": "Continue your checkout",
   "Awaiting confirmation": "Awaiting confirmation",
   "We’re checking whether this checkout can be closed. A payment already processing may still complete.": "We’re checking whether this checkout can be closed. A payment already processing may still complete.",
+  "If you already paid, refresh billing to check the result.": "If you already paid, refresh billing to check the result.",
   "If you already paid, refresh billing to check the result. Otherwise, you can continue the same checkout.": "If you already paid, refresh billing to check the result. Otherwise, you can continue the same checkout.",
   "Closing an unpaid checkout lets you choose another plan. It does not cancel an existing subscription.": "Closing an unpaid checkout lets you choose another plan. It does not cancel an existing subscription.",
   "Checkout is still being prepared. Refresh billing shortly before trying again.": "Checkout is still being prepared. Refresh billing shortly before trying again.",

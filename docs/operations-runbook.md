@@ -1,13 +1,15 @@
 # Wishlist operations runbook
 
-Reviewed 30 October 2026. Owner: **Service owner, Finland**. Support and incident
+Reviewed 31 October 2026. Owner: **Service owner, Finland**. Support and incident
 contact: **support@wishlist.fi**, handled by the owner (owner-confirmed). No secondary
 responder is appointed. This is an owner-operated beta, without a 24/7 response SLA.
 
 Step 6 implementation includes on-demand status, a fictional recovery drill,
 encrypted manual backup with an offline verified restore, and an opt-in final-job
-failure alert. Off-device backup/key custody, deployed alert delivery and final
-policies remain open. Permanent Preview infrastructure is deferred by the owner;
+failure alert. Off-device backup/key custody and deployed alert delivery remain
+open. The approved EN/FI policies were published on 31 October; see the
+[policy-only release](policy-publication-2026-10-31.md).
+Permanent Preview infrastructure is deferred by the owner;
 see [the evidence and decisions](operations-readiness-2026-10-29.md).
 
 ## Environments and ownership
@@ -19,13 +21,15 @@ see [the evidence and decisions](operations-readiness-2026-10-29.md).
 | Vercel Blob                | Private original images and responsive variants                                     | Service owner; `arn1`, private; hosted-object archive and offline checksum restore passed on 30 October                 |
 | Resend                     | Transactional account, invitation and group messages                                | Service owner; earlier hosted delivery evidence, current sending-domain settings need recheck                           |
 | Inngest                    | Email/billing recovery, immediate events, media/auth maintenance and failure alerts | Service owner; five existing jobs plus one opt-in alert handler; deployed Cloud configuration/delivery need recheck     |
-| Paddle                     | Sandbox subscription lifecycle only                                                 | Service owner; live API use is rejected in code; live activation belongs to Step 7                                      |
+| Paddle                     | Production remains sandbox; live candidate prepared locally                         | Service owner; live activation is held under the [Step 7 release checklist](billing-live-release-checklist.md)          |
 | Cloudflare Turnstile       | Signup/recovery/resend abuse protection                                             | Service owner; production variable names are configured; keys must match allowed domains                                |
 | Domain and inbound support | `wishlist.fi`, `support@wishlist.fi`                                                | Service owner; inbound receipt passed on 20 October; owner reconfirmed handling on 29 October                           |
 
-Confirmed production deployment: `dpl_4amH8C2euXwKtc5fzp4w3bnXBrhN`, READY,
-Git commit `32721ba8dfb9b37538dcdbdce048b0259b24b57b`, branch `main`.
-This is a dated observation, not a permanent deployment identifier.
+Confirmed production deployment on 31 October:
+`dpl_crr3BoXzzfDd1ivc6dvdxkmZgatv`, READY. It was built from baseline `2ef0dea`
+plus the isolated approved policy patch. The complete live-billing implementation
+in local commit `4ef8a24` has not been deployed. These are dated observations, not
+permanent deployment identifiers.
 
 | Environment       | Database / media / delivery boundary                                                                                                                                                                |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -65,11 +69,13 @@ of a deliberately wrong hostname. Prisma migration status passed with explicit
 this is a connection test using the existing private copy rather than an exact
 export of deployed settings. Details and limits are in the readiness report.
 
-The local candidate normalizes Neon `sslmode=require` to `verify-full` in memory
+The application normalizes Neon `sslmode=require` to `verify-full` in memory
 for both runtime and Prisma CLI configuration. It preserves other parameters and
-explicit compatibility settings. Review and deploy the candidate, then verify
-runtime connectivity and that the old alias warning is absent. No environment
-edit or migration is required for this fix. The candidate is not yet deployed.
+explicit compatibility settings. The runtime/CLI connection files match the
+source of the 31 October policy-only deployment, which inherited this committed
+fix. Continue checking runtime connectivity and absence of the old alias warning
+after releases; source/deployment evidence does not replace that runtime check.
+No environment edit or database migration is required for this TLS normalization.
 
 ## Routine checks and escalation
 
@@ -166,6 +172,13 @@ email or provider payment. Existing deployments may contain older environment
 configuration. Inngest app synchronization and current secrets must agree with
 the selected code. Roll forward with a corrective migration when that is safer
 than restoring data. [Vercel rollback documentation](https://vercel.com/docs/deployments/rollback)
+
+The Step 7 billing migration is a specific exception to routine code rollback:
+it removes uniqueness constraints required by the old billing code. Keep the
+live candidate local until the coordinated maintenance/backup/migration/deployment
+window in the [release checklist](billing-live-release-checklist.md). After that
+migration, use a compatible build or forward fix; do not roll back blindly to
+the older policy-only deployment.
 
 ## Database and media recovery
 

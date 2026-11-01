@@ -1,4 +1,5 @@
 import { imageSelection } from "@/features/media/types";
+import { premiumGrantEnvironmentWhere } from "@/features/premium/service/entitlements";
 import { wishPreviewSelection } from "@/features/wish/service/preview";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -228,6 +229,7 @@ export const discoverUsers = async (
               ownedLists: { where: publicLists },
               premiumGrants: {
                 where: {
+                  ...premiumGrantEnvironmentWhere(),
                   revokedAt: null,
                   startsAt: { lte: new Date() },
                   expiresAt: { gt: new Date() },

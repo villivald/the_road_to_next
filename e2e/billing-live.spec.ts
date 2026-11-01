@@ -3,9 +3,81 @@ import { expect, test } from "@playwright/test";
 import { createRequire } from "node:module";
 import { emptyPaddleState, livePaddleEnvironment } from "./paddle-fixture";
 import { readPaddleState, writePaddleState } from "./paddle-state";
-import { accounts, resetFixtures } from "./seed";
+import { accounts, resetFixtures, testPrisma } from "./seed";
 
 for (const locale of ["en", "fi"] as const) {
+  test(`non-testers cannot resume a pending live checkout in ${locale}`, async ({
+    page,
+  }) => {
+    await resetFixtures();
+    await writePaddleState({
+      ...emptyPaddleState(),
+      idNamespace: "l",
+      environment: livePaddleEnvironment,
+    });
+    const prisma = testPrisma();
+    const checkoutId = "e2e-restricted-checkout";
+    try {
+      await prisma.billingAccount.create({
+        data: {
+          userId: "e2e-member",
+          environment: "live",
+          checkouts: {
+            create: {
+              id: checkoutId,
+              interval: "month",
+              priceId: livePaddleEnvironment.PADDLE_MONTHLY_PRICE_ID,
+              transactionId: `txn_${"x".repeat(26)}`,
+            },
+          },
+        },
+      });
+    } finally {
+      await prisma.$disconnect();
+    }
+    const messages = createRequire(import.meta.url)(
+      `../src/i18n/messages/${locale}.json`,
+    ) as Record<string, string>;
+    await page.goto(`/${locale}/sign-in`);
+    await page
+      .getByLabel(messages.Email, { exact: true })
+      .fill(accounts.member.email);
+    await page
+      .getByLabel(messages.Password, { exact: true })
+      .fill(accounts.member.password);
+    await page
+      .getByRole("button", { name: messages["Sign in"], exact: true })
+      .click();
+    await expect(page).toHaveURL(/\/lists$/);
+    await page.goto(`/${locale}/account/plan`);
+    await expect(
+      page.getByText(
+        messages["If you already paid, refresh billing to check the result."],
+        { exact: true },
+      ),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", {
+        name: messages["Resume checkout"],
+        exact: true,
+      }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("button", {
+        name: messages["Discard checkout"],
+        exact: true,
+      }),
+    ).toBeVisible();
+    await page.goto(`/${locale}/account/checkout?id=${checkoutId}`);
+    await expect(
+      page.getByRole("heading", {
+        name: messages["Checkout unavailable"],
+        exact: true,
+      }),
+    ).toBeVisible();
+    expect((await readPaddleState()).createCount).toBe(0);
+  });
+
   test(`public policies are reachable and accessible in ${locale}`, async ({
     page,
   }, testInfo) => {

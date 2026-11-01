@@ -825,6 +825,7 @@
   "Continue your checkout": "Jatka kesken jäänyttä maksua",
   "Awaiting confirmation": "Odottaa vahvistusta",
   "We’re checking whether this checkout can be closed. A payment already processing may still complete.": "Tarkistamme, voiko maksun sulkea. Jo käsittelyssä oleva maksu voi vielä valmistua.",
+  "If you already paid, refresh billing to check the result.": "Jos olet jo maksanut, tarkista tulos päivittämällä maksutiedot.",
   "If you already paid, refresh billing to check the result. Otherwise, you can continue the same checkout.": "Jos olet jo maksanut, tarkista tulos päivittämällä maksutiedot. Muuten voit jatkaa samaa maksua.",
   "Closing an unpaid checkout lets you choose another plan. It does not cancel an existing subscription.": "Sulkemalla maksamattoman maksun voit valita toisen tilauksen. Sulkeminen ei peru olemassa olevaa tilausta.",
   "Checkout is still being prepared. Refresh billing shortly before trying again.": "Maksua valmistellaan vielä. Päivitä maksutiedot hetken kuluttua ennen kuin yrität uudelleen.",

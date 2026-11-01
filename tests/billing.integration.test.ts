@@ -27,6 +27,9 @@ import {
   syncBillingAccount,
 } from "@/features/billing/service/sync";
 import { acceptWebhook } from "@/features/billing/service/webhook";
+import { discoverUsers } from "@/features/discovery/service/discovery";
+import { readFavorites } from "@/features/favorites/service/favorites";
+import { deliverAccountEmails } from "@/features/notifications/service/delivery";
 import { readPremiumAccess } from "@/features/premium/service/entitlements";
 import { issuePromo, redeemPromo } from "@/features/premium/service/promotions";
 import { backgroundEvents } from "@/lib/background-events";
@@ -122,6 +125,97 @@ const useLive = () => {
 };
 
 describe("Paddle live environment isolation", () => {
+  it.each(["sandbox", "live"])(
+    "delivers the Premium guide for a payment in the active %s environment",
+    async (environment) => {
+      const provider = environment === "live" ? useLive() : state;
+      const { checkout } = await begin();
+      completePayment(provider, checkout.transactionId!);
+      expect(await syncBillingAccount(checkout.accountId)).toBe(true);
+      const email = await prisma.accountEmail.findFirstOrThrow();
+      const transport = vi.fn<typeof fetch>(async () => new Response(null));
+      vi.stubGlobal("fetch", transport);
+      expect(await deliverAccountEmails(email.id)).toEqual({
+        sent: 1,
+        failed: 0,
+        canceled: 0,
+      });
+      expect(transport).toHaveBeenCalledOnce();
+      expect(String(transport.mock.calls[0][0])).toBe(
+        `${process.env.MAILPIT_URL}/api/v1/send`,
+      );
+    },
+  );
+
+  it("keeps discovery and favorite-person badges aligned with active-environment access", async () => {
+    const { user } = await paid();
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { showPremiumBadge: true },
+    });
+    await prisma.wishlist.create({
+      data: {
+        id: "e2e-billing-public-list",
+        title: "Public fixture list",
+        ownerId: user.id,
+        publication: "PUBLISHED",
+        visibility: "PUBLIC",
+        memberships: { create: { userId: user.id, role: "ADMIN" } },
+      },
+    });
+    await prisma.favoritePerson.create({
+      data: { userId: "e2e-member", personId: user.id },
+    });
+    const badges = async () => [
+      (await discoverUsers({})).users.find(
+        (person) => person.username === user.username,
+      )?.showPremiumBadge,
+      (await readFavorites("e2e-member", { view: "people" })).people?.find(
+        (person) => person.username === user.username,
+      )?.showPremiumBadge,
+    ];
+    expect(await badges()).toEqual([true, true]);
+    useLive();
+    expect((await readPremiumAccess(user.id)).plan).toBe("FREE");
+    expect(await badges()).toEqual([false, false]);
+    await prisma.premiumGrant.create({
+      data: {
+        userId: user.id,
+        startsAt: new Date(Date.now() - 1000),
+        expiresAt: new Date(Date.now() + 86400000),
+      },
+    });
+    expect((await readPremiumAccess(user.id)).plan).toBe("PREMIUM");
+    expect(await badges()).toEqual([true, true]);
+  });
+
+  it.each(["live", ""])(
+    "cancels a queued sandbox Premium guide when the active environment becomes %s",
+    async (environment) => {
+      await paid();
+      const email = await prisma.accountEmail.findFirstOrThrow();
+      vi.stubEnv("PADDLE_ENVIRONMENT", environment);
+      const transport = vi.fn<typeof fetch>();
+      vi.stubGlobal("fetch", transport);
+      expect(await deliverAccountEmails(email.id)).toEqual({
+        sent: 0,
+        failed: 0,
+        canceled: 1,
+      });
+      expect(transport).not.toHaveBeenCalled();
+      expect(
+        await prisma.accountEmail.findUniqueOrThrow({
+          where: { id: email.id },
+        }),
+      ).toMatchObject({
+        sentAt: null,
+        canceledAt: expect.any(Date),
+        html: "",
+        text: "",
+      });
+    },
+  );
+
   it("restricts starting and resuming live checkout to configured testers", async () => {
     useLive();
     const { user, session } = await login();

@@ -61,6 +61,9 @@ complete environment. Temporary duplicate credential captures were removed.
 - Paid Premium access follows the active environment; promo/manual access is
   preserved. Historical sandbox payments are not converted into live access.
   Existing future promo dates are preserved, not silently rescheduled.
+  Public discovery/favorite-person badges use that same environment boundary,
+  and queued Premium guides are canceled if their payment belongs to another
+  environment. Current-environment and promo/manual guides remain eligible.
 - Recovery selects the original account/event environment and matching credentials.
   Account deletion records cancellation intents for every environment. Inactive
   environment recovery does not queue new active-environment Premium guide emails.
@@ -69,6 +72,8 @@ complete environment. Temporary duplicate credential captures were removed.
   Saved sandbox simulator events remain recoverable after the UI switches live.
 - Paddle.js selects sandbox only for sandbox, uses a matching token, and receives
   the verified Paddle customer ID through `pwCustomer`. Remounts use `Paddle.Update`.
+  Paused/restricted checkout also hides the resume link and its invitation to
+  continue paying, while retaining discard and status-refresh controls.
 - Provider resource/event IDs remain globally unique. A cross-environment collision
   fails closed instead of overwriting another environment's history.
 
@@ -119,18 +124,20 @@ the website through the agreed publication approach, without adding personal nam
 to repository documentation. The draft is not evidence of published compliance.
 
 On 31 October, the live MCP confirmed `wishlist.fi` is **approved** and Apple Pay
-registration is **verified**. Account setup is completed. Overall onboarding is
-`action_required`, with `automated_review` requiring action. The live dashboard's
-**Get started → Verify your account** task specifically requests **Verify your
+registration is **verified**. Account setup was completed. At the initial check,
+overall onboarding was `action_required`, with `automated_review` requiring
+action. The live dashboard's **Get started → Verify your account** task requested **Verify your
 identity / Complete identity checks**. This is an account-holder action through
 Paddle's verification flow; no identity documents or session links are recorded here.
 
 The owner subsequently supplied a Sumsub success screen showing the profile verified.
-A follow-up live MCP check still reports `action_required` at `automated_review`;
-the refreshed Paddle dashboard still displays the identity-check prompt and no new
-request. Record Sumsub completion separately from Paddle onboarding approval. Do
-not repeat the identity flow solely because that prompt remains visible. Await
-Paddle status clarification and use Paddle support if it remains unresolved.
+The first follow-up live MCP check still reported `action_required` at
+`automated_review`; the refreshed dashboard retained the identity-check prompt.
+This historical mismatch was resolved later on 31 October: the live MCP now
+reports overall onboarding **`completed`**, with both `account_setup` and
+`automated_review` completed. The verification-support email is no longer needed.
+No identity flow needs repeating. Domain/Apple Pay approval and the default link
+were reconfirmed in the same read-only audit.
 
 After confirming domain approval and the existing null setting, the authorized
 live default payment link was set and read back successfully as
@@ -145,7 +152,7 @@ does not certify legal completeness or make a provider approval decision.
 ## Local verification
 
 - `npm run check`: ESLint, Stylelint, Prettier, types and 217 unit cases passed.
-- `npm run test:integration`: 302 total cases with integration enabled passed,
+- `npm run test:integration`: 302 integration cases passed before final review,
   including environment isolation, legacy recovery, deletion, pause behavior,
   collisions, live HTTP source/signature checks and refunds.
 - The affected sandbox billing/localization browser run passed 38 cases.
@@ -167,16 +174,17 @@ manual-retention documentation; it excludes billing code and Prisma changes. It
 applies to committed baseline `2ef0dea` and type-checks with its original Prisma
 schema. It is intended for review, not an instruction to deploy the entire working tree.
 
-## Preparation can continue during Paddle review
+## Preparation before the coordinated release
 
-Paddle's outstanding approval holds live activation under the owner's launch
-instruction. It does not prevent local release preparation. The agreed hold on
-the production billing migration/live cutover is a release-order decision, not a
-technical restriction imposed by Paddle on database work.
+Paddle approval is now confirmed. The remaining work is the local follow-up
+commit, backup/key custody and a coordinated maintenance/migration/deployment
+window, followed by separately agreed live financial acceptance. Provider
+verification does not apply the application migration or deploy its code.
 
 Work that can proceed now:
 
-- Final review of the uncommitted billing diff and preparation of local commits.
+- Commit the reviewed follow-up fixes and updated release documents locally.
+  Final billing review and the affected checks have passed.
   Keep these local until the coordinated release: pushing the entire branch can
   trigger deployment before the production schema is ready. Permanent/shared
   Preview infrastructure remains deferred.
@@ -187,11 +195,11 @@ Work that can proceed now:
   custody. Take a fresh verified backup near the actual migration, rather than
   treating an older preparation snapshot as the cutover backup.
 - Run affected checks when code changes. Previously passed unchanged suites do
-  not need repeated runs merely because provider approval is pending.
+  not need repeated runs merely because the provider's verification status changed.
 
 Continue holding the live billing deployment/environment switch, coordinated
 production billing migration, live webhook activation and charged acceptance/public
-sales until the applicable approval and release gates are satisfied. The published
+sales until the remaining release gates are satisfied. The published
 policy-only sandbox release stays in place during preparation.
 
 ## Remaining release order
@@ -199,12 +207,10 @@ policy-only sandbox release stays in place during preparation.
 1. **Policy preparation — published:** the owner-approved EN/FI pages are live in
    the isolated policy-only release, with sandbox billing preserved. See the
    publication report. Do not switch hosted variables to the private live candidate.
-2. **Provider approval — identity action required:** domain approval, Apple Pay
-   registration and account setup are complete. The live default payment link is
-   configured. The owner has completed the Sumsub flow, but Paddle onboarding is
-   still `action_required` after rechecking the API and refreshing the dashboard.
-   Confirm Paddle approval or resolve its outstanding status before live cutover;
-   do not infer final approval from the Sumsub success screen alone.
+2. **Provider approval — completed:** the live MCP confirms overall onboarding,
+   account setup and automated review are all `completed`. Domain approval, Apple
+   Pay registration, the catalogue and live default payment link were reconfirmed.
+   The live webhook remains inactive until its compatible route is deployed.
 3. **Review the cutover:** agree a maintenance window, tester restriction and the
    controlled real transaction/refund method. A zero-total test does not prove a
    charged payment/refund lifecycle. No real financial operation is authorized yet.
@@ -233,6 +239,52 @@ schema-compatible build/forward fix. Do not restore a pre-cutover database over
 later paid activity without a separate recovery/reconciliation decision.
 
 The final handover handbook remains deferred until requested.
+
+## Final review and preparation — 31 October
+
+The owner committed the implementation as `4ef8a24` without pushing. Follow-up
+review covered configuration/credential routing, authenticated checkout/portal
+ownership, webhook source/signature/durable receipt, cross-environment recovery,
+account deletion, entitlement reads, Paddle.js initialization and migration
+compatibility. It found two missed environment filters: public Premium badge
+counts and eligibility of already queued Premium guides. New integration cases
+reproduced both before the fixes. A shared environment filter now covers access,
+badges and queued guides, preserving manual/promo grants. The review also corrected
+the resume-checkout UI for paused/restricted users.
+
+The follow-up changes are uncommitted. No dependency or migration change was
+needed. The full check passed with 217 unit cases; the isolated integration suite
+passed 307 cases. The live-mode browser suite passed 12 cases, including EN/FI
+non-tester attempts to resume a pending checkout. The affected sandbox billing
+and localization browser suite passed all 38 cases. Both browser runs built the
+production app against isolated fixtures; they took no real payment.
+
+At that review checkpoint the live MCP still reported onboarding
+`action_required` at `automated_review`. A later 31 October re-evaluation confirms
+onboarding and both steps are now **`completed`**; domain approval/default link
+are intact and the live notification remains inactive. A Vercel inspection
+confirms the same READY policy-only production deployment. These reviews made no
+production setting, database, deployment or financial change.
+
+The owner chose the existing verified Wishlist account as the sole live tester,
+and confirmed off-device backup/key custody is not yet complete. The accepted
+30 October archive is present, its SHA-256 still matches the offline restore
+report, and its separate key file has mode 600. No fresh hosted backup or source
+database query was performed during this review.
+
+The concrete [release checklist](billing-live-release-checklist.md) records the
+configuration matrix, owner backup action, maintenance/deployment sequence,
+proposed EUR 2 monthly test/cancellation/refund and evidence needed before public
+sales. A static bilingual maintenance artifact was prepared locally, with no
+runtime functions or secrets. Light/dark accessibility and 320px/doubled-text
+layout checks passed; its hosted routing/deployment acceptance remains a release
+check. Nothing was uploaded. Provider approval is now satisfied. The follow-up
+local commit, fresh cutover backup and off-device/key custody, exact private
+tester ID, maintenance window and financial authorization remain release actions.
+The code/worksheet matched the successful test checkpoint before updating these
+status documents, so unchanged suites were not repeated. If release work starts
+next, prioritize off-device custody of the fresh cutover archive; a separate copy
+of the older preparation archive is optional.
 
 Sources checked 30–31 October 2026:
 [Paddle go-live checklist](https://developer.paddle.com/build/go-live-checklist/),

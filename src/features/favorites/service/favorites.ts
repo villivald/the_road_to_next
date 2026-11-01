@@ -5,6 +5,7 @@ import {
   publicOwners,
 } from "@/features/discovery/service/access";
 import { imageSelection } from "@/features/media/types";
+import { premiumGrantEnvironmentWhere } from "@/features/premium/service/entitlements";
 import { readableWishes } from "@/features/wish/service/access";
 import { wishPreviewSelection } from "@/features/wish/service/preview";
 import { readableLists } from "@/features/wishlist/service/access";
@@ -277,6 +278,7 @@ export const readFavorites = async (
               ownedLists: { where: publicLists },
               premiumGrants: {
                 where: {
+                  ...premiumGrantEnvironmentWhere(),
                   revokedAt: null,
                   startsAt: { lte: new Date() },
                   expiresAt: { gt: new Date() },

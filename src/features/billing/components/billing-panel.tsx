@@ -71,20 +71,24 @@ export async function BillingPanel({
           ? t(
               "We’re checking whether this checkout can be closed. A payment already processing may still complete.",
             )
-          : t(
-              "If you already paid, refresh billing to check the result. Otherwise, you can continue the same checkout.",
-            )}
+          : checkoutEnabled
+            ? t(
+                "If you already paid, refresh billing to check the result. Otherwise, you can continue the same checkout.",
+              )
+            : t("If you already paid, refresh billing to check the result.")}
       </p>
       <div className={styles.actions}>
-        {pending.transactionId && !pending.cancelRequested && (
-          <Link
-            className={shell.button}
-            href={`/account/checkout?id=${pending.id}`}
-          >
-            <CreditCard size={18} aria-hidden="true" />
-            {t("Resume checkout")}
-          </Link>
-        )}
+        {checkoutEnabled &&
+          pending.transactionId &&
+          !pending.cancelRequested && (
+            <Link
+              className={shell.button}
+              href={`/account/checkout?id=${pending.id}`}
+            >
+              <CreditCard size={18} aria-hidden="true" />
+              {t("Resume checkout")}
+            </Link>
+          )}
         {!pending.cancelRequested && (
           <ActionForm
             action={abandonCheckout}

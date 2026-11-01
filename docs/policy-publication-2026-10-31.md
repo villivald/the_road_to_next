@@ -70,16 +70,15 @@ The owner submitted `wishlist.fi`, and the live MCP now confirms it is approved,
 with Apple Pay registration verified. The authorized live default payment link is
 configured and verified as `https://wishlist.fi/en/account/checkout`.
 
-Account setup is complete, but onboarding reports `action_required` at the
-`automated_review` step. The live dashboard asks the owner to **Verify your identity**
-using **Complete identity checks** under **Get started → Verify your account**.
-No identity documents or verification-session links are stored in this record.
-The owner supplied a Sumsub success screen after completing that flow. Paddle
-still reports `action_required` at `automated_review` on a subsequent live MCP
-check, and its refreshed dashboard still shows the identity prompt. Sumsub
-completion is recorded separately from final Paddle approval; live cutover stays held.
+The initial post-Sumsub check reported `action_required` at `automated_review`,
+while the dashboard retained its identity-check prompt. A later live MCP recheck
+on 31 October confirms **onboarding `completed`**, including `account_setup` and
+`automated_review`. The verification mismatch is resolved. No identity documents
+or verification-session links are stored in this record.
 
-The live billing candidate and reviewed migration remain held pending the
-coordinated cutover and agreed controlled payment/refund acceptance. Do not deploy
+The live billing candidate and reviewed migration await the remaining local
+follow-up commit, fresh verified/off-device backup and coordinated cutover, then
+the agreed controlled payment/refund acceptance. Provider verification is complete.
+See the [current release checklist](billing-live-release-checklist.md). Do not deploy
 the entire uncommitted working tree as a policy update. The final handover handbook
 remains deferred.
