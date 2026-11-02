@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { CardMedia } from "@/components/cards/card-media";
 import cardStyles from "@/components/cards/cards.module.css";
-import { wishTone } from "@/components/cards/wish-card";
+import { wishTone } from "@/components/cards/wish-tones";
 import styles from "@/components/shell.module.css";
 import { GUEST_COOKIE } from "@/features/guest/http";
 import { readGuestWish } from "@/features/guest/service/access";

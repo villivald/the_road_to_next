@@ -69,7 +69,7 @@ test("background jobs initialize with the real SDK and compatibility dependencie
   const response = await request.get("/api/inngest");
   expect(response.status()).toBe(200);
   expect(await response.json()).toMatchObject({
-    function_count: 5,
+    function_count: 6,
     schema_version: "2024-05-24",
   });
 });

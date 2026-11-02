@@ -3,8 +3,6 @@ import shell from "@/components/shell.module.css";
 import styles from "./cards.module.css";
 import type { WishTone } from "./wish-tones";
 
-export { wishTone } from "./wish-tones";
-
 export function WishCard({
   children,
   tone = "butter",

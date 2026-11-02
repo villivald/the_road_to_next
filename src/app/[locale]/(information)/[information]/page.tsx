@@ -31,7 +31,7 @@ const information = (
           )}
         </p>
         <h2>
-          {t("Made by")} {creator}
+          {t("Designed and built by")} {creator}
         </h2>
         <p>
           {t("Questions, feedback, or something not working? Write to")}{" "}

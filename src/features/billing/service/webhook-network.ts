@@ -71,11 +71,17 @@ export const allowedPaddleWebhookSource = async (
     // Local sandbox fixtures still verify signatures. Live never trusts a
     // caller-supplied forwarding header outside the configured Vercel edge.
     const app = process.env.APP_URL ? new URL(process.env.APP_URL) : null;
+    const incoming = new URL(request.url);
+    const loopbackHosts = ["localhost", "127.0.0.1", "[::1]"];
     return (
       environment === "sandbox" &&
       !!app &&
-      ["localhost", "127.0.0.1", "[::1]"].includes(app.hostname) &&
-      new URL(request.url).origin === app.origin
+      // Next.js normalizes loopback IPs to localhost in request URLs.
+      loopbackHosts.includes(app.hostname) &&
+      loopbackHosts.includes(incoming.hostname) &&
+      ["http:", "https:"].includes(app.protocol) &&
+      incoming.protocol === app.protocol &&
+      incoming.port === app.port
     );
   }
   // Vercel supplies this at its edge; never fall back to arbitrary X-Forwarded-For.

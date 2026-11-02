@@ -111,3 +111,30 @@ it("permits local sandbox fixtures but never bypasses the live edge check", asyn
     ),
   ).toBe(false);
 });
+
+it("accepts Next.js loopback normalization while preserving protocol and port restrictions", async () => {
+  vi.stubEnv("VERCEL", "");
+  const { allowedPaddleWebhookSource } = await load();
+  for (const host of ["localhost", "127.0.0.1", "[::1]"]) {
+    vi.stubEnv("APP_URL", `http://${host}:3017`);
+    expect(
+      await allowedPaddleWebhookSource(
+        new Request("http://localhost:3017/api/paddle/webhook"),
+        "sandbox",
+      ),
+    ).toBe(true);
+  }
+  for (const origin of [
+    "http://localhost:3000",
+    "https://localhost:3017",
+    "http://wishlist.example:3017",
+    "http://localhost.example:3017",
+  ]) {
+    expect(
+      await allowedPaddleWebhookSource(
+        new Request(`${origin}/api/paddle/webhook`),
+        "sandbox",
+      ),
+    ).toBe(false);
+  }
+});

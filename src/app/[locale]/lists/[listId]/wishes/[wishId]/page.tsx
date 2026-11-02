@@ -16,8 +16,8 @@ import {
 import { BackLink } from "@/components/back-link";
 import { CardMedia } from "@/components/cards/card-media";
 import cardStyles from "@/components/cards/cards.module.css";
-import { wishTone } from "@/components/cards/wish-card";
 import { WishStatus } from "@/components/cards/wish-status";
+import { wishTone } from "@/components/cards/wish-tones";
 import { ActionForm } from "@/components/form/action-form";
 import { SuccessMessage } from "@/components/form/success-message";
 import styles from "@/components/shell.module.css";

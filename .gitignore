@@ -42,6 +42,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Local Python font tooling
+__pycache__/
+*.py[cod]
+/.venv/
+
 !.env.example
 /src/generated/
 /src/emails/static/

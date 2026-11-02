@@ -30,8 +30,10 @@ const localPath = (pathname: string) => {
     throw new Error("Invalid local media path");
   }
 
+  // Mutable private uploads are runtime data, not deployment inputs. Hosted
+  // mode rejects local storage, so never trace these files into a function.
   return path.join(
-    process.cwd(),
+    /* turbopackIgnore: true */ process.cwd(),
     ".local",
     process.env.MEDIA_LOCAL_NAMESPACE === "test" ? "media-test" : "media",
     pathname,

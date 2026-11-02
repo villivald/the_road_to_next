@@ -8,6 +8,7 @@ const eslintConfig = [
   {
     ignores: [
       ".local/**",
+      "docs/**",
       ".agents/skills/**",
       ".next/**",
       "src/generated/**",

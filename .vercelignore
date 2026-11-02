@@ -1,0 +1,28 @@
+# Private owner documentation and local data never belong in CLI uploads.
+/docs/
+/.local/
+/.agents/
+/.codex/
+/.aws/
+/img/
+Notes.md
+PLAN.md
+
+# Hosting supplies deployment credentials; do not upload local env files.
+.env
+.env.*
+*.pem
+
+# Generated previews, test results, and local tooling caches.
+/src/generated/
+/src/emails/static/
+next-env.d.ts
+/coverage/
+/playwright-report/
+/test-results/
+/out/
+/build/
+*.tsbuildinfo
+__pycache__/
+*.py[cod]
+/.venv/
