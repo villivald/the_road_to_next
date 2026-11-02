@@ -4,12 +4,16 @@
   border-radius: 0;
   background: var(--footer);
   color: var(--foreground);
+  overflow-wrap: anywhere;
 }
 
 .inner {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr;
-  gap: 2rem 3rem;
+  grid-template-columns: minmax(0, 1.3fr) repeat(2, minmax(0, 1fr)) minmax(
+      0,
+      1.1fr
+    );
+  gap: 2rem clamp(1.5rem, 2.5vw, 2.5rem);
   max-width: calc(var(--content-width) - 2 * var(--page-gutter));
   width: calc(100% - 2 * var(--page-gutter));
   margin-inline: auto;
@@ -22,6 +26,7 @@
   align-content: start;
   justify-items: start;
   gap: 1rem;
+  min-width: 0;
 }
 
 .brand {
@@ -39,6 +44,19 @@
   font-weight: 650;
 }
 
+.contact-details {
+  display: grid;
+  justify-items: start;
+  gap: 0.25rem;
+  max-width: 32ch;
+}
+
+.description {
+  color: var(--muted-foreground);
+  font-size: 0.85rem;
+  line-height: 1.65;
+}
+
 .links {
   display: grid;
   align-content: start;
@@ -46,11 +64,74 @@
   min-width: 0;
 }
 
-.links h2 {
+.links h2,
+.mobile h2 {
   margin-bottom: 1rem;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+
+.community {
+  display: grid;
+  align-content: start;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+.community-links {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.community-link,
+.community-placeholder {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 44px;
+  font-size: 0.9rem;
+}
+
+.community-placeholder {
+  color: var(--muted-foreground);
+}
+
+.placeholder-label {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+}
+
+.mobile {
+  display: grid;
+  justify-items: start;
+  gap: 0.6rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.mobile h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.status {
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius);
+  background: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.contact svg,
+.community svg {
+  flex-shrink: 0;
 }
 
 .footer a {
@@ -95,18 +176,14 @@
   font-size: 0.75rem;
 }
 
-@media (width <= 700px) {
+@media (width <= 1000px) {
   .inner {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 2rem 1rem;
   }
-
-  .intro {
-    grid-column: 1 / -1;
-  }
 }
 
-@media (width <= 400px) {
+@media (width <= 540px) {
   .inner {
     grid-template-columns: minmax(0, 1fr);
   }

@@ -386,7 +386,7 @@ test("footer links and information pages are accessible in both themes", async (
     await page.goto("/");
     const footer = page.getByRole("contentinfo");
     await expect(
-      footer.getByRole("link", { name: "Contact support" }),
+      footer.getByRole("link", { name: "Get in touch" }),
     ).toHaveAttribute("href", "mailto:support@wishlist.fi");
     await expect(
       footer.getByRole("link", { name: "villivald", exact: true }),

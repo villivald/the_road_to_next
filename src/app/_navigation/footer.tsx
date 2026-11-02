@@ -1,4 +1,11 @@
-import { ArrowUpRight, Mail } from "lucide-react";
+import {
+  ArrowUpRight,
+  Camera,
+  Coffee,
+  type LucideIcon,
+  Mail,
+  Smartphone,
+} from "lucide-react";
 import { headers } from "next/headers";
 import { Brand } from "@/components/brand/brand";
 import { getAuth } from "@/features/auth/actions/get-auth";
@@ -6,6 +13,15 @@ import { getHomePath } from "@/features/auth/utils/home-path";
 import { Link } from "@/i18n/navigation";
 import { getText } from "@/i18n/server";
 import styles from "./footer.module.css";
+
+const communityLinks: {
+  name: "Instagram" | "Buy Me a Coffee";
+  icon: LucideIcon;
+  href: string | null;
+}[] = [
+  { name: "Instagram", icon: Camera, href: null },
+  { name: "Buy Me a Coffee", icon: Coffee, href: null },
+];
 
 export default async function Footer() {
   const t = await getText();
@@ -29,10 +45,16 @@ export default async function Footer() {
             <Brand variant="footer" />
           </Link>
           <p>{t("Good things are even better shared.")}</p>
-          <a className={styles.contact} href="mailto:support@wishlist.fi">
-            <Mail size={18} aria-hidden="true" />
-            {t("Contact support")} <ArrowUpRight size={16} aria-hidden="true" />
-          </a>
+          <div className={styles["contact-details"]}>
+            <a className={styles.contact} href="mailto:support@wishlist.fi">
+              <Mail size={18} aria-hidden="true" />
+              {t("Get in touch")}
+              <ArrowUpRight size={16} aria-hidden="true" />
+            </a>
+            <p className={styles.description}>
+              {t("Questions, feedback, ideas, and collaboration.")}
+            </p>
+          </div>
         </div>
         <nav aria-label={t("Footer explore")} className={styles.links}>
           <h2>{t("Explore")}</h2>
@@ -53,10 +75,49 @@ export default async function Footer() {
           <Link href="/terms">{t("Terms")}</Link>
           <Link href="/refunds">{t("Refunds and cancellations")}</Link>
         </nav>
+        <div className={styles.community}>
+          <section className={styles.links} aria-labelledby="footer-community">
+            <h2 id="footer-community">{t("Follow and support")}</h2>
+            <ul className={styles["community-links"]}>
+              {communityLinks.map(({ name, icon: Icon, href }) => (
+                <li key={name}>
+                  {href ? (
+                    <a className={styles["community-link"]} href={href}>
+                      <Icon size={18} aria-hidden="true" />
+                      <span translate="no">{name}</span>
+                      <ArrowUpRight size={16} aria-hidden="true" />
+                    </a>
+                  ) : (
+                    <span className={styles["community-placeholder"]}>
+                      <Icon size={18} aria-hidden="true" />
+                      <span>
+                        <span translate="no">{name}</span>
+                        <span className={styles["placeholder-label"]}>
+                          {t("Coming soon")}
+                        </span>
+                      </span>
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+          <section className={styles.mobile} aria-labelledby="footer-mobile">
+            <h2 id="footer-mobile">
+              <Smartphone size={18} aria-hidden="true" />
+              {t("Mobile app")}
+            </h2>
+            <span className={styles.status}>{t("In the works")}</span>
+            <p className={styles.description}>
+              {t("Until then, use Wishlist in your phone’s browser.")}
+            </p>
+          </section>
+        </div>
         <div className={styles.bottom}>
           <p>
-            {t("Made by")} <a href="https://www.villivald.com/">villivald</a> ·
-            © {new Date().getUTCFullYear()}
+            {t("Designed and built by")}{" "}
+            <a href="https://www.villivald.com/">villivald</a> · ©{" "}
+            {new Date().getUTCFullYear()}
           </p>
         </div>
       </div>
