@@ -12,3 +12,6 @@ img/
 
 # Preserve third-party skill instructions and examples as published.
 .agents/skills/
+
+# Private documentation is maintained in its own local Git repository.
+docs/

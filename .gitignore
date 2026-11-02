@@ -53,3 +53,6 @@ PLAN.md
 # Personal reference material
 Notes.md
 /img
+
+# Owner documentation has its own local Git repository; never publish with app.
+/docs/
