@@ -3,6 +3,8 @@ import {
   EmailAction,
   EmailLayout,
   EmailLink,
+  EmailList,
+  EmailNote,
   EmailParagraph,
 } from "../components/layout";
 
@@ -23,12 +25,23 @@ export default function InvitationEmail({
       <EmailParagraph>
         {t("You have been invited to a list on Wishlist.")}
       </EmailParagraph>
-      <EmailParagraph>
-        {t(
-          "Sign in or create an account with this email address and verify it. Then review the invitation and choose whether to join. The invitation expires after seven days.",
-        )}
-      </EmailParagraph>
+      <EmailList
+        ordered
+        items={[
+          t(
+            "Sign in with this email address and verify it. A Free account is enough.",
+          ),
+          t(
+            "Review the invitation and choose whether to join. It expires seven days after it was created.",
+          ),
+        ]}
+      />
       <EmailAction href={url}>{t("Review invitation")}</EmailAction>
+      <EmailNote>
+        {t(
+          "Joining shares your username and membership role with the list admins.",
+        )}
+      </EmailNote>
       <EmailParagraph>
         {t("If the button does not work, open this link:")}
         <br />
@@ -42,5 +55,6 @@ export default function InvitationEmail({
 }
 
 InvitationEmail.PreviewProps = {
-  url: "http://localhost:3000/invitations/example",
+  url: "http://localhost:3000/en/invitations/example-token",
+  locale: "en",
 };

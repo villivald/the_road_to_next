@@ -41,9 +41,7 @@ export default function PremiumEmail({
       title={t(
         promo ? "Your Premium access has been updated" : "Welcome to Premium",
       )}
-      preview={t(
-        "Private lists, invitations, guest links, and shared management.",
-      )}
+      preview={t("Your Premium dates, tools, and subscription settings.")}
     >
       <EmailParagraph>
         {t("Hi {name}, thank you for choosing Wishlist Premium.", {
@@ -78,34 +76,44 @@ export default function PremiumEmail({
       <EmailList
         items={[
           <>
+            <strong>{t("Themes and QR cards.")}</strong>{" "}
+            {t(
+              "Choose a theme in List settings. On a published list, use Sharing card to download a printable QR card.",
+            )}
+          </>,
+          <>
             <strong>{t("Private lists.")}</strong>{" "}
             {t(
-              "In List settings → Visibility and access, choose Limit access. Only invited members and people with a guest link can view a shown list.",
+              "Choose Limit access in List settings → Visibility and access. Publish the list when ready.",
             )}
           </>,
           <>
             <strong>{t("Email invitations.")}</strong>{" "}
             {t(
-              "Open Sharing and members to invite people. They accept the email invitation with a Free verified account and can reserve gifts when allowed.",
+              "Invite people in Sharing and members. They can join with a Free verified account and reserve gifts when allowed.",
             )}
           </>,
           <>
             <strong>{t("Guest links.")}</strong>{" "}
             {t(
-              "Use Manage guest links for view-only access without an account. Anyone with the link can view a shown list until the link expires or you disable it.",
+              "Create expiring, view-only links in Manage guest links. Guests need no account and cannot reserve or edit wishes.",
             )}
           </>,
           <>
             <strong>{t("Shared management.")}</strong>{" "}
             {t(
-              "Make trusted members admins in Sharing and members. They can manage wishes, list settings, and sharing.",
+              "Make trusted members admins to manage wishes, list settings, and sharing.",
             )}
+          </>,
+          <>
+            <strong>{t("Profile badge.")}</strong>{" "}
+            {t("Turn on your optional Premium badge in Profile settings.")}
           </>,
         ]}
       />
       <EmailNote>
         {t(
-          "Only the list owner needs Premium. New lists start hidden; choose Show list when ready. Guests cannot reserve or edit wishes.",
+          "Only the list owner needs Premium. A QR card opens the list; it does not grant access to a private list.",
         )}
       </EmailNote>
       <EmailAction href={emailUrl(listsPath, locale)}>
@@ -121,22 +129,25 @@ export default function PremiumEmail({
                   "Promo access does not renew automatically. Added days may start later if you already have Premium.",
                 ),
                 t(
-                  "Promo codes never create charges or cancel a paid subscription.",
+                  "A code does not charge you, cancel a subscription, or delay its next payment.",
                 ),
               ]
             : [
                 t(
-                  "In your plan, choose Manage subscription to update your payment method or cancel in Paddle.",
+                  "Choose Manage subscription in Your plan to update payment details, view receipts, or cancel renewal in Paddle.",
                 ),
                 t(
-                  "Subscriptions renew automatically until canceled. End-of-period cancellation keeps Premium through the paid period.",
+                  "Subscriptions renew automatically. Canceling renewal keeps non-refunded access until the paid period ends.",
+                ),
+                t(
+                  "Refunds go through Paddle. A full approved refund removes that payment’s access, but does not cancel renewal.",
                 ),
               ]
         }
       />
       <EmailParagraph>
         {t(
-          "When Premium ends, your lists, members, and active guest links stay. New private sharing and admin assignments require Premium.",
+          "When Premium ends, existing lists, access, and themes stay. New Premium tools need active access; your profile badge is hidden.",
         )}
       </EmailParagraph>
       <EmailParagraph>
@@ -155,6 +166,6 @@ PremiumEmail.PreviewProps = {
   toName: "Alex",
   locale: "en",
   source: "month",
-  startsAt: "2026-10-14T12:00:00Z",
-  expiresAt: "2026-11-14T12:00:00Z",
+  startsAt: "2026-11-02T12:00:00Z",
+  expiresAt: "2026-12-02T12:00:00Z",
 } satisfies PremiumEmailProps;

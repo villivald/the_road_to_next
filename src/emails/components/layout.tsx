@@ -43,12 +43,12 @@ export function EmailLayout({
   const language = resolveLocale(locale);
   const t = createText(language);
   return (
-    <Html lang={language}>
+    <Html lang={language} dir="ltr">
       <Head>
+        <title>{title}</title>
         <meta name="color-scheme" content="light" />
         <meta name="supported-color-schemes" content="light" />
       </Head>
-      <Preview>{preview}</Preview>
       <Body
         style={{
           margin: 0,
@@ -58,84 +58,84 @@ export function EmailLayout({
           fontFamily: "Arial, Helvetica, sans-serif",
         }}
       >
-        <Container
-          style={{ maxWidth: "600px", width: "100%", tableLayout: "fixed" }}
-        >
-          <Section style={{ padding: "8px 0 24px" }}>
-            <Link href={emailUrl("/", language)}>
-              <Img
-                src={`${getBaseUrl()}/email-brand.png`}
-                alt="Wishlist"
-                width="200"
-                height="36"
-                style={{ display: "block", border: 0 }}
-              />
-            </Link>
-          </Section>
-          <Section
-            style={{
-              backgroundColor: emailColors.surface,
-              border: `1px solid ${emailColors.border}`,
-              borderTop: `5px solid ${emailColors.yellow}`,
-              borderRadius: "4px",
-              padding: "28px 24px",
-              tableLayout: "fixed",
-            }}
+        <Preview useTitleTag={false}>{preview}</Preview>
+        <div lang={language} dir="ltr" role="main">
+          <Container
+            style={{ maxWidth: "600px", width: "100%", tableLayout: "fixed" }}
           >
-            <Heading
-              as="h1"
+            <Section style={{ padding: "8px 0 24px" }}>
+              <Link href={emailUrl("/", language)}>
+                <Img
+                  src={
+                    process.env.EMAIL_PREVIEW === "1"
+                      ? "/static/email-brand.png"
+                      : `${getBaseUrl()}/email-brand.png`
+                  }
+                  alt="Wishlist"
+                  width="200"
+                  height="36"
+                  style={{ display: "block", border: 0 }}
+                />
+              </Link>
+            </Section>
+            <Section
               style={{
-                fontFamily: "Georgia, 'Times New Roman', serif",
-                fontSize: "32px",
-                lineHeight: "1.2",
-                fontWeight: 600,
-                overflowWrap: "anywhere",
-                wordBreak: "break-word",
-                margin: "0 0 20px",
-                color: emailColors.ink,
+                backgroundColor: emailColors.surface,
+                border: `1px solid ${emailColors.border}`,
+                borderTop: `5px solid ${emailColors.yellow}`,
+                borderRadius: "4px",
+                padding: "24px 20px",
+                tableLayout: "fixed",
               }}
             >
-              {title}
-            </Heading>
-            {children}
-          </Section>
-          <Section style={{ padding: "20px 8px" }}>
-            <Text
-              style={{
-                fontSize: "13px",
-                lineHeight: "1.6",
-                color: emailColors.muted,
-                margin: "0 0 10px",
-              }}
-            >
-              {t(
-                "A place for your wishes, and the people you share them with.",
-              )}
-            </Text>
-            <Text style={{ fontSize: "13px", lineHeight: "1.8", margin: 0 }}>
-              <Link
-                style={{ color: emailColors.ink }}
-                href={emailUrl("/about", language)}
+              <Heading
+                as="h1"
+                style={{
+                  fontFamily: "Georgia, 'Times New Roman', serif",
+                  fontSize: "32px",
+                  lineHeight: "1.2",
+                  fontWeight: 600,
+                  overflowWrap: "anywhere",
+                  wordBreak: "break-word",
+                  margin: "0 0 20px",
+                  color: emailColors.ink,
+                }}
               >
-                {t("Help and contact")}
-              </Link>
-              {" · "}
-              <Link
-                style={{ color: emailColors.ink }}
-                href={emailUrl("/privacy", language)}
+                {title}
+              </Heading>
+              {children}
+            </Section>
+            <Section style={{ padding: "20px 8px" }}>
+              <Text
+                style={{
+                  fontSize: "13px",
+                  lineHeight: "1.6",
+                  color: emailColors.muted,
+                  margin: "0 0 10px",
+                }}
               >
-                {t("Privacy")}
-              </Link>
-              {" · "}
-              <Link
-                style={{ color: emailColors.ink }}
-                href={emailUrl("/premium", language)}
-              >
-                {t("Premium features")}
-              </Link>
-            </Text>
-          </Section>
-        </Container>
+                {t(
+                  "A place for your wishes, and the people you share them with.",
+                )}
+              </Text>
+              <Text style={{ fontSize: "13px", lineHeight: "1.8", margin: 0 }}>
+                <Link
+                  style={{ color: emailColors.ink }}
+                  href={emailUrl("/about", language)}
+                >
+                  {t("Help and contact")}
+                </Link>
+                {" · "}
+                <Link
+                  style={{ color: emailColors.ink }}
+                  href={emailUrl("/privacy", language)}
+                >
+                  {t("Privacy")}
+                </Link>
+              </Text>
+            </Section>
+          </Container>
+        </div>
       </Body>
     </Html>
   );
@@ -167,6 +167,8 @@ export function EmailHeading({ children }: { children: ReactNode }) {
         lineHeight: "1.3",
         margin: "26px 0 12px",
         color: emailColors.ink,
+        overflowWrap: "anywhere",
+        wordBreak: "break-word",
       }}
     >
       {children}
@@ -195,6 +197,9 @@ export function EmailAction({
           padding: "14px 20px",
           maxWidth: "100%",
           boxSizing: "border-box",
+          textAlign: "center",
+          overflowWrap: "anywhere",
+          wordBreak: "break-word",
         }}
       >
         {children}
@@ -251,6 +256,7 @@ export function EmailNote({
         margin: "16px 0",
         backgroundColor: tone === "muted" ? "#eeebe1" : emailColors.green,
         borderRadius: "4px",
+        tableLayout: "fixed",
       }}
     >
       <Text
@@ -259,6 +265,8 @@ export function EmailNote({
           lineHeight: "1.65",
           margin: 0,
           color: emailColors.ink,
+          overflowWrap: "anywhere",
+          wordBreak: "break-word",
         }}
       >
         {children}
@@ -267,7 +275,15 @@ export function EmailNote({
   );
 }
 export function EmailDivider() {
-  return <Hr style={{ borderColor: emailColors.border, margin: "24px 0" }} />;
+  return (
+    <Hr
+      style={{
+        border: 0,
+        borderTop: `1px solid ${emailColors.border}`,
+        margin: "24px 0",
+      }}
+    />
+  );
 }
 export function EmailLink({
   href,

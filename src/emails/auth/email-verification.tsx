@@ -30,9 +30,12 @@ const EmailVerification = ({
       <Text
         style={{
           fontFamily: "'Courier New', monospace",
-          fontSize: "30px",
+          fontSize: "28px",
+          lineHeight: "1.5",
           fontWeight: 700,
-          letterSpacing: "3px",
+          letterSpacing: "2px",
+          overflowWrap: "anywhere",
+          wordBreak: "break-all",
           textAlign: "center",
           padding: "18px 8px",
           backgroundColor: "#eeebe1",
@@ -58,6 +61,7 @@ const EmailVerification = ({
 EmailVerification.PreviewProps = {
   toName: "John Doe",
   code: "CMAGLPOI",
-};
+  locale: "en",
+} satisfies EmailVerificationProps;
 
 export default EmailVerification;

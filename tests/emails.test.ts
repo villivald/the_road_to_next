@@ -19,13 +19,15 @@ it.each(["en", "fi"])(
         toName: "<script>private name</script>",
         locale,
       }),
-      createElement(PremiumEmail, {
-        toName: "Demo",
-        locale,
-        source: "month",
-        startsAt: "2026-10-14T12:00:00Z",
-        expiresAt: "2026-11-14T12:00:00Z",
-      }),
+      ...(["month", "year", "promo"] as const).map((source) =>
+        createElement(PremiumEmail, {
+          toName: "Demo",
+          locale,
+          source,
+          startsAt: "2026-10-14T12:00:00Z",
+          expiresAt: "2026-11-14T12:00:00Z",
+        }),
+      ),
       createElement(EmailVerification, {
         toName: "Demo",
         locale,
@@ -54,12 +56,19 @@ it.each(["en", "fi"])(
       const plain = await render(email, { plainText: true });
       expect(html).not.toContain("<script>");
       expect(html).toContain(`lang="${locale}"`);
+      expect(html).toContain(`<div lang="${locale}" dir="ltr" role="main">`);
+      expect(html).toMatch(/<title>[^<]+<\/title>/);
+      expect(html.match(/<title>/g)).toHaveLength(1);
+      expect(html.match(/<h1\b/g)).toHaveLength(1);
+      expect(html).not.toMatch(/<table(?![^>]*role="presentation")/);
       expect(html).toContain('src="https://wishlist.example/email-brand.png"');
       expect(html).toContain("#faf8f0");
       expect(html).toContain("#ffd803");
       expect(html).toContain(`href="https://wishlist.example/${locale}/about"`);
       expect(plain).not.toContain("<table");
       expect(Buffer.byteLength(html)).toBeLessThan(100_000);
+      expect(plain.length).toBeGreaterThan(100);
+      expect(plain).not.toContain("Show list");
     }
     const welcome = await render(emails[0]);
     expect(welcome).not.toContain("<script>");
@@ -107,6 +116,59 @@ it.each(["en", "fi"])(
     );
     expect(paid).toContain(
       locale === "fi" ? "Hallitse tilausta" : "Manage subscription",
+    );
+    expect(promo).toContain(
+      locale === "fi"
+        ? "eikä siirrä sen seuraavaa maksua"
+        : "or delay its next payment",
+    );
+    expect(paid).toContain(
+      locale === "fi"
+        ? "ei peru tilauksen uusiutumista"
+        : "does not cancel renewal",
+    );
+    for (const message of [promo, paid]) {
+      expect(message).toContain(locale === "fi" ? "QR-kortti" : "QR card");
+      expect(message).toContain(
+        locale === "fi"
+          ? "ei anna pääsyä rajatulle listalle"
+          : "does not grant access to a private list",
+      );
+    }
+  },
+);
+
+it.each(["en", "fi"])(
+  "explains %s group consent without leaking names into the preheader",
+  async (locale) => {
+    const props = {
+      locale,
+      actorName: "Private Person",
+      url: `https://wishlist.example/${locale}/reservations/example`,
+    };
+    const invited = await render(
+      createElement(GroupEmail, { ...props, kind: "INVITED" }),
+    );
+    const accepted = await render(
+      createElement(GroupEmail, { ...props, kind: "ACCEPTED" }),
+      { plainText: true },
+    );
+    expect(invited).toContain(
+      locale === "fi"
+        ? "jaat nimesi ja käyttäjänimesi ryhmälle"
+        : "shares your name and username with the group",
+    );
+    expect(invited).toContain(
+      locale === "fi"
+        ? "ei anna pääsyä rajatulle listalle"
+        : "does not grant access to a private list",
+    );
+    expect(invited.indexOf("Private Person")).toBeGreaterThan(
+      invited.indexOf("</h1>"),
+    );
+    expect(accepted).toContain(locale === "fi" ? "hyväksyi" : "accepted");
+    expect(accepted).not.toContain(
+      locale === "fi" ? "Tarkista kutsu" : "Review invitation",
     );
   },
 );

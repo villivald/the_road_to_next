@@ -3,20 +3,23 @@ import {
   EmailAction,
   EmailLayout,
   EmailLink,
+  EmailNote,
   EmailParagraph,
 } from "../components/layout";
 
-export default function GroupEmail({
-  kind = "INVITED",
-  actorName = "Alex",
-  url = "http://localhost:3000/en/reservations/example",
-  locale = "en",
-}: {
-  kind?: "INVITED" | "ACCEPTED";
-  actorName?: string;
-  url?: string;
+type GroupEmailProps = {
+  kind: "INVITED" | "ACCEPTED";
+  actorName: string;
+  url: string;
   locale?: string;
-}) {
+};
+
+export default function GroupEmail({
+  kind,
+  actorName,
+  url,
+  locale = "en",
+}: GroupEmailProps) {
   const t = createText(locale);
   const invited = kind === "INVITED";
   const title = t(invited ? "Group invitation" : "Invitation accepted");
@@ -38,13 +41,27 @@ export default function GroupEmail({
       <EmailParagraph>
         {t(
           invited
-            ? "Sign in to the account this email belongs to, review the invitation, and choose whether to join. Invitations expire seven days after they are created. Joining shares your name and username with the group. No payment is collected."
+            ? "Sign in to the account this email belongs to, then review the invitation."
             : "Open the group to see its current members and coordinate the gift. No payment is collected.",
         )}
       </EmailParagraph>
+      {invited && (
+        <EmailParagraph>
+          {t(
+            "The invitation expires seven days after it was created. It does not grant access to a private list.",
+          )}
+        </EmailParagraph>
+      )}
       <EmailAction href={url}>
         {t(invited ? "Review invitation" : "Manage group reservation")}
       </EmailAction>
+      {invited && (
+        <EmailNote>
+          {t(
+            "Joining shares your name and username with the group. Wishlist does not collect payments for group gifts.",
+          )}
+        </EmailNote>
+      )}
       <EmailParagraph>
         {t("If the button does not work, open this link:")}
         <br />
@@ -58,3 +75,10 @@ export default function GroupEmail({
     </EmailLayout>
   );
 }
+
+GroupEmail.PreviewProps = {
+  kind: "INVITED",
+  actorName: "Alex",
+  url: "http://localhost:3000/en/reservations/example",
+  locale: "en",
+} satisfies GroupEmailProps;

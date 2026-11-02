@@ -10,7 +10,8 @@
     "lint-fix": "eslint . --fix",
     "type": "next typegen && tsc --noEmit",
     "postinstall": "prisma generate",
-    "email": "email dev --dir src/emails --port 3001",
+    "preemail": "node --import tsx scripts/prepare-email-preview.ts",
+    "email": "EMAIL_PREVIEW=1 email dev --dir src/emails --port 3001",
     "lint:css": "stylelint \"src/**/*.css\"",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -59,7 +60,7 @@
     "qrcode": "^1.5.4",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "react-email": "^6.11.0",
+    "react-email": "^6.11.6",
     "resend": "^6.30.0",
     "sharp": "^0.35.5",
     "zod": "^4.6.7"
@@ -67,7 +68,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "1.63.0",
-    "@react-email/ui": "^6.11.0",
+    "@react-email/ui": "^6.11.6",
     "@types/node": "^24.19.0",
     "@types/opentype.js": "^1.3.10",
     "@types/qrcode": "^1.5.6",
@@ -105,9 +106,6 @@
     },
     "prisma": {
       "mysql2": "^3.24.4"
-    },
-    "@react-email/ui": {
-      "next": "16.4.2"
     }
   }
 }

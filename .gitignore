@@ -44,6 +44,7 @@ next-env.d.ts
 
 !.env.example
 /src/generated/
+/src/emails/static/
 
 PLAN.md
 

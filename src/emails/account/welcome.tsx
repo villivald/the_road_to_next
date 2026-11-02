@@ -47,13 +47,13 @@ export default function WelcomeEmail({
           <>
             <strong>{t("Make a list.")}</strong>{" "}
             {t(
-              "Open My lists → Create list. Add wishes: only the name is required. Images, links, prices, notes, and stars are optional.",
+              "Open My lists → Create list. Add wishes with a name, and optional images, links, prices, notes, or stars.",
             )}
           </>,
           <>
-            <strong>{t("Show and share it.")}</strong>{" "}
+            <strong>{t("Publish and share it.")}</strong>{" "}
             {t(
-              "New lists start hidden. In List settings, choose Show list when ready, then share the link. Public lists also appear in Browse.",
+              "New lists start hidden. Choose Publish list in List settings, then share the link. Public lists also appear in Browse.",
             )}
           </>,
           <>
@@ -72,12 +72,12 @@ export default function WelcomeEmail({
       <EmailHeading>{t("Buying a gift for someone?")}</EmailHeading>
       <EmailParagraph>
         {t(
-          "Find ideas in Browse. Reserve a wish to avoid duplicate gifts, then view or cancel it in My reservations. Reserving does not buy the item.",
+          "Browse ideas and save private favorites. Reserve gifts alone or with a group, then manage them in My reservations. Reserving does not buy anything.",
         )}
       </EmailParagraph>
       <EmailParagraph>
         {t(
-          "A reserved wish is visible only to you and the list admins. Your name stays private. If the wish or list becomes unavailable, the reservation ends.",
+          "Reserved wishes are visible to you, accepted group members, and list admins. Joining a group shares your name and username with that group. Other viewers cannot see who reserved a wish.",
         )}
       </EmailParagraph>
       <EmailParagraph>
@@ -117,7 +117,7 @@ export default function WelcomeEmail({
             </EmailLink>
             {" — "}
             {t(
-              "private sharing, guest links, and shared management. Only the list owner needs Premium.",
+              "list themes, QR cards, and private sharing. Only the list owner needs Premium.",
             )}
           </>,
         ]}
