@@ -1,6 +1,6 @@
 .media,
 .stack {
-  aspect-ratio: 4 / 3;
+  aspect-ratio: var(--card-media-ratio, 4 / 3);
   min-width: 0;
   width: 100%;
   overflow: hidden;
@@ -393,11 +393,21 @@
 }
 
 .wish-card[data-wish-tone] {
+  --card-media-ratio: 1;
+  --card-title-size: 1.3rem;
+  --card-title-line-height: 1.2;
+
   position: relative;
   padding: 0.85rem;
   border: 1px solid var(--input);
   border-radius: var(--radius);
   background: var(--wish-surface);
+}
+
+.wish-card[data-wish-tone] > h2,
+.wish-card[data-wish-tone] > h3 {
+  font-size: var(--card-title-size);
+  line-height: var(--card-title-line-height);
 }
 
 .wish-card .media {
