@@ -14,7 +14,7 @@ export const wishlistSchema = z.object({
     .min(1, "Enter a title")
     .max(200, "Use at most 200 characters"),
   description: z.string().trim().max(2000, "Use at most 2,000 characters"),
-  reservationsEnabled: z.boolean(),
+  reservationsEnabled: z.boolean().default(true),
   theme: z.enum(listThemeIds).optional(),
 });
 

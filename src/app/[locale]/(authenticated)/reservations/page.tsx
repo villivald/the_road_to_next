@@ -126,7 +126,7 @@ export default async function ReservationsPage({
       {reservations.length ? (
         <ul className={styles["list-grid"]}>
           {reservations.map(({ id, wish, groupEnabled }) => (
-            <WishCard key={id} tone={tones[wish.id]}>
+            <WishCard key={id} tone={tones[wish.id]} reserved>
               <CardMediaLink
                 path={navigationPath(
                   wishPath(wish.wishlist.id, wish.id),

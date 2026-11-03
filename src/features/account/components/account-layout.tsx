@@ -21,21 +21,24 @@ export function AccountLayout({
       <header className={styles["page-heading"]}>
         <h1>{t("Your account")}</h1>
       </header>
-      <div className={styles["content-columns"]}>
-        <div className={styles["content-stack"]}>
-          <section className={styles["content-panel"]}>
-            {identity}
-            {profile}
-          </section>
-          <section className={styles["content-panel"]}>
-            <h2>{t("Account settings")}</h2>
-            {security}
-          </section>
-        </div>
+      <div
+        className={`${styles["content-columns"]} ${styles["account-columns"]}`}
+      >
+        <section className={styles["content-panel"]}>
+          {identity}
+          {profile}
+        </section>
         <div className={styles["content-stack"]}>
           {plan}
           <div className={styles["content-panel"]}>{avatar}</div>
         </div>
+        <section
+          className={`${styles["content-panel"]} ${styles["account-security"]}`}
+          aria-labelledby="account-settings-heading"
+        >
+          <h2 id="account-settings-heading">{t("Account settings")}</h2>
+          {security}
+        </section>
       </div>
     </>
   );

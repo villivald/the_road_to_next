@@ -16,7 +16,6 @@ import {
   invitationPath,
   listsPath,
   reservationsPath,
-  sharedListsPath,
   sharingPath,
 } from "@/paths";
 import { SharingError } from "../service/access";
@@ -36,7 +35,6 @@ import {
 const refresh = (listId: string) => {
   for (const path of [
     listsPath,
-    sharedListsPath,
     browsePath,
     reservationsPath,
     sharingPath(listId),
@@ -130,7 +128,7 @@ export const joinList = async (
   }
   refresh(listId);
   revalidatePath(invitationPath(id));
-  return await redirect(`${sharedListsPath}?joined=1`);
+  return await redirect(`${listsPath}?shared=1&joined=1`);
 };
 
 export const changeVisibility = async (
@@ -175,7 +173,8 @@ export const updateMemberRole = async (
     return actionError(error);
   }
   refresh(listId);
-  if (leftManagement) return await redirect(`${sharedListsPath}?roleChanged=1`);
+  if (leftManagement)
+    return await redirect(`${listsPath}?shared=1&roleChanged=1`);
   return toActionState("SUCCESS", "Role updated.");
 };
 
@@ -195,7 +194,7 @@ export const deleteMembership = async (
     return actionError(error);
   }
   refresh(listId);
-  if (left) return await redirect(`${sharedListsPath}?left=1`);
+  if (left) return await redirect(`${listsPath}?shared=1&left=1`);
   return await redirect(`${sharingPath(listId)}?changed=removed`);
 };
 

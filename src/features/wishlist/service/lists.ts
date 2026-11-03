@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { manageableLists, readableLists } from "./access";
 import { lockWishlist } from "./lock";
 import { publicationSchema, wishlistIdSchema, wishlistSchema } from "./schemas";
-import { readManagedWishCounts } from "./wish-counts";
+import { readWishCounts } from "./wish-counts";
 
 export class WishlistError extends Error {}
 
@@ -39,6 +39,7 @@ export const readWishlist = async (id: string, userId: string | null) => {
     where: { id, ...readableLists(userId) },
     select: {
       ...listFields,
+      owner: { select: { username: true } },
       memberships: {
         where: {
           userId: userId ?? "",
@@ -70,32 +71,67 @@ export const readManagedWishlist = (id: string, userId: string) => {
   });
 };
 
-export const readOwnedWishlists = async (userId: string, page = 1) => {
+export const readMyWishlists = async (
+  userId: string,
+  page = 1,
+  includeShared = false,
+) => {
   const pageSize = 20;
   const currentPage =
     Number.isSafeInteger(page) && page > 0 ? Math.min(page, 10000) : 1;
   const results = await prisma.wishlist.findMany({
-    where: { ownerId: userId, ...manageableLists(userId) },
-    select: { ...listFields, wishes: wishPreviewSelection },
+    where: {
+      archivedAt: null,
+      ...(includeShared ? {} : { ownerId: userId }),
+      memberships: {
+        some: {
+          userId,
+          user: { emailVerified: true },
+          ...(includeShared ? {} : { role: "ADMIN" }),
+        },
+      },
+    },
+    select: {
+      ...listFields,
+      ownerId: true,
+      owner: { select: { username: true } },
+      wishes: wishPreviewSelection,
+      memberships: { where: { userId }, select: { id: true, role: true } },
+    },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     skip: (currentPage - 1) * pageSize,
     take: pageSize + 1,
   });
   const lists = results.slice(0, pageSize);
-  const counts = await readManagedWishCounts(
+  const counts = await readWishCounts(
     userId,
     lists.map(({ id }) => id),
   );
 
   return {
-    lists: lists.map(({ wishes, ...list }) => ({
-      ...list,
-      ...(counts.get(list.id) ?? {
-        availableWishCount: 0,
-        reservedWishCount: 0,
-      }),
-      previewImages: wishes.flatMap(({ image }) => (image ? [image] : [])),
-    })),
+    lists: lists.map(({ wishes, memberships, ownerId, ...list }) => {
+      const membership = memberships[0];
+      const canManage = membership?.role === "ADMIN";
+      const accessible = canManage || list.publication === "PUBLISHED";
+      return {
+        ...list,
+        title: accessible ? list.title : null,
+        image: accessible ? list.image : null,
+        description: accessible ? list.description : null,
+        owner: accessible ? list.owner : null,
+        theme: accessible ? list.theme : "classic",
+        isOwner: ownerId === userId,
+        canManage,
+        membership,
+        ...(counts.get(list.id) ?? {
+          availableWishCount: 0,
+          reservedWishCount: 0,
+        }),
+        previewImages: accessible
+          ? wishes.flatMap(({ image }) => (image ? [image] : []))
+          : [],
+      };
+    }),
     hasNextPage: results.length > pageSize,
     page: currentPage,
   };
@@ -132,7 +168,7 @@ export const createWishlist = async (userId: string, input: unknown) => {
         ...data,
         description: data.description || null,
         ownerId: user.id,
-        publication: "DRAFT",
+        publication: "PUBLISHED",
         visibility,
         memberships: { create: { userId: user.id, role: "ADMIN" } },
       },

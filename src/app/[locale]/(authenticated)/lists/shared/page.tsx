@@ -1,192 +1,19 @@
-import { Share2, Users } from "lucide-react";
-import type { Metadata } from "next";
-import { navigationPath } from "@/app/_navigation/navigation-path";
-import { BackLink } from "@/components/back-link";
-import { ListWishCounts } from "@/components/cards/list-wish-counts";
-import { ReservationAvailability } from "@/components/cards/reservation-availability";
-import { ActionForm } from "@/components/form/action-form";
-import { SuccessMessage } from "@/components/form/success-message";
-import styles from "@/components/shell.module.css";
-import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
-import { FavoriteButton } from "@/features/favorites/components/favorite-button";
-import { readFavoriteIds } from "@/features/favorites/service/favorites";
-import { deleteMembership } from "@/features/sharing/actions/manage-sharing";
-import sharingStyles from "@/features/sharing/components/sharing.module.css";
-import { readSharedLists } from "@/features/sharing/service/queries";
-import { Link } from "@/i18n/navigation";
-import { getText } from "@/i18n/server";
-import {
-  listPath,
-  listSettingsPath,
-  listsPath,
-  sharedListsPath,
-} from "@/paths";
-
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getText();
-  return {
-    title: t("Lists shared with you"),
-    robots: { index: false, follow: false },
-  };
-}
+import { redirect } from "@/i18n/server-navigation";
+import { listsPath } from "@/paths";
 
 export default async function SharedListsPage({
   searchParams,
 }: {
   searchParams: Promise<{
-    page?: string;
     joined?: string;
     left?: string;
     roleChanged?: string;
   }>;
 }) {
-  const t = await getText();
-
-  const { user } = await getAuthOrRedirect();
   const query = await searchParams;
-  const { lists, page, hasNextPage } = await readSharedLists(
-    user.id,
-    query.page,
-  );
-  const favoriteIds = await readFavoriteIds(
-    user.id,
-    "list",
-    lists.filter(({ title }) => !!title).map(({ listId }) => listId),
-  );
-  return (
-    <section className={styles.page}>
-      <BackLink href={listsPath}>{t("Back to my lists")}</BackLink>
-      <div className={styles["page-heading"]}>
-        <div>
-          <h1>{t("Lists shared with you")}</h1>
-          <p className={styles.muted}>
-            {t("Lists owned by other people that you have joined.")}
-          </p>
-        </div>
-      </div>
-      {query.roleChanged === "1" && (
-        <SuccessMessage queryKeys={["roleChanged"]}>
-          {t("You are now a member. Admin controls are no longer available.")}
-        </SuccessMessage>
-      )}
-      {query.joined === "1" && (
-        <SuccessMessage queryKeys={["joined"]}>
-          {t("Invitation accepted. You have joined the list.")}
-        </SuccessMessage>
-      )}
-      {query.left === "1" && (
-        <SuccessMessage queryKeys={["left"]}>
-          {t("You have left the list.")}
-        </SuccessMessage>
-      )}
-      {lists.length ? (
-        <ul className={styles["list-grid"]}>
-          {lists.map((list) => (
-            <li key={list.id} className={styles["list-card"]}>
-              <h2>
-                {list.title ? (
-                  <Link href={navigationPath(listPath(list.listId), "lists")}>
-                    {list.title}
-                  </Link>
-                ) : (
-                  t("Hidden list")
-                )}
-              </h2>
-              <p>
-                {list.role === "ADMIN" ? t("Admin") : t("Member")}
-                {!list.title && (
-                  <> {t("· Available when the admins show it")}</>
-                )}
-              </p>
-              {list.management && (
-                <>
-                  <ListWishCounts
-                    availableWishCount={list.management.availableWishCount}
-                    reservedWishCount={list.management.reservedWishCount}
-                  />
-                  <ReservationAvailability
-                    enabled={list.management.reservationsEnabled}
-                  />
-                </>
-              )}
-              {list.role === "ADMIN" && (
-                <Link href={listSettingsPath(list.listId)}>
-                  {t("List settings")}
-                </Link>
-              )}
-              {list.title && (
-                <FavoriteButton
-                  kind="list"
-                  targetId={list.listId}
-                  saved={favoriteIds.includes(list.listId)}
-                  title={list.title}
-                />
-              )}
-              <ActionForm
-                requireConfirmation
-                action={deleteMembership.bind(null, list.listId, list.id)}
-                label={t("Leave list")}
-                pendingLabel={t("Leaving…")}
-                destructive
-              >
-                <label className={styles["checkbox-label"]}>
-                  <input type="checkbox" name="confirm" value="yes" required />
-                  {t(
-                    "Remove my membership. I will lose private access and any reservations that require it.",
-                  )}
-                </label>
-              </ActionForm>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <div className={styles["empty-state"]}>
-          <Users aria-hidden="true" />
-          <h2>{page === 1 ? t("No shared lists yet") : t("No more lists")}</h2>
-          <p className={styles.muted}>
-            {page === 1
-              ? t(
-                  "Accept an email invitation to see the list here. You can join with a Free account.",
-                )
-              : t("Return to an earlier page to find your lists.")}
-          </p>
-        </div>
-      )}
-      {(page > 1 || hasNextPage) && (
-        <nav className={styles.actions} aria-label={t("Shared list pages")}>
-          {page > 1 && (
-            <Link href={`${sharedListsPath}?page=${page - 1}`}>
-              {t("Previous page")}
-            </Link>
-          )}
-          <span>
-            {t("Page")} {page}
-          </span>
-          {hasNextPage && (
-            <Link href={`${sharedListsPath}?page=${page + 1}`}>
-              {t("Next page")}
-            </Link>
-          )}
-        </nav>
-      )}
-      <aside
-        className={sharingStyles["share-prompt"]}
-        aria-labelledby="share-own-list-heading"
-      >
-        <div>
-          <h2 id="share-own-list-heading">
-            <Share2 size={20} aria-hidden="true" /> {t("Share your own list")}
-          </h2>
-          <p className={styles.muted}>
-            {t(
-              "Open a list’s settings and choose Sharing and members to invite people. Sending invitations requires Premium.",
-            )}
-          </p>
-        </div>
-        <Link href={listsPath} className={styles["secondary-button"]}>
-          {t("Go to my lists")}
-        </Link>
-      </aside>
-    </section>
-  );
+  const params = new URLSearchParams({ shared: "1" });
+  for (const key of ["joined", "left", "roleChanged"] as const) {
+    if (query[key] === "1") params.set(key, "1");
+  }
+  return redirect(`${listsPath}?${params}`);
 }

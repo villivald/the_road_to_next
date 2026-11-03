@@ -106,7 +106,7 @@ test("profile details validate, preserve invalid input, save, clear, and stay un
   await expect(page.getByLabel("About you")).toHaveValue("");
 });
 
-test("register, publish, reserve, cancel, fulfill and delete without a successor", async ({
+test("register, create a visible list, reserve, cancel, fulfill and delete without a successor", async ({
   page,
   browser,
   request,
@@ -156,9 +156,6 @@ test("register, publish, reserve, cancel, fulfill and delete without a successor
     listId = new URL(page.url()).pathname.split("/").at(-1);
     await page
       .getByRole("link", { name: "List settings", exact: true })
-      .click();
-    await page
-      .getByRole("button", { name: "Publish list", exact: true })
       .click();
     await expect(page.getByRole("button", { name: "Hide list" })).toBeVisible();
     await page.getByRole("link", { name: "Back to list", exact: true }).click();

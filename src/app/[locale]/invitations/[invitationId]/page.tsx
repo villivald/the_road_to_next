@@ -7,7 +7,7 @@ import { joinList } from "@/features/sharing/actions/manage-sharing";
 import { readInvitation } from "@/features/sharing/service/invitations";
 import { Link } from "@/i18n/navigation";
 import { getText } from "@/i18n/server";
-import { invitationPath, sharedListsPath } from "@/paths";
+import { invitationPath, listsPath } from "@/paths";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getText();
@@ -79,7 +79,7 @@ export default async function InvitationPage({
           )}
         </p>
       )}
-      <Link href={sharedListsPath}>{t("Lists shared with you")}</Link>
+      <Link href={`${listsPath}?shared=1`}>{t("Lists shared with you")}</Link>
     </section>
   );
 }

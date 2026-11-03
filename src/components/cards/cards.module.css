@@ -37,13 +37,8 @@
   overflow-wrap: anywhere;
   font-family: var(--font-fraunces), Georgia, serif;
   font-weight: 500;
-  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  font-size: clamp(1rem, 2.5vw, 2rem);
   line-height: 1.2;
-}
-
-.placeholder-label {
-  font-size: 0.75rem;
-  color: var(--muted-foreground);
 }
 
 .stack {
@@ -415,6 +410,9 @@
 }
 
 .wish-card .placeholder {
+  height: calc(100% - 1rem);
+  margin: 0.5rem;
+  padding: 0.25rem;
   border: 0;
 }
 
@@ -441,4 +439,16 @@
   .media-link:hover .media img {
     transform: none;
   }
+}
+
+.wish-card[data-reserved="true"] {
+  border-color: var(--positive);
+  box-shadow: inset 0 0 0 2px var(--positive);
+  background: var(--accent);
+}
+
+.wish-card[data-reserved="true"] .reserved {
+  background: var(--positive);
+  color: var(--surface);
+  font-weight: 700;
 }

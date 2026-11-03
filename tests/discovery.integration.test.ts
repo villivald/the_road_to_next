@@ -53,6 +53,7 @@ describe("public discovery", () => {
       ...listInput,
       title: "Draft secret marker",
     });
+    await setWishlistPublication("e2e-owner", draft.id, "DRAFT");
     await createWish("e2e-owner", draft.id, {
       title: "Draft wish secret marker",
     });
@@ -73,9 +74,9 @@ describe("public discovery", () => {
     expect((await discoverLists({ q: "secret marker" })).lists).toEqual([]);
     expect(JSON.stringify(lists)).not.toContain("ownerId");
     expect(JSON.stringify(lists)).not.toContain("e2e-member");
-    expect(JSON.stringify(await discoverLists({}, "e2e-owner"))).not.toContain(
-      "reservedWishCount",
-    );
+    expect(
+      (await discoverLists({}, "e2e-owner")).lists[0].reservedWishCount,
+    ).toBe(1);
     expect(JSON.stringify(await discoverWishes({}))).not.toContain("authorId");
   });
 

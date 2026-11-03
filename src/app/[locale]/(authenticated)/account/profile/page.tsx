@@ -74,7 +74,7 @@ export default async function AccountPage() {
           />
         }
         security={
-          <div className={styles["content-stack"]}>
+          <div className={styles.actions}>
             <Link href={accountPasswordPath}>{t("Change password")}</Link>
             <Link href={accountDeletePath}>{t("Delete account")}</Link>
           </div>

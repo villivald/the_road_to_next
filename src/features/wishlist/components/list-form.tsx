@@ -1,5 +1,5 @@
 "use client";
-import { EyeOff } from "lucide-react";
+import { Eye } from "lucide-react";
 import { useActionState, useId } from "react";
 import { ActionFeedback } from "@/components/form/action-feedback";
 import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
@@ -57,15 +57,15 @@ export function ListForm({
 
         {!list && (
           <div
-            className={formStyles["hidden-notice"]}
+            className={formStyles["visibility-notice"]}
             id={`${prefix}-visibility-help`}
           >
-            <EyeOff size={22} aria-hidden="true" />
+            <Eye size={22} aria-hidden="true" />
             <div>
-              <strong>{t("Your new list starts hidden")}</strong>
+              <strong>{t("Your new list starts visible")}</strong>
               <p>
                 {t(
-                  "Only you and other list admins can see it. When you are ready, choose Show list on the list page.",
+                  "Your chosen audience can see it immediately. You can hide it from the list page at any time.",
                 )}
               </p>
             </div>
@@ -128,7 +128,7 @@ export function ListForm({
               defaultChecked={
                 state.payload
                   ? state.payload.get("reservationsEnabled") === "on"
-                  : (list?.reservationsEnabled ?? false)
+                  : (list?.reservationsEnabled ?? true)
               }
               aria-describedby={`${prefix}-reservations-help`}
             />
@@ -146,7 +146,7 @@ export function ListForm({
             className={formStyles.audience}
             aria-describedby={`${prefix}-visibility-help`}
           >
-            <legend>{t("Who can view it when you show the list?")}</legend>
+            <legend>{t("Who can view this list?")}</legend>
             <label className={formStyles.choice}>
               <input
                 type="radio"

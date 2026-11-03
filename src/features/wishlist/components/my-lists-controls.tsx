@@ -1,9 +1,14 @@
+import { QueryToggle } from "@/components/query-toggle";
 import styles from "@/components/shell.module.css";
 import { Link } from "@/i18n/navigation";
 import { useText } from "@/i18n/use-text";
-import { newListPath, sharedListsPath } from "@/paths";
+import { newListPath } from "@/paths";
 
-export function MyListsControls() {
+export function MyListsControls({
+  includeShared = false,
+}: {
+  includeShared?: boolean;
+}) {
   const t = useText();
   return (
     <>
@@ -16,9 +21,11 @@ export function MyListsControls() {
           {t("Create a list")}
         </Link>
       </div>
-      <Link href={sharedListsPath} className={styles["catalog-link"]}>
-        {t("Lists shared with you")}
-      </Link>
+      <QueryToggle
+        name="shared"
+        checked={includeShared}
+        label={t("Include shared lists")}
+      />
     </>
   );
 }

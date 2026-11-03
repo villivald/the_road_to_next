@@ -41,7 +41,7 @@ test("create, validate, edit, publish, unpublish, and confirm deletion", async (
   await page
     .getByLabel("Description (optional)")
     .fill("Ideas for a quiet weekend.\nBooks and a little time outdoors.");
-  await page.getByLabel("Allow reservations").check();
+  await expect(page.getByLabel("Allow reservations")).toBeChecked();
   await page.getByRole("button", { name: "Create list", exact: true }).click();
 
   await expect(page.getByRole("main").getByRole("alert")).toBeFocused();
@@ -53,9 +53,7 @@ test("create, validate, edit, publish, unpublish, and confirm deletion", async (
 
   await page.getByLabel("Title", { exact: true }).fill("Weekend wishes");
   await page.getByRole("button", { name: "Create list", exact: true }).click();
-  await expect(page.getByRole("status")).toContainText(
-    "List created. It stays hidden until you publish it.",
-  );
+  await expect(page.getByRole("status")).toContainText("List created.");
   const listUrl = new URL(page.url()).pathname;
 
   await page.getByRole("link", { name: "List settings", exact: true }).click();
@@ -72,8 +70,7 @@ test("create, validate, edit, publish, unpublish, and confirm deletion", async (
   await expect(page.getByRole("status")).toContainText("Changes saved");
 
   await page.goto(`${listUrl}/edit`);
-  await page.getByRole("button", { name: "Publish list", exact: true }).click();
-  await expect(page.getByRole("status")).toContainText("List published");
+  await expect(page.getByRole("button", { name: "Hide list" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Hide list" })).toBeVisible();
 
   const visitor = await browser.newPage({ baseURL: testOrigin });
@@ -140,6 +137,10 @@ test("draft/private content stays out of direct responses and another account ca
 }) => {
   await signIn(page);
   const listUrl = await createList(page, "Draft title must stay secret");
+  await page.getByRole("button", { name: "Hide list", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Publish list", exact: true }),
+  ).toBeVisible();
   const other = await browser.newPage({ baseURL: testOrigin });
 
   try {

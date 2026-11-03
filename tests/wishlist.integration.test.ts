@@ -11,7 +11,7 @@ import {
   createWishlist,
   deleteWishlist,
   readManagedWishlist,
-  readOwnedWishlists,
+  readMyWishlists,
   readWishlist,
   setWishlistPublication,
   updateWishlist,
@@ -138,7 +138,7 @@ describe("wishlist management and authorization", () => {
     });
     await updateWishlist("e2e-owner", list.id, input);
 
-    const owned = await readOwnedWishlists("e2e-owner");
+    const owned = await readMyWishlists("e2e-owner");
     expect(owned.lists).toMatchObject([
       {
         id: list.id,
@@ -149,7 +149,7 @@ describe("wishlist management and authorization", () => {
     ]);
     expect(JSON.stringify(owned)).not.toContain("e2e-member");
     expect(JSON.stringify(owned)).not.toContain(reservation.id);
-    expect((await readOwnedWishlists("e2e-member")).lists).not.toContainEqual(
+    expect((await readMyWishlists("e2e-member")).lists).not.toContainEqual(
       expect.objectContaining({ id: list.id }),
     );
 
@@ -159,17 +159,17 @@ describe("wishlist management and authorization", () => {
       "count-reserved",
       reservation.id,
     );
-    expect((await readOwnedWishlists("e2e-owner")).lists).toMatchObject([
+    expect((await readMyWishlists("e2e-owner")).lists).toMatchObject([
       { availableWishCount: 3, reservedWishCount: 0 },
     ]);
   });
 
-  it("creates a public draft and admin membership using session identity, ignoring injected fields", async () => {
+  it("creates a visible public list and admin membership using session identity, ignoring injected fields", async () => {
     const data = new FormData();
     data.set("title", "  Birthday ideas  ");
     data.set("description", "  A few things I love.  ");
     data.set("ownerId", "e2e-member");
-    data.set("publication", "PUBLISHED");
+    data.set("publication", "DRAFT");
 
     await expect(createList(EMPTY_ACTION_STATE, data)).rejects.toThrow(
       "REDIRECT:/en/lists/",
@@ -183,7 +183,7 @@ describe("wishlist management and authorization", () => {
     expect(list).toMatchObject({
       ...input,
       ownerId: "e2e-owner",
-      publication: "DRAFT",
+      publication: "PUBLISHED",
       visibility: "PUBLIC",
     });
     expect(list.memberships).toMatchObject([
@@ -202,7 +202,7 @@ describe("wishlist management and authorization", () => {
     data.set("description", "  For the summer  ");
     data.set("reservationsEnabled", "on");
     data.set("ownerId", "e2e-member");
-    data.set("publication", "PUBLISHED");
+    data.set("publication", "DRAFT");
     data.set("visibility", "PRIVATE");
 
     await expect(
@@ -216,7 +216,7 @@ describe("wishlist management and authorization", () => {
       description: "For the summer",
       reservationsEnabled: true,
       ownerId: "e2e-owner",
-      publication: "DRAFT",
+      publication: "PUBLISHED",
       visibility: "PUBLIC",
     });
   });
@@ -261,6 +261,7 @@ describe("wishlist management and authorization", () => {
 
   it("restricts drafts to admins and never returns private content or membership identities to outsiders", async () => {
     const list = await createWishlist("e2e-owner", input);
+    await setWishlistPublication("e2e-owner", list.id, "DRAFT");
 
     expect(await readWishlist(list.id, null)).toBeNull();
     expect(await readWishlist(list.id, "e2e-member")).toBeNull();
@@ -280,6 +281,7 @@ describe("wishlist management and authorization", () => {
       publication: "PUBLISHED",
       visibility: "PUBLIC",
       canManage: false,
+      owner: { username: "e2e-owner" },
     });
 
     await prisma.wishlist.update({
@@ -353,7 +355,7 @@ describe("wishlist management and authorization", () => {
       title: "Updated",
       description: null,
       visibility: "PUBLIC",
-      publication: "DRAFT",
+      publication: "PUBLISHED",
     });
     expect(
       (await prisma.wishlist.findUniqueOrThrow({ where: { id: list.id } }))
@@ -481,8 +483,8 @@ describe("wishlist management and authorization", () => {
       await createWishlist("e2e-owner", { ...input, title: `List ${index}` });
     }
 
-    const first = await readOwnedWishlists("e2e-owner");
-    const second = await readOwnedWishlists("e2e-owner", 2);
+    const first = await readMyWishlists("e2e-owner");
+    const second = await readMyWishlists("e2e-owner", 2);
 
     expect(first.lists).toHaveLength(20);
     expect(first.hasNextPage).toBe(true);
@@ -491,6 +493,60 @@ describe("wishlist management and authorization", () => {
     expect(
       new Set([...first.lists, ...second.lists].map((list) => list.id)).size,
     ).toBe(21);
-    expect((await readOwnedWishlists("e2e-owner", Number.NaN)).page).toBe(1);
+    expect((await readMyWishlists("e2e-owner", Number.NaN)).page).toBe(1);
   });
+});
+
+it("defaults creation to visible with reservations, while preserving explicit reservation opt-out", async () => {
+  const list = await createWishlist("e2e-owner", {
+    title: "Default list",
+    description: "",
+  });
+  expect(await readWishlist(list.id, null)).toMatchObject({
+    publication: "PUBLISHED",
+    reservationsEnabled: true,
+  });
+  const disabled = await createWishlist("e2e-owner", input);
+  expect(await readWishlist(disabled.id, null)).toMatchObject({
+    reservationsEnabled: false,
+  });
+});
+
+it("combines owned and joined lists without duplicate cards or hidden contents", async () => {
+  await createWishlist("e2e-owner", input);
+  await prisma.membership.create({
+    data: {
+      wishlistId: "e2e-private-list",
+      userId: "e2e-owner",
+      role: "MEMBER",
+    },
+  });
+  expect((await readMyWishlists("e2e-owner")).lists).toHaveLength(1);
+  await prisma.wishlist.update({
+    where: { id: "e2e-private-list" },
+    data: { publication: "DRAFT" },
+  });
+  const hidden = await readMyWishlists("e2e-owner", 1, true);
+  expect(hidden.lists).toHaveLength(2);
+  expect(
+    hidden.lists.find(({ id }) => id === "e2e-private-list"),
+  ).toMatchObject({
+    title: null,
+    owner: null,
+    image: null,
+    previewImages: [],
+    availableWishCount: 0,
+    reservedWishCount: 0,
+    canManage: false,
+  });
+  expect(JSON.stringify(hidden)).not.toContain("Another person's private list");
+  await prisma.wishlist.update({
+    where: { id: "e2e-private-list" },
+    data: { publication: "PUBLISHED" },
+  });
+  expect(
+    (await readMyWishlists("e2e-owner", 1, true)).lists.find(
+      ({ id }) => id === "e2e-private-list",
+    ),
+  ).toMatchObject({ title: "Another person's private list", canManage: false });
 });

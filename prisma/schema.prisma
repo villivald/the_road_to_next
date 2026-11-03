@@ -112,9 +112,9 @@ model Wishlist {
   title               String         @db.VarChar(200)
   description         String?        @db.VarChar(2000)
   theme               String         @default("classic") @db.VarChar(20)
-  publication         Publication    @default(DRAFT)
+  publication         Publication    @default(PUBLISHED)
   visibility          ListVisibility @default(PUBLIC)
-  reservationsEnabled Boolean        @default(false)
+  reservationsEnabled Boolean        @default(true)
   archivedAt          DateTime?
   ownerId             String?
   owner               User?          @relation("ListOwner", fields: [ownerId], references: [id], onDelete: SetNull)

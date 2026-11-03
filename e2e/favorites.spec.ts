@@ -145,7 +145,7 @@ test("one-click favorites persist across lists, wishes, people, and detail navig
     .click();
   await page
     .getByRole("navigation", { name: "Favorite categories" })
-    .getByRole("link", { name: "Wishes", exact: true })
+    .getByRole("link", { name: /^Wishes \d+/ })
     .click();
   await expect(page).toHaveURL(/\/favorites\?view=wishes$/);
   await expect(
@@ -190,7 +190,7 @@ test("one-click favorites persist across lists, wishes, people, and detail navig
   ).toBeVisible();
   await page
     .getByRole("navigation", { name: "Favorite categories" })
-    .getByRole("link", { name: "People", exact: true })
+    .getByRole("link", { name: /^People \d+/ })
     .click();
   await expect(
     page.getByRole("heading", { name: "Favorite person" }),
@@ -402,7 +402,7 @@ test("Finnish favorites support keyboard use, dark mode, enlarged text, and narr
   await favoritesLink(page, "fi").click();
   await page
     .getByRole("navigation", { name: "Suosikkien luokat" })
-    .getByRole("link", { name: "Toiveet", exact: true })
+    .getByRole("link", { name: /^Toiveet \d+/ })
     .click();
   await expect(
     page.getByRole("heading", { name: "Favorite notebook" }),

@@ -4,7 +4,10 @@ import shell from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import styles from "@/features/favorites/components/favorites.module.css";
 import { FavoritesResults } from "@/features/favorites/components/favorites-results";
-import { readFavorites } from "@/features/favorites/service/favorites";
+import {
+  readFavoriteCounts,
+  readFavorites,
+} from "@/features/favorites/service/favorites";
 import { Link } from "@/i18n/navigation";
 import { getText } from "@/i18n/server";
 import { favoritesPath } from "@/paths";
@@ -21,7 +24,11 @@ export default async function FavoritesPage({
 }) {
   const t = await getText();
   const { user } = await getAuthOrRedirect({ returnTo: favoritesPath });
-  const result = await readFavorites(user.id, await searchParams);
+  const query = await searchParams;
+  const [result, counts] = await Promise.all([
+    readFavorites(user.id, query),
+    readFavoriteCounts(user.id),
+  ]);
   const count =
     result.lists?.length ?? result.wishes?.length ?? result.people?.length ?? 0;
   const empty = count === 0;
@@ -49,6 +56,9 @@ export default async function FavoritesPage({
         >
           <List size={18} aria-hidden="true" />
           {t("Lists")}
+          <span className={styles.count}>
+            {counts.lists.toLocaleString(t.locale)}
+          </span>
         </Link>
         <Link
           href={`${favoritesPath}?view=wishes`}
@@ -56,6 +66,9 @@ export default async function FavoritesPage({
         >
           <Gift size={18} aria-hidden="true" />
           {t("Wishes")}
+          <span className={styles.count}>
+            {counts.wishes.toLocaleString(t.locale)}
+          </span>
         </Link>
         <Link
           href={`${favoritesPath}?view=people`}
@@ -63,6 +76,9 @@ export default async function FavoritesPage({
         >
           <Users size={18} aria-hidden="true" />
           {t("People")}
+          <span className={styles.count}>
+            {counts.people.toLocaleString(t.locale)}
+          </span>
         </Link>
       </nav>
       <p role="status" className={shell["visually-hidden"]}>

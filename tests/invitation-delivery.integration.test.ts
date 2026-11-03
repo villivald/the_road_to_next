@@ -8,14 +8,16 @@ import {
   vi,
 } from "vitest";
 import { authenticate } from "@/features/auth/service/accounts";
+import { deliverAccountEmails } from "@/features/notifications/service/delivery";
 import { deliverInvitations } from "@/features/sharing/service/delivery";
 import {
+  acceptInvitation,
   inviteMember,
   revokeInvitation,
 } from "@/features/sharing/service/invitations";
 import * as mail from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
-import { assertTestDatabase } from "../e2e/environment";
+import { assertTestDatabase, testEnvironment } from "../e2e/environment";
 import { accounts, resetFixtures } from "../e2e/seed";
 
 assertTestDatabase(process.env);
@@ -218,3 +220,94 @@ it("freezes recipient language for invitation retries and uses sender language f
       .locale,
   ).toBe("fi");
 });
+
+it("queues acceptance in the inviter language, delivers once and rejects replay", async () => {
+  await prisma.user.update({
+    where: { id: account.user.id },
+    data: { locale: "fi" },
+  });
+  const recipient = await authenticate(
+    accounts.owner.email,
+    accounts.owner.password,
+  );
+  await acceptInvitation(recipient.user.id, recipient.session.id, id);
+  const email = await prisma.accountEmail.findUniqueOrThrow({
+    where: { key: `list-invitation-accepted/${id}` },
+  });
+  expect(email).toMatchObject({
+    recipient: accounts.member.email,
+    subject: "Kutsusi listalle hyväksyttiin",
+    sentAt: null,
+  });
+  expect(email.html).toContain("@e2e-owner");
+  expect(email.html).toContain("/fi/lists/e2e-private-list/sharing");
+  await expect(
+    acceptInvitation(recipient.user.id, recipient.session.id, id),
+  ).rejects.toThrow("unavailable");
+  const send = vi
+    .spyOn(mail, "deliverRenderedEmail")
+    .mockResolvedValue({ error: null });
+  await Promise.all([
+    deliverAccountEmails(email.id),
+    deliverAccountEmails(email.id),
+  ]);
+  expect(send).toHaveBeenCalledTimes(1);
+  expect(send.mock.calls[0][1]).toBe(`wishlist-account-email/${email.id}`);
+});
+
+it("cancels an acceptance notification if the list is archived", async () => {
+  const recipient = await authenticate(
+    accounts.owner.email,
+    accounts.owner.password,
+  );
+  await acceptInvitation(recipient.user.id, recipient.session.id, id);
+  const email = await prisma.accountEmail.findUniqueOrThrow({
+    where: { key: `list-invitation-accepted/${id}` },
+  });
+  await prisma.wishlist.update({
+    where: { id: "e2e-private-list" },
+    data: { archivedAt: new Date() },
+  });
+  const send = vi
+    .spyOn(mail, "deliverRenderedEmail")
+    .mockResolvedValue({ error: null });
+  expect(await deliverAccountEmails(email.id)).toEqual({
+    sent: 0,
+    failed: 0,
+    canceled: 1,
+  });
+  expect(send).not.toHaveBeenCalled();
+});
+
+it.each(["en", "fi"])(
+  "delivers the %s acceptance email to the local inbox",
+  async (locale) => {
+    await prisma.user.update({
+      where: { id: account.user.id },
+      data: { locale },
+    });
+    const recipient = await authenticate(
+      accounts.owner.email,
+      accounts.owner.password,
+    );
+    await acceptInvitation(recipient.user.id, recipient.session.id, id);
+    const email = await prisma.accountEmail.findUniqueOrThrow({
+      where: { key: `list-invitation-accepted/${id}` },
+    });
+    expect(await deliverAccountEmails(email.id)).toEqual({
+      sent: 1,
+      failed: 0,
+      canceled: 0,
+    });
+    const message = await (
+      await fetch(`${testEnvironment.MAILPIT_URL}/api/v1/message/latest`)
+    ).json();
+    expect(message.Subject).toBe(
+      locale === "fi"
+        ? "Kutsusi listalle hyväksyttiin"
+        : "Your list invitation was accepted",
+    );
+    expect(message.Text).toContain("@e2e-owner");
+    expect(message.Text).toContain(`/${locale}/lists/e2e-private-list/sharing`);
+  },
+);

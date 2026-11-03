@@ -9,6 +9,7 @@ import cardStyles from "@/components/cards/cards.module.css";
 import { WishCard } from "@/components/cards/wish-card";
 import { WishStatus } from "@/components/cards/wish-status";
 import { createWishTones } from "@/components/cards/wish-tones";
+import { QueryToggle } from "@/components/query-toggle";
 import styles from "@/components/shell.module.css";
 import { readFavoriteIds } from "@/features/favorites/service/favorites";
 import { localizedPath } from "@/i18n/config";
@@ -32,15 +33,22 @@ export async function WishCollection({
   canManage: boolean;
   section: DetailSection;
   reservationsEnabled: boolean;
-  searchParams: { sort?: string; view?: string; page?: string };
+  searchParams: {
+    sort?: string;
+    view?: string;
+    page?: string;
+    reserved?: string;
+  };
 }) {
   const t = await getText();
+  const reservedOnly = searchParams.reserved === "1";
 
   const { wishes, sort, view, page, hasNextPage } = await readListWishes(
     listId,
     userId,
     {
       sort: searchParams.sort,
+      reserved: reservedOnly,
       view: canManage ? searchParams.view : "current",
       page: Number(searchParams.page ?? 1),
     },
@@ -48,7 +56,7 @@ export async function WishCollection({
 
   const pageUrl = (nextPage: number) =>
     navigationPath(
-      `${listPath(listId)}?${new URLSearchParams({ sort, view, page: String(nextPage) })}`,
+      `${listPath(listId)}?${new URLSearchParams({ sort, view, ...(reservedOnly ? { reserved: "1" } : {}), page: String(nextPage) })}`,
       section,
     );
   const tones = createWishTones(wishes.map((wish) => wish.id));
@@ -76,6 +84,7 @@ export async function WishCollection({
         className={styles["wish-toolbar"]}
       >
         <input type="hidden" name="from" value={section} />
+        {reservedOnly && <input type="hidden" name="reserved" value="1" />}
         <div className={styles.field}>
           <label htmlFor="wish-sort">{t("Sort wishes")}</label>
           <select id="wish-sort" name="sort" defaultValue={sort}>
@@ -99,10 +108,20 @@ export async function WishCollection({
         </button>
       </form>
 
+      <QueryToggle
+        name="reserved"
+        checked={reservedOnly}
+        label={t("Only reserved wishes")}
+      />
+
       {wishes.length ? (
         <ul className={styles["list-grid"]}>
           {wishes.map((wish) => (
-            <WishCard key={wish.id} tone={tones[wish.id]}>
+            <WishCard
+              key={wish.id}
+              tone={tones[wish.id]}
+              reserved={wish.isReserved}
+            >
               <CardMediaLink
                 path={navigationPath(wishPath(listId, wish.id), section)}
                 title={wish.title}
@@ -120,12 +139,13 @@ export async function WishCollection({
                 </p>
                 <WishPriority priority={wish.priority} />
               </div>
-              {canManage && (
+              {(canManage || wish.isReserved) && (
                 <WishStatus
                   hidden={wish.hidden}
                   fulfilled={!!wish.fulfilledAt}
                   reserved={wish.isReserved}
-                  showVisible
+                  reservedByYou={wish.isReservedByYou}
+                  showVisible={canManage}
                 />
               )}
               <CardActions
@@ -157,22 +177,26 @@ export async function WishCollection({
         <div className={styles["empty-state"]}>
           <Sparkles aria-hidden="true" />
           <h3>
-            {page > 1
-              ? t("No more wishes")
-              : view === "fulfilled"
-                ? t("No fulfilled wishes yet")
-                : canManage
-                  ? t("No wishes yet")
-                  : t("No wishes available")}
+            {reservedOnly
+              ? t("No reserved wishes")
+              : page > 1
+                ? t("No more wishes")
+                : view === "fulfilled"
+                  ? t("No fulfilled wishes yet")
+                  : canManage
+                    ? t("No wishes yet")
+                    : t("No wishes available")}
           </h3>
           <p className={styles.muted}>
-            {page > 1
-              ? t("Return to an earlier page.")
-              : view === "fulfilled"
-                ? t("Wishes you mark as fulfilled will appear here.")
-                : canManage
-                  ? t("Start with just a title. You can add details later.")
-                  : t("Check back for new wishes.")}
+            {reservedOnly
+              ? t("Turn off the filter to see other wishes.")
+              : page > 1
+                ? t("Return to an earlier page.")
+                : view === "fulfilled"
+                  ? t("Wishes you mark as fulfilled will appear here.")
+                  : canManage
+                    ? t("Start with just a title. You can add details later.")
+                    : t("Check back for new wishes.")}
           </p>
         </div>
       )}

@@ -205,7 +205,9 @@ describe("reservations", () => {
     });
     await reserveWish("e2e-member", listId, wishId);
     expect((await readListWishes(listId, null)).wishes).toEqual([]);
-    expect((await readListWishes(listId, "e2e-member")).wishes).toEqual([]);
+    expect((await readListWishes(listId, "e2e-member")).wishes).toMatchObject([
+      { id: wishId, isReserved: true, isReservedByYou: true },
+    ]);
     expect(await readWish(listId, wishId, null)).toBeNull();
     expect(await readableImage(image.id, null)).toBeNull();
     expect(await readableImage(image.id, "e2e-member")).not.toBeNull();

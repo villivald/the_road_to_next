@@ -413,7 +413,7 @@ test("streamed loading previews reserve space, hide decorative content and respe
     for (const path of [
       "/en/browse",
       "/en/lists",
-      "/en/lists/shared",
+      "/en/lists?shared=1",
       "/en/account/profile",
       "/en/lists/e2e-loading-list",
       "/en/lists/e2e-loading-list/edit",
@@ -426,8 +426,8 @@ test("streamed loading previews reserve space, hide decorative content and respe
       await previewPage.goto(new URL(path, page.url()).href);
       const preview = previewPage.locator("[data-loading-preview]").first();
       await expect(preview).toBeVisible();
-      const expectedHeading = path.endsWith("/shared")
-        ? "Lists you’ve joined"
+      const expectedHeading = path.includes("?shared=1")
+        ? "My lists"
         : path.endsWith("/edit")
           ? path.includes("/wishes/")
             ? "Edit wish"
@@ -451,7 +451,7 @@ test("streamed loading previews reserve space, hide decorative content and respe
             path.endsWith("/edit") ||
             path.endsWith("/new")) &&
             (previewTitle === null || previewTitle === "My lists")) ||
-          (path.endsWith("/shared") && previewTitle === "My lists");
+          (path.includes("?shared=1") && previewTitle === "My lists");
         if (parentFallback) {
           await expect(preview.getByRole("status")).toHaveText(
             previewTitle === "My lists"

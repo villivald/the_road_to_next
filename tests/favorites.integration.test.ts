@@ -6,6 +6,7 @@ import {
 } from "@/features/discovery/service/discovery";
 import { changeFavorite } from "@/features/favorites/actions/manage-favorites";
 import {
+  readFavoriteCounts,
   readFavoriteIds,
   readFavorites,
   setFavorite,
@@ -367,4 +368,29 @@ describe("private favorites", () => {
       (await readFavorites("e2e-member", { view: "wishes", page: "-1" })).page,
     ).toBe(1);
   });
+});
+
+it("counts only currently accessible favorites across all categories", async () => {
+  const list = await prisma.wishlist.create({
+    data: {
+      title: "Counts",
+      ownerId: "e2e-owner",
+      memberships: { create: { userId: "e2e-owner", role: "ADMIN" } },
+      wishes: { create: { id: "count-favorite-wish", title: "Counted" } },
+    },
+  });
+  await prisma.favoriteList.create({
+    data: { userId: "e2e-member", wishlistId: list.id },
+  });
+  await prisma.favoriteWish.create({
+    data: { userId: "e2e-member", wishId: "count-favorite-wish" },
+  });
+  const before = await readFavoriteCounts("e2e-member");
+  await prisma.wishlist.update({
+    where: { id: list.id },
+    data: { publication: "DRAFT" },
+  });
+  const after = await readFavoriteCounts("e2e-member");
+  expect(after.lists).toBe(before.lists - 1);
+  expect(after.wishes).toBe(before.wishes - 1);
 });

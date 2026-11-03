@@ -14,14 +14,14 @@ const signIn = async (page: Page) => {
 
 test.beforeEach(resetFixtures);
 
-test("new lists explain their hidden state and can be shown from the list page", async ({
+test("new lists explain their visible state and can be hidden from the list page", async ({
   page,
   browser,
 }, info) => {
   await signIn(page);
   await page.goto("/en/lists/new");
   await expect(
-    page.getByText("Your new list starts hidden", { exact: true }),
+    page.getByText("Your new list starts visible", { exact: true }),
   ).toBeVisible();
   await page.getByLabel("Title", { exact: true }).fill("Ready when I am");
   await page.getByRole("button", { name: "Create list", exact: true }).click();
@@ -46,39 +46,21 @@ test("new lists explain their hidden state and can be shown from the list page",
     header.getByRole("button", { name: "Sharing card", exact: true }),
   ).toBeVisible();
   await header.screenshot({ path: info.outputPath("list-header.png") });
+  await expect(control).toContainText("Visible · Public list");
   await expect(
-    control.getByText("Hidden · Admins only", { exact: true }),
+    control.getByRole("button", { name: "Hide list", exact: true }),
   ).toBeVisible();
-  await expect(
-    control.getByRole("button", { name: "Publish list", exact: true }),
-  ).toBeVisible();
-  await expect(control).toContainText(
-    "Publishing makes it available to anyone, including in Browse.",
-  );
   const bounds = await control.boundingBox();
   expect(bounds?.height).toBeLessThanOrEqual(
     (page.viewportSize()?.width ?? 0) >= 768 ? 80 : 170,
   );
   expect(
-    (await control.getByRole("button", { name: "Publish list" }).boundingBox())
+    (await control.getByRole("button", { name: "Hide list" }).boundingBox())
       ?.height,
   ).toBeGreaterThanOrEqual(44);
   await control.screenshot({ path: info.outputPath("compact-visibility.png") });
-
   await page.reload();
-  await expect(control).toContainText("Hidden · Admins only");
-  await control
-    .getByRole("button", { name: "Publish list", exact: true })
-    .click();
-  await expect(
-    control.getByRole("button", { name: "Hide list", exact: true }),
-  ).toBeVisible();
-  await expect(
-    page.getByText("List created. It stays hidden until you publish it."),
-  ).toHaveCount(0);
-  await expect(control).toContainText(
-    "Only list admins can open a hidden list.",
-  );
+  await expect(control).toContainText("Visible · Public list");
 
   const visitor = await browser.newPage();
   try {

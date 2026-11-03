@@ -1,6 +1,7 @@
 import { imageSelection } from "@/features/media/types";
 import { premiumGrantEnvironmentWhere } from "@/features/premium/service/entitlements";
 import { wishPreviewSelection } from "@/features/wish/service/preview";
+import { readWishCounts } from "@/features/wishlist/service/wish-counts";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { availableWishes, publicLists, publicOwners } from "./access";
@@ -64,7 +65,6 @@ export const discoverLists = async (
           image: imageSelection,
           reservationsEnabled: true,
           wishes: wishPreviewSelection,
-          _count: { select: { wishes: { where: availableWishes } } },
         },
         orderBy:
           filters.sort === "title"
@@ -74,13 +74,20 @@ export const discoverLists = async (
         take: 21,
       });
 
+  const counts = await readWishCounts(
+    viewerId,
+    lists.slice(0, 20).map(({ id }) => id),
+  );
   return {
     filters,
-    lists: lists.slice(0, 20).map(({ _count, ownerId, wishes, ...list }) => ({
+    lists: lists.slice(0, 20).map(({ ownerId, wishes, ...list }) => ({
       ...list,
       isOwner: !!viewerId && ownerId === viewerId,
       previewImages: wishes.flatMap(({ image }) => (image ? [image] : [])),
-      availableWishCount: _count.wishes,
+      ...(counts.get(list.id) ?? {
+        availableWishCount: 0,
+        reservedWishCount: 0,
+      }),
     })),
     hasNextPage: !filters.error && lists.length > 20 && filters.page < 1000,
   };

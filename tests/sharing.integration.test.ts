@@ -17,12 +17,10 @@ import {
   setVisibility,
   transferOwnership,
 } from "@/features/sharing/service/members";
-import {
-  readSharedLists,
-  readSharing,
-} from "@/features/sharing/service/queries";
+import { readSharing } from "@/features/sharing/service/queries";
 import {
   createWishlist,
+  readMyWishlists,
   readWishlist,
   updateWishlist,
 } from "@/features/wishlist/service/lists";
@@ -90,12 +88,18 @@ afterAll(async () => {
 });
 
 describe("private lists and collaboration", () => {
-  it("returns wish counts only while a joined user is an admin", async () => {
+  it("keeps joined-list counts readable while current roles control management", async () => {
     await join((await invite()).id);
     await reserveWish(member.user.id, listId, "e2e-sharing-wish");
-    expect(
-      (await readSharedLists(member.user.id)).lists[0].management,
-    ).toBeNull();
+    const joinedList = async () =>
+      (await readMyWishlists(member.user.id, 1, true)).lists.find(
+        ({ id }) => id === listId,
+      );
+    expect(await joinedList()).toMatchObject({
+      availableWishCount: 0,
+      reservedWishCount: 1,
+      canManage: false,
+    });
     const target = await membership();
     await changeMemberRole(
       owner.user.id,
@@ -104,15 +108,10 @@ describe("private lists and collaboration", () => {
       target.id,
       "ADMIN",
     );
-    const shared = await readSharedLists(member.user.id);
-    expect(shared.lists[0].management).toEqual({
-      availableWishCount: 0,
+    expect(await joinedList()).toMatchObject({
+      canManage: true,
       reservedWishCount: 1,
-      reservationsEnabled: true,
     });
-    expect(JSON.stringify(shared)).not.toContain(owner.user.id);
-    expect(JSON.stringify(shared)).not.toContain(member.user.id);
-
     await changeMemberRole(
       owner.user.id,
       owner.session.id,
@@ -120,9 +119,10 @@ describe("private lists and collaboration", () => {
       target.id,
       "MEMBER",
     );
-    expect(
-      (await readSharedLists(member.user.id)).lists[0].management,
-    ).toBeNull();
+    expect(await joinedList()).toMatchObject({
+      canManage: false,
+      reservedWishCount: 1,
+    });
   });
 
   it("requires Premium for new private lists and ignores spoofed ownership", async () => {
@@ -139,7 +139,7 @@ describe("private lists and collaboration", () => {
     ).toMatchObject({
       ownerId: owner.user.id,
       visibility: "PRIVATE",
-      publication: "DRAFT",
+      publication: "PUBLISHED",
     });
     await expect(createWishlist(member.user.id, input)).rejects.toThrow(
       "Active Premium",
@@ -494,9 +494,13 @@ describe("private lists and collaboration", () => {
       where: { id: listId },
       data: { publication: "DRAFT" },
     });
-    const shared = await readSharedLists(member.user.id);
-    expect(shared.lists).toHaveLength(1);
-    expect(shared.lists[0]).toMatchObject({ title: null, role: "MEMBER" });
+    const shared = await readMyWishlists(member.user.id, 1, true);
+    expect(shared.lists.find(({ id }) => id === listId)).toMatchObject({
+      title: null,
+      membership: { role: "MEMBER" },
+      availableWishCount: 0,
+      reservedWishCount: 0,
+    });
     expect(JSON.stringify(shared)).not.toContain("Secret");
     await removeMember(
       member.user.id,
@@ -504,7 +508,11 @@ describe("private lists and collaboration", () => {
       listId,
       (await membership()).id,
     );
-    expect((await readSharedLists(member.user.id)).lists).toEqual([]);
+    expect(
+      (await readMyWishlists(member.user.id, 1, true)).lists.find(
+        ({ id }) => id === listId,
+      ),
+    ).toBeUndefined();
   });
 
   it("serializes acceptance with revocation and transfer with removal without losing an owner", async () => {

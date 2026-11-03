@@ -54,12 +54,6 @@
   width: 12rem;
 }
 
-.back-label {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-}
-
 .textarea,
 .toolbar {
   height: 7rem;

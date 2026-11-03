@@ -1,4 +1,4 @@
-.hidden-notice {
+.visibility-notice {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 0.75rem;
@@ -8,11 +8,11 @@
   background: var(--muted);
 }
 
-.hidden-notice svg {
+.visibility-notice svg {
   margin-top: 0.15rem;
 }
 
-.hidden-notice p {
+.visibility-notice p {
   margin-top: 0.35rem;
   font-size: 0.85rem;
   color: var(--muted-foreground);

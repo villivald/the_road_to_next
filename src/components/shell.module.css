@@ -1216,6 +1216,27 @@
   padding-block: 0;
 }
 
+.account-columns {
+  align-items: stretch;
+}
+
+.account-columns > .content-panel,
+.account-columns > .content-stack {
+  align-content: start;
+}
+
+.account-columns > .content-stack {
+  grid-template-rows: auto 1fr;
+}
+
+.account-columns > .content-stack > .content-panel {
+  align-content: start;
+}
+
+.account-security {
+  grid-column: 1 / -1;
+}
+
 .profile-page {
   max-width: 1040px;
   margin-inline: auto;

@@ -397,6 +397,7 @@ describe("private media", () => {
       "width",
     ]);
     expect((await read(image.id)).status).toBe(200);
+    await setWishlistPublication("e2e-owner", listId, "DRAFT");
     auth.id = null;
     expect((await read(image.id)).status).toBe(404);
     await setWishlistPublication("e2e-owner", listId, "PUBLISHED");
@@ -452,6 +453,7 @@ describe("private media", () => {
   });
 
   it("restricts avatar reads to the verified owner and retains cleanup after account deletion", async () => {
+    await setWishlistPublication("e2e-owner", listId, "DRAFT");
     const image = await replaceImage(
       "e2e-owner",
       { kind: "avatar", userId: "e2e-member" },

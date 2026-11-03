@@ -6,14 +6,17 @@ import type { WishTone } from "./wish-tones";
 export function WishCard({
   children,
   tone = "butter",
+  reserved = false,
 }: {
   children: ReactNode;
   tone?: WishTone;
+  reserved?: boolean;
 }) {
   return (
     <li
       className={`${shell["list-card"]} ${styles.tone} ${styles["wish-card"]}`}
       data-wish-tone={tone}
+      data-reserved={reserved || undefined}
     >
       {children}
     </li>

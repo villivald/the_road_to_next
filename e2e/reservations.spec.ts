@@ -211,7 +211,9 @@ test("disabling preserves reservations, fulfillment ends them, and reopening nev
     const card = owner.getByRole("listitem").filter({
       has: owner.getByRole("heading", { name: "Birthday gift ideas" }),
     });
-    await expect(card.getByText("0 available", { exact: true })).toBeVisible();
+    await expect(
+      card.getByText("0 available wishes", { exact: true }),
+    ).toBeVisible();
     await expect(card.getByText("1 reserved", { exact: true })).toBeVisible();
     await expect(
       card.getByText("Reservations enabled", { exact: true }),
@@ -224,7 +226,9 @@ test("disabling preserves reservations, fulfillment ends them, and reopening nev
     await expect(owner.getByRole("status")).toContainText("Changes saved.");
     await expect(owner).toHaveURL(`${listUrl}/edit`);
     await owner.goto("/fi/lists");
-    await expect(card.getByText("0 vapaana", { exact: true })).toBeVisible();
+    await expect(
+      card.getByText("0 vapaata toivetta", { exact: true }),
+    ).toBeVisible();
     await expect(card.getByText("1 varattuna", { exact: true })).toBeVisible();
     await expect(
       card.getByText("Varaukset pois käytöstä", { exact: true }),
@@ -258,8 +262,10 @@ test("disabling preserves reservations, fulfillment ends them, and reopening nev
       owner.getByRole("button", { name: "Reserve wish", exact: true }),
     ).toHaveCount(0);
     await owner.goto("/en/lists");
-    await expect(card.getByText("1 available", { exact: true })).toBeVisible();
-    await expect(card.getByText("0 reserved", { exact: true })).toBeVisible();
+    await expect(
+      card.getByText("1 available wish", { exact: true }),
+    ).toBeVisible();
+    await expect(card.getByText("0 reserved", { exact: true })).toHaveCount(0);
     await page.goto(wishUrl);
     await expect(page.getByRole("main")).toContainText(
       "Reservations are not available",

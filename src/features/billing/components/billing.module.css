@@ -198,7 +198,7 @@
 .help > section,
 .help > div {
   min-width: 0;
-  align-self: start;
+  align-content: start;
 }
 
 .benefits {
@@ -224,4 +224,8 @@
   .actions > form {
     width: 100%;
   }
+}
+
+.help-topics > details + details {
+  border-top: 0;
 }

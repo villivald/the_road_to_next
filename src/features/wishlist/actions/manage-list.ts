@@ -9,13 +9,7 @@ import {
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import { PremiumError } from "@/features/premium/service/entitlements";
 import { redirect, revalidatePath } from "@/i18n/server-navigation";
-import {
-  browsePath,
-  listPath,
-  listsPath,
-  reservationsPath,
-  sharedListsPath,
-} from "@/paths";
+import { browsePath, listPath, listsPath, reservationsPath } from "@/paths";
 import {
   createWishlist,
   deleteWishlist,
@@ -45,7 +39,6 @@ const refreshList = (id: string) => {
   revalidatePath(browsePath);
   revalidatePath(reservationsPath);
   revalidatePath(listsPath);
-  revalidatePath(sharedListsPath);
   revalidatePath(listPath(id));
   revalidatePath(`${listPath(id)}/edit`);
   revalidatePath(`${listPath(id)}/delete`);

@@ -1,18 +1,21 @@
 import { List } from "lucide-react";
 import type { Metadata } from "next";
+import { navigationPath } from "@/app/_navigation/navigation-path";
 import { CardActions } from "@/components/cards/card-actions";
 import { CardMediaLink, ListPreview } from "@/components/cards/card-media";
 import cardStyles from "@/components/cards/cards.module.css";
 import { ListStatus } from "@/components/cards/list-status";
 import { ListWishCounts } from "@/components/cards/list-wish-counts";
 import { ReservationAvailability } from "@/components/cards/reservation-availability";
+import { ActionForm } from "@/components/form/action-form";
 import { SuccessMessage } from "@/components/form/success-message";
 import styles from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import { readFavoriteIds } from "@/features/favorites/service/favorites";
 import { ListTheme } from "@/features/premium/components/list-theme";
+import { deleteMembership } from "@/features/sharing/actions/manage-sharing";
 import { MyListsControls } from "@/features/wishlist/components/my-lists-controls";
-import { getMyLists } from "@/features/wishlist/queries/get-my-lists";
+import { readMyWishlists } from "@/features/wishlist/service/lists";
 import { Link } from "@/i18n/navigation";
 import { getText } from "@/i18n/server";
 import { listSettingsPath, sharingPath } from "@/paths";
@@ -29,15 +32,24 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ListsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; deleted?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    deleted?: string;
+    shared?: string;
+    joined?: string;
+    left?: string;
+    roleChanged?: string;
+  }>;
 }) {
   const t = await getText();
 
   const params = await searchParams;
-  const { lists, page, hasNextPage } = await getMyLists(
-    Number(params.page ?? 1),
-  );
   const { user } = await getAuthOrRedirect();
+  const { lists, page, hasNextPage } = await readMyWishlists(
+    user.id,
+    Number(params.page ?? 1),
+    params.shared === "1",
+  );
   const favoriteIds = await readFavoriteIds(
     user.id,
     "list",
@@ -46,7 +58,22 @@ export default async function ListsPage({
 
   return (
     <section className={styles.page}>
-      <MyListsControls />
+      <MyListsControls includeShared={params.shared === "1"} />
+      {params.joined === "1" && (
+        <SuccessMessage queryKeys={["joined"]}>
+          {t("Invitation accepted. You have joined the list.")}
+        </SuccessMessage>
+      )}
+      {params.left === "1" && (
+        <SuccessMessage queryKeys={["left"]}>
+          {t("You have left the list.")}
+        </SuccessMessage>
+      )}
+      {params.roleChanged === "1" && (
+        <SuccessMessage queryKeys={["roleChanged"]}>
+          {t("You are now a member. Admin controls are no longer available.")}
+        </SuccessMessage>
+      )}
 
       {params.deleted === "1" && (
         <SuccessMessage queryKeys={["deleted"]}>
@@ -58,45 +85,103 @@ export default async function ListsPage({
         <ul className={styles["list-grid"]}>
           {lists.map((list) => (
             <li key={list.id} className={styles["list-card"]}>
-              <ListTheme theme={list.theme} media>
-                <CardMediaLink path={listPath(list.id)} title={list.title}>
-                  <ListPreview
-                    image={list.image}
-                    images={list.previewImages}
-                    title={list.title}
+              {list.title ? (
+                <>
+                  <ListTheme theme={list.theme} media>
+                    <CardMediaLink
+                      path={navigationPath(listPath(list.id), "lists")}
+                      title={list.title}
+                    >
+                      <ListPreview
+                        image={list.image}
+                        images={list.previewImages}
+                        title={list.title}
+                      />
+                    </CardMediaLink>
+                  </ListTheme>
+                  <h2>
+                    <Link href={navigationPath(listPath(list.id), "lists")}>
+                      {list.title}
+                    </Link>
+                  </h2>
+                  {list.owner && !list.isOwner && (
+                    <p className={cardStyles["list-owner"]}>
+                      @{list.owner.username}
+                    </p>
+                  )}
+                  <ListStatus
+                    publication={list.publication}
+                    visibility={list.visibility}
                   />
-                </CardMediaLink>
-              </ListTheme>
-              <h2>
-                <Link href={listPath(list.id)}>{list.title}</Link>
-              </h2>
-              <ListStatus
-                publication={list.publication}
-                visibility={list.visibility}
-              />
-              <div className={cardStyles["list-footer"]}>
-                <ListWishCounts
-                  availableWishCount={list.availableWishCount}
-                  reservedWishCount={list.reservedWishCount}
-                />
-                <ReservationAvailability enabled={list.reservationsEnabled} />
-                <CardActions
-                  path={listPath(list.id)}
-                  settingsPath={listSettingsPath(list.id)}
-                  title={list.title}
-                  canManage
-                  favorite={{
-                    kind: "list",
-                    targetId: list.id,
-                    saved: favoriteIds.includes(list.id),
-                  }}
-                  sharingPath={sharingPath(list.id)}
-                  canCopy={
-                    list.publication === "PUBLISHED" &&
-                    list.visibility === "PUBLIC"
-                  }
-                />
-              </div>
+                  <div className={cardStyles["list-footer"]}>
+                    <ListWishCounts
+                      availableWishCount={list.availableWishCount}
+                      reservedWishCount={list.reservedWishCount}
+                    />
+                    <ReservationAvailability
+                      enabled={list.reservationsEnabled}
+                    />
+                    <CardActions
+                      path={listPath(list.id)}
+                      section="lists"
+                      settingsPath={listSettingsPath(list.id)}
+                      title={list.title}
+                      canManage={list.canManage}
+                      favorite={{
+                        kind: "list",
+                        targetId: list.id,
+                        saved: favoriteIds.includes(list.id),
+                      }}
+                      sharingPath={
+                        list.canManage ? sharingPath(list.id) : undefined
+                      }
+                      canCopy={
+                        list.publication === "PUBLISHED" &&
+                        list.visibility === "PUBLIC"
+                      }
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2>{t("Hidden list")}</h2>
+                  <p className={styles.muted}>
+                    {t("· Available when the admins show it")}
+                  </p>
+                </>
+              )}
+              {!list.isOwner && list.membership && (
+                <>
+                  <p className={styles.muted}>
+                    {list.membership.role === "ADMIN"
+                      ? t("Admin")
+                      : t("Member")}
+                  </p>
+                  <ActionForm
+                    requireConfirmation
+                    action={deleteMembership.bind(
+                      null,
+                      list.id,
+                      list.membership.id,
+                    )}
+                    label={t("Leave list")}
+                    pendingLabel={t("Leaving…")}
+                    destructive
+                  >
+                    <label className={styles["checkbox-label"]}>
+                      <input
+                        type="checkbox"
+                        name="confirm"
+                        value="yes"
+                        required
+                      />
+                      {t(
+                        "Remove my membership. I will lose private access and any reservations that require it.",
+                      )}
+                    </label>
+                  </ActionForm>
+                </>
+              )}
             </li>
           ))}
         </ul>
@@ -115,7 +200,9 @@ export default async function ListsPage({
       {(page > 1 || hasNextPage) && (
         <nav className={styles.actions} aria-label={t("List pages")}>
           {page > 1 && (
-            <Link href={`${listsPath}?page=${page - 1}`}>
+            <Link
+              href={`${listsPath}?page=${page - 1}${params.shared === "1" ? "&shared=1" : ""}`}
+            >
               {t("Previous page")}
             </Link>
           )}
@@ -123,7 +210,11 @@ export default async function ListsPage({
             {t("Page")} {page}
           </span>
           {hasNextPage && (
-            <Link href={`${listsPath}?page=${page + 1}`}>{t("Next page")}</Link>
+            <Link
+              href={`${listsPath}?page=${page + 1}${params.shared === "1" ? "&shared=1" : ""}`}
+            >
+              {t("Next page")}
+            </Link>
           )}
         </nav>
       )}

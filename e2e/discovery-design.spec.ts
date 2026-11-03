@@ -233,8 +233,9 @@ test("image previews, placeholders, ownership and card actions work", async ({
   }
   await page.emulateMedia({ colorScheme: "light" });
   await page.goto(`/en/lists/${listId}`);
+  await expect(page.getByText("A little wish", { exact: true })).toHaveCount(0);
   await expect(
-    page.getByText("A little wish", { exact: true }).first(),
+    page.locator('[class*="placeholder-title"]').first(),
   ).toBeVisible();
   await page.screenshot({
     path: info.outputPath("wish-placeholders.png"),

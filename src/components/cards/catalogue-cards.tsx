@@ -27,6 +27,7 @@ import {
 } from "./card-media";
 import cardStyles from "./cards.module.css";
 import { ListStatus } from "./list-status";
+import { ListWishCounts } from "./list-wish-counts";
 import { ProfileBio } from "./profile-bio";
 import { ReservationAvailability } from "./reservation-availability";
 import { WishCard } from "./wish-card";
@@ -109,14 +110,10 @@ export function CatalogueListCard({
         </p>
       )}
       <div className={cardStyles["list-footer"]}>
-        <p className={styles["icon-label"]}>
-          <List size={18} aria-hidden="true" />
-          {t.plural(
-            "{count} available wish",
-            "{count} available wishes",
-            list.availableWishCount,
-          )}
-        </p>
+        <ListWishCounts
+          availableWishCount={list.availableWishCount}
+          reservedWishCount={list.reservedWishCount}
+        />
         <ReservationAvailability enabled={list.reservationsEnabled} />
         <CardActions
           path={listPath(list.id)}
@@ -148,7 +145,7 @@ export function CatalogueWishCard({
 }) {
   const t = useText();
   return (
-    <WishCard tone={tone}>
+    <WishCard tone={tone} reserved={wish.isReserved}>
       <CardMediaLink
         path={navigationPath(wishPath(wish.wishlist.id, wish.id), section)}
         title={wish.title}

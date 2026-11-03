@@ -33,6 +33,7 @@ export function InvitationForm({ listId }: { listId: string }) {
             name="email"
             type="email"
             autoComplete="off"
+            spellCheck={false}
             required
             maxLength={254}
             defaultValue={String(state.payload?.get("email") ?? "")}

@@ -1,6 +1,5 @@
 import { readPremiumAccess } from "@/features/premium/service/entitlements";
 import { manageableLists } from "@/features/wishlist/service/access";
-import { readManagedWishCounts } from "@/features/wishlist/service/wish-counts";
 import { prisma } from "@/lib/prisma";
 import { sharingPage } from "./schemas";
 
@@ -58,61 +57,5 @@ export const readSharing = async (
     invitationsPage,
     moreMembers: list.memberships.length > 20,
     moreInvitations: list.invitations.length > 20,
-  };
-};
-
-export const readSharedLists = async (userId: string, input: unknown = 1) => {
-  const page = sharingPage(input);
-  const memberships = await prisma.membership.findMany({
-    where: {
-      userId,
-      user: { emailVerified: true },
-      wishlist: { ownerId: { not: userId }, archivedAt: null },
-    },
-    orderBy: [{ joinedAt: "desc" }, { id: "desc" }],
-    skip: (page - 1) * 20,
-    take: 21,
-    select: {
-      id: true,
-      role: true,
-      wishlist: {
-        select: {
-          id: true,
-          title: true,
-          publication: true,
-          visibility: true,
-          reservationsEnabled: true,
-        },
-      },
-    },
-  });
-  const shared = memberships.slice(0, 20);
-  const counts = await readManagedWishCounts(
-    userId,
-    shared
-      .filter(({ role }) => role === "ADMIN")
-      .map(({ wishlist }) => wishlist.id),
-  );
-  return {
-    page,
-    hasNextPage: memberships.length > 20,
-    lists: shared.map(({ wishlist, ...membership }) => ({
-      ...membership,
-      listId: wishlist.id,
-      title:
-        membership.role === "ADMIN" || wishlist.publication === "PUBLISHED"
-          ? wishlist.title
-          : null,
-      management:
-        membership.role === "ADMIN"
-          ? {
-              ...(counts.get(wishlist.id) ?? {
-                availableWishCount: 0,
-                reservedWishCount: 0,
-              }),
-              reservationsEnabled: wishlist.reservationsEnabled,
-            }
-          : null,
-    })),
   };
 };

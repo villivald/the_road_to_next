@@ -1,15 +1,12 @@
 import { consumeRateLimit, lockUser } from "@/features/auth/service/security";
-import {
-  availableWishes,
-  publicLists,
-  publicOwners,
-} from "@/features/discovery/service/access";
+import { publicLists, publicOwners } from "@/features/discovery/service/access";
 import { imageSelection } from "@/features/media/types";
 import { premiumGrantEnvironmentWhere } from "@/features/premium/service/entitlements";
 import { readableWishes } from "@/features/wish/service/access";
 import { wishPreviewSelection } from "@/features/wish/service/preview";
 import { readableLists } from "@/features/wishlist/service/access";
 import { lockWishlist } from "@/features/wishlist/service/lock";
+import { readWishCounts } from "@/features/wishlist/service/wish-counts";
 import { prisma } from "@/lib/prisma";
 import type { FavoriteKind } from "../types";
 import { favoriteInput, parseFavoritesQuery } from "./schemas";
@@ -159,30 +156,30 @@ export const readFavorites = async (
               select: { role: true },
               take: 1,
             },
-            _count: { select: { wishes: { where: availableWishes } } },
           },
         },
       },
     });
+    const counts = await readWishCounts(
+      userId,
+      rows.slice(0, 20).map(({ wishlist }) => wishlist.id),
+    );
     return {
       view,
       page,
       hasNextPage: rows.length > 20 && page < 1000,
       lists: rows
         .slice(0, 20)
-        .map(
-          ({
-            wishlist: { wishes, ownerId, memberships, _count, ...list },
-          }) => ({
-            ...list,
-            isOwner: ownerId === userId,
-            canManage: memberships.length > 0,
-            availableWishCount: _count.wishes,
-            previewImages: wishes.flatMap(({ image }) =>
-              image ? [image] : [],
-            ),
+        .map(({ wishlist: { wishes, ownerId, memberships, ...list } }) => ({
+          ...list,
+          isOwner: ownerId === userId,
+          canManage: memberships.length > 0,
+          ...(counts.get(list.id) ?? {
+            availableWishCount: 0,
+            reservedWishCount: 0,
           }),
-        ),
+          previewImages: wishes.flatMap(({ image }) => (image ? [image] : [])),
+        })),
     };
   }
   if (view === "wishes") {
@@ -301,4 +298,23 @@ export const readFavorites = async (
       isViewer: id === userId,
     })),
   };
+};
+
+export const readFavoriteCounts = async (userId: string) => {
+  const where = { userId, user: { emailVerified: true } };
+  const [lists, wishes, people] = await prisma.$transaction(
+    [
+      prisma.favoriteList.count({
+        where: { ...where, wishlist: readableLists(userId) },
+      }),
+      prisma.favoriteWish.count({
+        where: { ...where, wish: readableWishes(userId, true) },
+      }),
+      prisma.favoritePerson.count({
+        where: { ...where, person: publicOwners },
+      }),
+    ],
+    { isolationLevel: "RepeatableRead" },
+  );
+  return { lists, wishes, people };
 };

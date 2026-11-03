@@ -6,6 +6,7 @@ import WelcomeEmail from "@/emails/account/welcome";
 import EmailVerification from "@/emails/auth/email-verification";
 import EmailPasswordReset from "@/emails/password/email-password-reset";
 import GroupEmail from "@/emails/reservation/group";
+import InvitationAcceptedEmail from "@/emails/sharing/accepted";
 import InvitationEmail from "@/emails/sharing/invitation";
 
 afterEach(() => vi.unstubAllEnvs());
@@ -37,6 +38,11 @@ it.each(["en", "fi"])(
         toName: "Demo",
         locale,
         url: `https://wishlist.example/${locale}/password-reset/token`,
+      }),
+      createElement(InvitationAcceptedEmail, {
+        username: "<script>private name</script>",
+        locale,
+        url: `https://wishlist.example/${locale}/lists/example/sharing`,
       }),
       createElement(InvitationEmail, {
         locale,

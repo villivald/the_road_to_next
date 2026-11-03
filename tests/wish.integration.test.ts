@@ -97,7 +97,7 @@ describe("wish permissions and lifecycle", () => {
     for (const viewer of [null, "e2e-member"]) {
       expect(
         (await readListWishes(listId, viewer)).wishes.map((wish) => wish.id),
-      ).toEqual([visible.id]);
+      ).toEqual(viewer ? [reserved.id, visible.id] : [visible.id]);
       expect(
         (await readListWishes(listId, viewer, { view: "fulfilled" })).wishes,
       ).toEqual([]);
@@ -410,4 +410,31 @@ describe("wish permissions and lifecycle", () => {
       await prisma.wish.findUnique({ where: { id: "e2e-wish" } }),
     ).not.toBeNull();
   });
+});
+
+it("filters reserved wishes before pagination and preserves viewer permissions", async () => {
+  await createWish("e2e-owner", listId, { title: "Available" });
+  const wish = await createWish("e2e-owner", listId, { title: "Mine" });
+  await prisma.reservation.create({
+    data: { wishId: wish.id, userId: "e2e-member" },
+  });
+  await prisma.wish.createMany({
+    data: Array.from({ length: 25 }, (_, index) => ({
+      wishlistId: listId,
+      title: `Newer available ${index}`,
+    })),
+  });
+  for (const userId of ["e2e-owner", "e2e-member"]) {
+    const result = await readListWishes(listId, userId, { reserved: true });
+    expect(result.wishes).toHaveLength(1);
+    expect(result.wishes[0]).toMatchObject({
+      id: wish.id,
+      isReserved: true,
+      isReservedByYou: userId === "e2e-member",
+    });
+    expect(JSON.stringify(result)).not.toContain("e2e-member");
+  }
+  expect(
+    (await readListWishes(listId, null, { reserved: true })).wishes,
+  ).toEqual([]);
 });

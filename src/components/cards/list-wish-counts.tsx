@@ -15,12 +15,18 @@ export function ListWishCounts({
     <p className={styles["list-counts"]}>
       <span>
         <List size={16} aria-hidden="true" />
-        {t("{count} available", { count: availableWishCount })}
+        {t.plural(
+          "{count} available wish",
+          "{count} available wishes",
+          availableWishCount,
+        )}
       </span>
-      <span>
-        <BookmarkCheck size={16} aria-hidden="true" />
-        {t("{count} reserved", { count: reservedWishCount })}
-      </span>
+      {reservedWishCount > 0 && (
+        <span>
+          <BookmarkCheck size={16} aria-hidden="true" />
+          {t("{count} reserved", { count: reservedWishCount })}
+        </span>
+      )}
     </p>
   );
 }

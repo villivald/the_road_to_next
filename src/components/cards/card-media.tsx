@@ -53,11 +53,7 @@ export function CardMedia({
       ) : (
         <div className={styles.placeholder} aria-hidden="true">
           <span className={styles["placeholder-title"]}>
-            {title ??
-              (kind === "wish" ? t("Wish") : t("A collection of wishes"))}
-          </span>
-          <span className={styles["placeholder-label"]}>
-            {kind === "wish" ? t("A little wish") : t("A collection of wishes")}
+            {title ?? (kind === "wish" ? t("Wish") : t("List"))}
           </span>
         </div>
       )}

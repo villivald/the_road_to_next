@@ -15,7 +15,6 @@ import {
   listPath,
   listsPath,
   reservationsPath,
-  sharedListsPath,
   wishPath,
 } from "@/paths";
 import {
@@ -50,7 +49,6 @@ const actionError = (error: unknown, data?: FormData) => {
 
 const refreshWish = (listId: string, wishId: string) => {
   revalidatePath(listsPath);
-  revalidatePath(sharedListsPath);
   revalidatePath(browsePath);
   revalidatePath(reservationsPath);
   revalidatePath(listPath(listId));

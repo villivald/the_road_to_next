@@ -5,7 +5,7 @@ import {
   discoverWishes,
 } from "@/features/discovery/service/discovery";
 import { readableImage } from "@/features/media/service/media";
-import { readOwnedWishlists } from "@/features/wishlist/service/lists";
+import { readMyWishlists } from "@/features/wishlist/service/lists";
 import { prisma } from "@/lib/prisma";
 import { assertTestDatabase } from "../e2e/environment";
 import { resetFixtures } from "../e2e/seed";
@@ -207,9 +207,9 @@ describe("people discovery and visual previews", () => {
     expect(list.previewImages).toHaveLength(3);
     for (const image of list.previewImages)
       expect(["preview-4", "preview-5", "preview-6"]).not.toContain(image.alt);
-    const owned = await readOwnedWishlists("e2e-owner");
+    const owned = await readMyWishlists("e2e-owner");
     expect(owned.lists[0].previewImages).toEqual(list.previewImages);
-    expect((await readOwnedWishlists("e2e-member")).lists).not.toContainEqual(
+    expect((await readMyWishlists("e2e-member")).lists).not.toContainEqual(
       expect.objectContaining({ id: listId }),
     );
     await prisma.membership.create({
@@ -220,14 +220,14 @@ describe("people discovery and visual previews", () => {
       data: { visibility: "PRIVATE" },
     });
     expect((await discoverLists({})).lists).toEqual([]);
-    expect(
-      (await readOwnedWishlists("e2e-owner")).lists[0].previewImages,
-    ).toEqual(list.previewImages);
+    expect((await readMyWishlists("e2e-owner")).lists[0].previewImages).toEqual(
+      list.previewImages,
+    );
     await prisma.wishlist.update({
       where: { id: listId },
       data: { publication: "DRAFT" },
     });
-    const draftPreviews = (await readOwnedWishlists("e2e-owner")).lists[0]
+    const draftPreviews = (await readMyWishlists("e2e-owner")).lists[0]
       .previewImages;
     expect(draftPreviews).toHaveLength(3);
     expect(draftPreviews[0].alt).toBe("preview-6");

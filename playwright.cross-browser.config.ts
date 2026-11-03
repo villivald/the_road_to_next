@@ -19,6 +19,8 @@ export default defineConfig({
   ...baseline,
   testMatch: [
     "**/native-forms.spec.ts",
+    "**/user-testing.spec.ts",
+    "**/layout-review.spec.ts",
     "**/localization.spec.ts",
     "**/usability.spec.ts",
     "**/group-reservations.spec.ts",

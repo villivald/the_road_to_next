@@ -15,7 +15,6 @@ import {
   favoritesPath,
   listsPath,
   reservationsPath,
-  sharedListsPath,
 } from "@/paths";
 import { FavoriteError, setFavorite } from "../service/favorites";
 import type { FavoriteKind } from "../types";
@@ -31,13 +30,7 @@ export const changeFavorite = async (
     await limitSourceRequest("favorite-change");
     const saved = z.enum(["true", "false"]).parse(data.get("saved")) === "true";
     await setFavorite(user.id, { kind, targetId, saved });
-    for (const path of [
-      favoritesPath,
-      browsePath,
-      listsPath,
-      sharedListsPath,
-      reservationsPath,
-    ])
+    for (const path of [favoritesPath, browsePath, listsPath, reservationsPath])
       revalidatePath(path);
     revalidatePath("/lists/[listId]", "page");
     revalidatePath("/lists/[listId]/wishes/[wishId]", "page");

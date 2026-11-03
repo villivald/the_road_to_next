@@ -54,6 +54,7 @@ export default async function ListPage({
     sort?: string;
     view?: string;
     page?: string;
+    reserved?: string;
   }>;
 }) {
   const t = await getText();
@@ -86,7 +87,9 @@ export default async function ListPage({
           section === "favorites"
             ? favoritesPath
             : section === "lists"
-              ? listsPath
+              ? list.owner?.username !== user?.username
+                ? `${listsPath}?shared=1`
+                : listsPath
               : section === "reservations"
                 ? reservationsPath
                 : browsePath
@@ -103,11 +106,7 @@ export default async function ListPage({
 
       {list.canManage && (created === "1" || saved === "1") && (
         <SuccessMessage queryKeys={["created", "saved"]}>
-          {created === "1"
-            ? list.publication === "DRAFT"
-              ? t("List created. It’s hidden from viewers until you show it.")
-              : t("List created.")
-            : t("Changes saved.")}
+          {created === "1" ? t("List created.") : t("Changes saved.")}
         </SuccessMessage>
       )}
 
@@ -127,6 +126,14 @@ export default async function ListPage({
                 />
               )}
               <h1>{list.title}</h1>
+              {list.owner && (
+                <p className={styles.muted}>
+                  <span className={styles["visually-hidden"]}>
+                    {t("List owner")}:{" "}
+                  </span>
+                  <span>@{list.owner.username}</span>
+                </p>
+              )}
             </div>
           </div>
           <div className={headerStyles.toolbar}>

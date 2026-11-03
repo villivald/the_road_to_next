@@ -145,22 +145,24 @@ export default async function PlanPage({
             {t("Request a refund")}
           </a>
         </div>
-        <details className={shell.disclosure}>
-          <summary>{t("Canceling or changing a plan")}</summary>
-          <p>
-            {t(
-              "Open Manage subscription to stop renewal in Paddle. Your paid access remains until its end date. To switch between monthly and annual billing, cancel renewal and choose the other plan after your paid period ends.",
-            )}
-          </p>
-        </details>
-        <details className={shell.disclosure}>
-          <summary>{t("Receipts and refunds")}</summary>
-          <p>
-            {t(
-              "Use Manage subscription to find your payment history in Paddle. For a refund, use Request a refund to contact Paddle Buyer Support. A full approved refund removes access from that payment; partial refunds and separate promo access are unaffected.",
-            )}
-          </p>
-        </details>
+        <div className={styles["help-topics"]}>
+          <details className={shell.disclosure}>
+            <summary>{t("Canceling or changing a plan")}</summary>
+            <p>
+              {t(
+                "Open Manage subscription to stop renewal in Paddle. Your paid access remains until its end date. To switch between monthly and annual billing, cancel renewal and choose the other plan after your paid period ends.",
+              )}
+            </p>
+          </details>
+          <details className={shell.disclosure}>
+            <summary>{t("Receipts and refunds")}</summary>
+            <p>
+              {t(
+                "Use Manage subscription to find your payment history in Paddle. For a refund, use Request a refund to contact Paddle Buyer Support. A full approved refund removes access from that payment; partial refunds and separate promo access are unaffected.",
+              )}
+            </p>
+          </details>
+        </div>
         <p className={styles.meta}>
           {t("Need help with a payment?")}{" "}
           <a href="mailto:support@wishlist.fi" className={styles.fact}>

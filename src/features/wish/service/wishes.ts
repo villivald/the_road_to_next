@@ -47,7 +47,12 @@ const orderings = {
 export const readListWishes = async (
   listId: string,
   userId: string | null,
-  options: { sort?: string; view?: string; page?: number } = {},
+  options: {
+    sort?: string;
+    view?: string;
+    page?: number;
+    reserved?: boolean;
+  } = {},
 ) => {
   const sort = wishSortSchema.parse(options.sort);
   const view = wishViewSchema.parse(options.view);
@@ -60,19 +65,31 @@ export const readListWishes = async (
   const results = await prisma.wish.findMany({
     where: {
       wishlistId: listId,
-      ...readableWishes(userId),
+      ...readableWishes(userId, true),
+      ...(options.reserved
+        ? { reservations: { some: { endedAt: null } } }
+        : {}),
       fulfilledAt: view === "fulfilled" ? { not: null } : null,
     },
-    select: { ...wishFields, ...reservationStatus },
+    select: {
+      ...wishFields,
+      ...reservationStatus,
+      reservations: {
+        where: participantReservation(userId ?? ""),
+        select: { id: true },
+        take: 1,
+      },
+    },
     orderBy: orderings[sort],
     skip: (page - 1) * 20,
     take: 21,
   });
 
   return {
-    wishes: results.slice(0, 20).map(({ _count, ...wish }) => ({
+    wishes: results.slice(0, 20).map(({ _count, reservations, ...wish }) => ({
       ...wish,
       isReserved: _count.reservations > 0,
+      isReservedByYou: reservations.length > 0,
     })),
     hasNextPage: results.length > 20,
     page,

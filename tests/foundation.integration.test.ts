@@ -50,7 +50,7 @@ describe("wishlist database invariants", () => {
       }),
     ).toBe(1);
   });
-  it("defaults to a public draft with independent wish states", async () => {
+  it("defaults to a visible public list with reservations enabled and independent wish states", async () => {
     const list = await prisma.wishlist.create({
       data: {
         id: "e2e-defaults",
@@ -62,9 +62,9 @@ describe("wishlist database invariants", () => {
       include: { wishes: true },
     });
     expect(list).toMatchObject({
-      publication: "DRAFT",
+      publication: "PUBLISHED",
       visibility: "PUBLIC",
-      reservationsEnabled: false,
+      reservationsEnabled: true,
       archivedAt: null,
     });
     expect(list.wishes[0]).toMatchObject({

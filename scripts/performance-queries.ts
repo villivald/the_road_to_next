@@ -18,7 +18,7 @@ Object.assign(globalThis, { prisma });
 let durations: number[] = [];
 prisma.$on("query", ({ duration }) => durations.push(duration));
 try {
-  const { readOwnedWishlists } =
+  const { readMyWishlists } =
     await import("../src/features/wishlist/service/lists");
   const { discoverLists, discoverWishes } =
     await import("../src/features/discovery/service/discovery");
@@ -30,7 +30,7 @@ try {
     select: { id: true },
   });
   const operations = [
-    { name: "my-lists", run: () => readOwnedWishlists(ownerId) },
+    { name: "my-lists", run: () => readMyWishlists(ownerId) },
     { name: "browse-lists", run: () => discoverLists({}, ownerId) },
     { name: "browse-wishes", run: () => discoverWishes({}, ownerId) },
     ...(list

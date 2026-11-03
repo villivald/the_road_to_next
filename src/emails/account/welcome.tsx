@@ -2,9 +2,9 @@ import { createText } from "@/i18n/text";
 import {
   accountProfilePath,
   browsePath,
+  listsPath,
   newListPath,
   reservationsPath,
-  sharedListsPath,
 } from "@/paths";
 import {
   EmailAction,
@@ -51,15 +51,15 @@ export default function WelcomeEmail({
             )}
           </>,
           <>
-            <strong>{t("Publish and share it.")}</strong>{" "}
+            <strong>{t("Share your list.")}</strong>{" "}
             {t(
-              "New lists start hidden. Choose Publish list in List settings, then share the link. Public lists also appear in Browse.",
+              "New lists are visible immediately. Share the link, or hide the list while you prepare it. Public lists also appear in Browse.",
             )}
           </>,
           <>
             <strong>{t("Let people reserve gifts.")}</strong>{" "}
             {t(
-              "Turn on Allow reservations in List settings. A verified account is needed to reserve.",
+              "Reservations are on by default. You can turn them off in List settings. A verified account is needed to reserve.",
             )}
           </>,
         ]}
@@ -103,7 +103,7 @@ export default function WelcomeEmail({
             )}
           </>,
           <>
-            <EmailLink href={emailUrl(sharedListsPath, locale)}>
+            <EmailLink href={emailUrl(`${listsPath}?shared=1`, locale)}>
               {t("Lists shared with you")}
             </EmailLink>
             {" — "}

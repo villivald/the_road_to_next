@@ -4,7 +4,12 @@ import {
   requirePremium,
 } from "@/features/premium/service/entitlements";
 import type { Prisma } from "@/generated/prisma/client";
+import {
+  backgroundEvents,
+  publishBackgroundEvents,
+} from "@/lib/background-events";
 import { prisma } from "@/lib/prisma";
+import { queueInvitationAcceptedEmail } from "./acceptance-email";
 import { lockSharing, requireAdmin, SharingError } from "./access";
 import { invitationSchema } from "./schemas";
 
@@ -150,7 +155,7 @@ export const acceptInvitation = async (
     select: { wishlistId: true },
   });
   if (!locator) throw new SharingError(unavailable);
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const { user, list } = await lockSharing(
       tx,
       userId,
@@ -182,6 +187,11 @@ export const acceptInvitation = async (
       where: { id: invitationId },
       data: { acceptedAt: new Date() },
     });
-    return { listId: list.id };
+    const emailId = await queueInvitationAcceptedEmail(tx, invitation, userId);
+    return { listId: list.id, emailId };
   });
+  await publishBackgroundEvents(backgroundEvents.accountEmail, [
+    result.emailId,
+  ]);
+  return { listId: result.listId };
 };

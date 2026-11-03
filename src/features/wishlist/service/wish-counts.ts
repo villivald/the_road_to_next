@@ -1,20 +1,20 @@
 import { prisma } from "@/lib/prisma";
-import { manageableLists } from "./access";
+import { readableLists } from "./access";
 
 type WishCounts = {
   availableWishCount: number;
   reservedWishCount: number;
 };
 
-export const readManagedWishCounts = async (
-  userId: string,
+export const readWishCounts = async (
+  userId: string | null,
   listIds: string[],
 ): Promise<Map<string, WishCounts>> => {
   if (!listIds.length) return new Map();
 
   const where = {
     wishlistId: { in: listIds },
-    wishlist: manageableLists(userId),
+    wishlist: readableLists(userId),
     hidden: false,
     fulfilledAt: null,
   };

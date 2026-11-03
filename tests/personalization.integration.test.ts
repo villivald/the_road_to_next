@@ -154,6 +154,10 @@ it("requires a live admin session, publication and owner Premium for card downlo
     ...input,
     visibility: "PRIVATE",
   });
+  await prisma.wishlist.update({
+    where: { id: list.id },
+    data: { publication: "DRAFT" },
+  });
   expect(await readSharingCard(user.id, session.id, list.id)).toBeNull();
   await publish(list.id);
   expect(await readSharingCard(user.id, session.id, list.id)).toMatchObject({

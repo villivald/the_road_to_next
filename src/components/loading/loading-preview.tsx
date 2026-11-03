@@ -88,47 +88,21 @@ function SkeletonFields({ count = 2 }: { count?: number }) {
 export function CatalogSkeleton({
   kind = "browse",
 }: {
-  kind?: "browse" | "lists" | "shared";
+  kind?: "browse" | "lists";
 }) {
   const t = useText();
 
-  const { heading, description } = {
-    browse: {
-      heading: t("Browse wishlists"),
-      description: t(
-        "Explore public lists, available wishes, and the people behind them.",
-      ),
-    },
-    lists: {
-      heading: t("My lists"),
-      description: t("Your wishes, in one place."),
-    },
-    shared: {
-      heading: t("Lists shared with you"),
-      description: t("Lists owned by other people that you have joined."),
-    },
-  }[kind];
-
+  const heading = t(kind === "browse" ? "Browse wishlists" : "My lists");
   return (
     <LoadingFrame
       label={t("Loading {value0}…", { value0: heading.toLowerCase() })}
     >
-      {kind === "shared" && (
-        <span className={styles["back-label"]}>{t("Back to my lists")}</span>
-      )}
       {kind === "browse" ? (
         <BrowseControls filters={parseDiscoveryQuery({})} />
-      ) : kind === "lists" ? (
-        <MyListsControls />
       ) : (
-        <div className={shell["page-heading"]}>
-          <div>
-            <h1>{heading}</h1>
-            <p className={shell.muted}>{description}</p>
-          </div>
-        </div>
+        <MyListsControls />
       )}
-      <SkeletonCards media={kind !== "shared"} />
+      <SkeletonCards />
     </LoadingFrame>
   );
 }
