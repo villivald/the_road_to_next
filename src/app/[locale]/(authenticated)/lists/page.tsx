@@ -1,25 +1,15 @@
 import { List } from "lucide-react";
 import type { Metadata } from "next";
-import { navigationPath } from "@/app/_navigation/navigation-path";
-import { CardActions } from "@/components/cards/card-actions";
-import { CardMediaLink, ListPreview } from "@/components/cards/card-media";
-import cardStyles from "@/components/cards/cards.module.css";
-import { ListStatus } from "@/components/cards/list-status";
-import { ListWishCounts } from "@/components/cards/list-wish-counts";
-import { ReservationAvailability } from "@/components/cards/reservation-availability";
-import { ActionForm } from "@/components/form/action-form";
 import { SuccessMessage } from "@/components/form/success-message";
 import styles from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
 import { readFavoriteIds } from "@/features/favorites/service/favorites";
-import { ListTheme } from "@/features/premium/components/list-theme";
-import { deleteMembership } from "@/features/sharing/actions/manage-sharing";
+import { MyListCard } from "@/features/wishlist/components/my-list-card";
 import { MyListsControls } from "@/features/wishlist/components/my-lists-controls";
 import { readMyWishlists } from "@/features/wishlist/service/lists";
 import { Link } from "@/i18n/navigation";
 import { getText } from "@/i18n/server";
-import { listSettingsPath, sharingPath } from "@/paths";
-import { listPath, listsPath } from "@/paths";
+import { listsPath } from "@/paths";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getText();
@@ -84,105 +74,11 @@ export default async function ListsPage({
       {lists.length ? (
         <ul className={styles["list-grid"]}>
           {lists.map((list) => (
-            <li key={list.id} className={styles["list-card"]}>
-              {list.title ? (
-                <>
-                  <ListTheme theme={list.theme} media>
-                    <CardMediaLink
-                      path={navigationPath(listPath(list.id), "lists")}
-                      title={list.title}
-                    >
-                      <ListPreview
-                        image={list.image}
-                        images={list.previewImages}
-                        title={list.title}
-                      />
-                    </CardMediaLink>
-                  </ListTheme>
-                  <h2>
-                    <Link href={navigationPath(listPath(list.id), "lists")}>
-                      {list.title}
-                    </Link>
-                  </h2>
-                  {list.owner && !list.isOwner && (
-                    <p className={cardStyles["list-owner"]}>
-                      @{list.owner.username}
-                    </p>
-                  )}
-                  <ListStatus
-                    publication={list.publication}
-                    visibility={list.visibility}
-                  />
-                  <div className={cardStyles["list-footer"]}>
-                    <ListWishCounts
-                      availableWishCount={list.availableWishCount}
-                      reservedWishCount={list.reservedWishCount}
-                    />
-                    <ReservationAvailability
-                      enabled={list.reservationsEnabled}
-                    />
-                    <CardActions
-                      path={listPath(list.id)}
-                      section="lists"
-                      settingsPath={listSettingsPath(list.id)}
-                      title={list.title}
-                      canManage={list.canManage}
-                      favorite={{
-                        kind: "list",
-                        targetId: list.id,
-                        saved: favoriteIds.includes(list.id),
-                      }}
-                      sharingPath={
-                        list.canManage ? sharingPath(list.id) : undefined
-                      }
-                      canCopy={
-                        list.publication === "PUBLISHED" &&
-                        list.visibility === "PUBLIC"
-                      }
-                    />
-                  </div>
-                </>
-              ) : (
-                <>
-                  <h2>{t("Hidden list")}</h2>
-                  <p className={styles.muted}>
-                    {t("· Available when the admins show it")}
-                  </p>
-                </>
-              )}
-              {!list.isOwner && list.membership && (
-                <>
-                  <p className={styles.muted}>
-                    {list.membership.role === "ADMIN"
-                      ? t("Admin")
-                      : t("Member")}
-                  </p>
-                  <ActionForm
-                    requireConfirmation
-                    action={deleteMembership.bind(
-                      null,
-                      list.id,
-                      list.membership.id,
-                    )}
-                    label={t("Leave list")}
-                    pendingLabel={t("Leaving…")}
-                    destructive
-                  >
-                    <label className={styles["checkbox-label"]}>
-                      <input
-                        type="checkbox"
-                        name="confirm"
-                        value="yes"
-                        required
-                      />
-                      {t(
-                        "Remove my membership. I will lose private access and any reservations that require it.",
-                      )}
-                    </label>
-                  </ActionForm>
-                </>
-              )}
-            </li>
+            <MyListCard
+              key={list.id}
+              list={list}
+              favorite={favoriteIds.includes(list.id)}
+            />
           ))}
         </ul>
       ) : (

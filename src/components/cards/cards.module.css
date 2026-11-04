@@ -226,8 +226,10 @@
 }
 
 .reserved {
-  color: var(--positive);
-  background: var(--accent);
+  color: var(--foreground);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--input);
+  font-weight: 650;
 }
 
 .wish-summary {
@@ -442,13 +444,5 @@
 }
 
 .wish-card[data-reserved="true"] {
-  border-color: var(--positive);
-  box-shadow: inset 0 0 0 2px var(--positive);
-  background: var(--accent);
-}
-
-.wish-card[data-reserved="true"] .reserved {
-  background: var(--positive);
-  color: var(--surface);
-  font-weight: 700;
+  box-shadow: inset 0 3px 0 var(--foreground);
 }

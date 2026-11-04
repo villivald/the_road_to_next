@@ -203,7 +203,6 @@ test("narrow navigation, expanded filters, text resizing and reduced motion", as
   await page.keyboard.press("Enter");
   await expect(page.getByLabel("Minimum price")).toBeVisible();
   await page.getByLabel("Currency", { exact: true }).selectOption("EUR");
-  await page.getByRole("button", { name: "Search", exact: true }).click();
   await expect(page).toHaveURL(/currency=EUR/);
   await expect(page.getByLabel("Minimum price")).toBeVisible();
   await checkPage(page);

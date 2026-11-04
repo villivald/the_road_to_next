@@ -317,7 +317,6 @@ test("people search shows public names and avatars and filters their public list
   await page.evaluate(() => document.fonts.ready);
   await page.getByLabel("Search people").fill("MÜLLER");
   await expect(page.getByLabel("Search people")).toHaveValue("MÜLLER");
-  await page.getByRole("button", { name: "Search", exact: true }).click();
   await expect(page).toHaveURL((url) => url.searchParams.get("q") === "MÜLLER");
   await expect(page.getByRole("heading", { name: "Ada Müller" })).toBeVisible();
   const avatar = page.getByRole("img", { name: "Ada’s avatar" });

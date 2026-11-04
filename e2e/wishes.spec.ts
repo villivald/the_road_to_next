@@ -106,7 +106,6 @@ test("title-only wishes can be hidden, fulfilled, reopened, and deleted", async 
       page.getByRole("heading", { name: "No wishes yet" }),
     ).toBeVisible();
     await page.getByLabel("Show", { exact: true }).selectOption("fulfilled");
-    await page.getByRole("button", { name: "Apply", exact: true }).click();
     await expect(
       page.getByRole("heading", { name: "Fulfilled wishes" }),
     ).toBeVisible();
@@ -284,12 +283,10 @@ test("ordering is stable and private wish data never appears in viewer responses
 
     await visitor.goto(listUrl);
     await visitor.getByLabel("Sort wishes").selectOption("priority");
-    await visitor.getByRole("button", { name: "Apply", exact: true }).click();
     await expect(visitor.getByRole("heading", { level: 3 }).first()).toHaveText(
       "Zebra notebook",
     );
     await visitor.getByLabel("Sort wishes").selectOption("title");
-    await visitor.getByRole("button", { name: "Apply", exact: true }).click();
     await expect(visitor.getByRole("heading", { level: 3 }).first()).toHaveText(
       "Alpha book",
     );

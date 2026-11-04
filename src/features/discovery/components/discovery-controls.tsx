@@ -45,7 +45,7 @@ export function BrowseControls({ filters }: { filters: Filters }) {
           <Link href="/browse?view=users">{t("Find another person")}</Link>
         </p>
       )}
-      <DiscoveryFilters key={JSON.stringify(filters)} filters={filters} />
+      <DiscoveryFilters key={filters.view} filters={filters} />
     </>
   );
 }

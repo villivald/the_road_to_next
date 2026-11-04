@@ -5,6 +5,10 @@
   gap: 1.75rem;
 }
 
+.content noscript {
+  display: none;
+}
+
 .control:disabled {
   background: var(--muted);
   animation: pulse 1.8s ease-in-out infinite;

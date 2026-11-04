@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { AutoFilterForm } from "@/components/auto-filter-form";
 import styles from "@/components/shell.module.css";
 import { currencies } from "@/features/wish/utils/money";
 import { localizedPath } from "@/i18n/config";
@@ -14,10 +14,10 @@ export function DiscoveryFilters({ filters }: { filters: Filters }) {
   const users = filters.view === "users";
 
   return (
-    <form
+    <AutoFilterForm
       action={localizedPath(browsePath, t.locale)}
       className={styles["filter-panel"]}
-      aria-label={t("Browse filters")}
+      label={t("Browse filters")}
     >
       <input type="hidden" name="view" value={filters.view} />
       {filters.owner && (
@@ -56,10 +56,6 @@ export function DiscoveryFilters({ filters }: { filters: Filters }) {
             )}
           </select>
         </div>
-        <button type="submit" className={styles.button}>
-          <Search size={18} aria-hidden="true" />
-          {t("Search")}
-        </button>
       </div>
       {wishes && (
         <details
@@ -155,10 +151,10 @@ export function DiscoveryFilters({ filters }: { filters: Filters }) {
             )}
           </p>
         )}
-        <Link href={`${browsePath}?view=${filters.view}`}>
+        <Link data-reset-filters href={`${browsePath}?view=${filters.view}`}>
           {t("Clear filters")}
         </Link>
       </div>
-    </form>
+    </AutoFilterForm>
   );
 }

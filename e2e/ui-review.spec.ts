@@ -55,7 +55,8 @@ test("browse previews, reservation shortcuts and reservation navigation retain t
     .getByRole("link", { name: "Open Gift ideas from preview" })
     .click();
   await expect(active(page)).toHaveText("Browse");
-  await page.getByRole("button", { name: "Apply", exact: true }).click();
+  await page.getByLabel("Sort wishes").selectOption("title");
+  await expect(page).toHaveURL(/sort=title/);
   await expect(active(page)).toHaveText("Browse");
   await page.getByRole("link", { name: "Open A book from preview" }).click();
   await expect(active(page)).toHaveText("Browse");
@@ -213,12 +214,6 @@ for (const locale of ["en", "fi"] as const) {
     await page
       .getByLabel(fi ? "Näytä" : "Show", { exact: true })
       .selectOption("fulfilled");
-    await page
-      .getByRole("button", {
-        name: fi ? "Näytä tulokset" : "Apply",
-        exact: true,
-      })
-      .click();
     await expect(
       page
         .getByRole("main")

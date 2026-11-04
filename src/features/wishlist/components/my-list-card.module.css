@@ -1,0 +1,91 @@
+.identity {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.65rem;
+  min-width: 0;
+}
+
+.meta > p {
+  min-width: 0;
+  font-size: 0.85rem;
+}
+
+.role {
+  padding-inline-start: 0.65rem;
+  border-inline-start: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 0.85rem;
+}
+
+.leave {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  padding: 0.5rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--muted-foreground);
+}
+
+.leave:hover {
+  color: var(--destructive);
+  background: var(--error-background);
+  border-color: var(--input);
+}
+
+.dialog {
+  width: min(34rem, calc(100% - 2rem));
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  padding: clamp(1rem, 3vw, 1.75rem);
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--input);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+
+.dialog::backdrop {
+  background: rgb(0 0 0 / 55%);
+}
+
+.dialog-title {
+  margin-block: 0.75rem 1.25rem;
+  color: var(--muted-foreground);
+}
+
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+@media (width <= 480px) {
+  .dialog {
+    width: calc(100% - 1rem);
+  }
+
+  .confirmation {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .dialog-actions > button {
+    width: 100%;
+  }
+}

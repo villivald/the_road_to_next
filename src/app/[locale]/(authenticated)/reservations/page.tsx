@@ -3,7 +3,6 @@ import { navigationPath } from "@/app/_navigation/navigation-path";
 import { CardMedia, CardMediaLink } from "@/components/cards/card-media";
 import cardStyles from "@/components/cards/cards.module.css";
 import { WishCard } from "@/components/cards/wish-card";
-import { WishStatus } from "@/components/cards/wish-status";
 import { createWishTones } from "@/components/cards/wish-tones";
 import { ActionForm } from "@/components/form/action-form";
 import { SuccessMessage } from "@/components/form/success-message";
@@ -126,7 +125,7 @@ export default async function ReservationsPage({
       {reservations.length ? (
         <ul className={styles["list-grid"]}>
           {reservations.map(({ id, wish, groupEnabled }) => (
-            <WishCard key={id} tone={tones[wish.id]} reserved>
+            <WishCard key={id} tone={tones[wish.id]}>
               <CardMediaLink
                 path={navigationPath(
                   wishPath(wish.wishlist.id, wish.id),
@@ -163,7 +162,6 @@ export default async function ReservationsPage({
                 </p>
                 <WishPriority priority={wish.priority} />
               </div>
-              <WishStatus reserved reservedByYou />
               <div className={groupStyles["card-footer"]}>
                 {groupEnabled ? (
                   <Link

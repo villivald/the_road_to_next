@@ -182,7 +182,6 @@ test("currency filters, pagination and keyboard search work in a narrow dark lay
   await page.goto("/en/browse?view=wishes");
   await page.getByLabel("Search wishes").fill("Reading pick");
   await page.getByLabel("Sort by").selectOption("price-low");
-  await page.getByRole("button", { name: "Search", exact: true }).click();
   await expect(page.getByRole("main").getByRole("alert")).toContainText(
     "Choose a currency",
   );
@@ -191,8 +190,7 @@ test("currency filters, pagination and keyboard search work in a narrow dark lay
   await page.getByLabel("Maximum price").fill("21");
   await page.getByLabel("Minimum priority").selectOption("5");
   await page.getByLabel("Reservations enabled").check();
-  await page.getByRole("button", { name: "Search", exact: true }).focus();
-  await page.keyboard.press("Enter");
+  await expect(page.getByLabel("Reservations enabled")).toBeFocused();
   const results = page.getByRole("list", { name: "Public wishes" });
   await expect(results.getByRole("listitem")).toHaveCount(20);
   await expect(results.getByRole("heading").first()).toHaveText(
@@ -218,7 +216,6 @@ test("currency filters, pagination and keyboard search work in a narrow dark lay
     "Reading pick 00",
   );
   await page.getByLabel("Currency", { exact: true }).selectOption("USD");
-  await page.getByRole("button", { name: "Search", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "No results found" }),
   ).toBeVisible();

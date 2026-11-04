@@ -20,6 +20,7 @@ export default defineConfig({
   testMatch: [
     "**/native-forms.spec.ts",
     "**/user-testing.spec.ts",
+    "**/filter-controls.spec.ts",
     "**/layout-review.spec.ts",
     "**/localization.spec.ts",
     "**/usability.spec.ts",

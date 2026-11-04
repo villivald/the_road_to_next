@@ -470,7 +470,6 @@
   "Save changes": "Tallenna muutokset",
   "Save profile": "Tallenna profiili",
   "Saving…": "Tallennetaan…",
-  "Search": "Hae",
   "Select the link above and copy it manually.": "Valitse yllä oleva linkki ja kopioi se itse.",
   "Selected image preview": "Valitun kuvan esikatselu",
   "Send a new code": "Lähetä uusi koodi",
@@ -667,7 +666,6 @@
   "{value0} will be able to edit wishes, change settings, and manage members.": "{value0} voi muokata toiveita, muuttaa asetuksia ja hallita jäseniä.",
   "{value0} will lose admin controls. Invitations they sent that have not been accepted will be canceled.": "{value0} menettää ylläpitäjän oikeudet. Hänen lähettämänsä hyväksymättömät kutsut peruutetaan.",
   "{value0}…": "{value0}…",
-  "· Available when the admins show it": "· Avautuu, kun ylläpitäjät julkaisevat listan",
   "” and all its wishes and reservations will be permanently deleted. This cannot be undone.": "” sekä sen kaikki toiveet ja varaukset poistetaan pysyvästi. Tätä ei voi perua.",
   "” and its reservations will be permanently deleted. This cannot be undone.": "” ja sen varaukset poistetaan pysyvästi. Tätä ei voi perua.",
   "”. Start with a title and add any details you like.": "”. Aloita nimestä ja lisää haluamasi tiedot.",
@@ -1188,5 +1186,7 @@
   "List": "Lista",
   "Share your list.": "Jaa listasi.",
   "New lists are visible immediately. Share the link, or hide the list while you prepare it. Public lists also appear in Browse.": "Uudet listat näkyvät heti. Jaa linkki tai piilota lista valmistelun ajaksi. Julkiset listat näkyvät myös Selaa-sivulla.",
-  "Reservations are on by default. You can turn them off in List settings. A verified account is needed to reserve.": "Varaukset ovat oletuksena käytössä. Voit poistaa ne käytöstä listan asetuksissa. Varaaminen edellyttää vahvistettua tiliä."
+  "Reservations are on by default. You can turn them off in List settings. A verified account is needed to reserve.": "Varaukset ovat oletuksena käytössä. Voit poistaa ne käytöstä listan asetuksissa. Varaaminen edellyttää vahvistettua tiliä.",
+  "Leave this list?": "Poistutaanko listalta?",
+  "Available when the admins show it.": "Voit avata listan, kun ylläpitäjät asettavat sen näkyviin."
 }

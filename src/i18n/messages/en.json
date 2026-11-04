@@ -470,7 +470,6 @@
   "Save changes": "Save changes",
   "Save profile": "Save profile",
   "Saving…": "Saving…",
-  "Search": "Search",
   "Select the link above and copy it manually.": "Select the link above and copy it manually.",
   "Selected image preview": "Selected image preview",
   "Send a new code": "Send a new code",
@@ -667,7 +666,6 @@
   "{value0} will be able to edit wishes, change settings, and manage members.": "{value0} will be able to edit wishes, change settings, and manage members.",
   "{value0} will lose admin controls. Invitations they sent that have not been accepted will be canceled.": "{value0} will lose admin controls. Invitations they sent that have not been accepted will be canceled.",
   "{value0}…": "{value0}…",
-  "· Available when the admins show it": "· Available when the admins publish it",
   "” and all its wishes and reservations will be permanently deleted. This cannot be undone.": "” and all its wishes and reservations will be permanently deleted. This cannot be undone.",
   "” and its reservations will be permanently deleted. This cannot be undone.": "” and its reservations will be permanently deleted. This cannot be undone.",
   "”. Start with a title and add any details you like.": "”. Start with a title and add any details you like.",
@@ -1188,5 +1186,7 @@
   "List": "List",
   "Share your list.": "Share your list.",
   "New lists are visible immediately. Share the link, or hide the list while you prepare it. Public lists also appear in Browse.": "New lists are visible immediately. Share the link, or hide the list while you prepare it. Public lists also appear in Browse.",
-  "Reservations are on by default. You can turn them off in List settings. A verified account is needed to reserve.": "Reservations are on by default. You can turn them off in List settings. A verified account is needed to reserve."
+  "Reservations are on by default. You can turn them off in List settings. A verified account is needed to reserve.": "Reservations are on by default. You can turn them off in List settings. A verified account is needed to reserve.",
+  "Leave this list?": "Leave this list?",
+  "Available when the admins show it.": "Available when the admins show it."
 }

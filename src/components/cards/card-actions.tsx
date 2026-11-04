@@ -7,6 +7,7 @@ import {
   Share2,
   UserRound,
 } from "lucide-react";
+import type { ReactNode } from "react";
 import {
   type DetailSection,
   navigationPath,
@@ -46,6 +47,7 @@ export function CardActions({
   productUrl,
   canReserve = false,
   favorite,
+  children,
 }: {
   path: string;
   title: string;
@@ -57,6 +59,7 @@ export function CardActions({
   productUrl?: string | null;
   canReserve?: boolean;
   favorite?: FavoriteTarget;
+  children?: ReactNode;
 }) {
   const t = useText();
 
@@ -123,6 +126,7 @@ export function CardActions({
             <Share2 size={18} aria-hidden="true" />
           </Link>
         )}
+        {children}
       </div>
     </div>
   );

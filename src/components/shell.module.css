@@ -1346,22 +1346,12 @@
 
 .search-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.4fr) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.4fr);
   align-items: end;
   gap: 1rem;
 }
 
 @media (width <= 700px) {
-  .search-row {
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-
-  .search-row > .field:first-child {
-    grid-column: 1 / -1;
-  }
-}
-
-@media (width <= 360px) {
   .search-row {
     grid-template-columns: minmax(0, 1fr);
   }

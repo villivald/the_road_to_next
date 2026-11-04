@@ -3,13 +3,13 @@ import {
   type DetailSection,
   navigationPath,
 } from "@/app/_navigation/navigation-path";
+import { AutoFilterForm } from "@/components/auto-filter-form";
 import { CardActions } from "@/components/cards/card-actions";
 import { CardMedia, CardMediaLink } from "@/components/cards/card-media";
 import cardStyles from "@/components/cards/cards.module.css";
 import { WishCard } from "@/components/cards/wish-card";
 import { WishStatus } from "@/components/cards/wish-status";
 import { createWishTones } from "@/components/cards/wish-tones";
-import { QueryToggle } from "@/components/query-toggle";
 import styles from "@/components/shell.module.css";
 import { readFavoriteIds } from "@/features/favorites/service/favorites";
 import { localizedPath } from "@/i18n/config";
@@ -79,12 +79,12 @@ export async function WishCollection({
         )}
       </div>
 
-      <form
+      <AutoFilterForm
         action={localizedPath(listPath(listId), t.locale)}
         className={styles["wish-toolbar"]}
+        label={t("Wishes")}
       >
         <input type="hidden" name="from" value={section} />
-        {reservedOnly && <input type="hidden" name="reserved" value="1" />}
         <div className={styles.field}>
           <label htmlFor="wish-sort">{t("Sort wishes")}</label>
           <select id="wish-sort" name="sort" defaultValue={sort}>
@@ -103,16 +103,17 @@ export async function WishCollection({
             </select>
           </div>
         )}
-        <button className={styles["secondary-button"]} type="submit">
-          {t("Apply")}
-        </button>
-      </form>
-
-      <QueryToggle
-        name="reserved"
-        checked={reservedOnly}
-        label={t("Only reserved wishes")}
-      />
+        <label className={styles["checkbox-label"]}>
+          <input
+            type="checkbox"
+            role="switch"
+            name="reserved"
+            value="1"
+            defaultChecked={reservedOnly}
+          />
+          {t("Only reserved wishes")}
+        </label>
+      </AutoFilterForm>
 
       {wishes.length ? (
         <ul className={styles["list-grid"]}>
