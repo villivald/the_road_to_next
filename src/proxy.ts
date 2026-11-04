@@ -10,6 +10,13 @@ const localize = createMiddleware(routing);
 
 export async function proxy(request: NextRequest) {
   const path = withoutLocale(request.nextUrl.pathname);
+  const locale = request.nextUrl.pathname.split("/")[1];
+  if (path === "/lists/shared" && isLocale(locale)) {
+    const url = request.nextUrl.clone();
+    url.pathname = localizedPath("/lists", locale);
+    url.searchParams.set("shared", "1");
+    return NextResponse.redirect(url);
+  }
   const guest = path === "/guest" || path.startsWith("/guest/");
   // Guest pages remain read-only, including localized and legacy URLs.
   if (guest && !["GET", "HEAD"].includes(request.method)) {

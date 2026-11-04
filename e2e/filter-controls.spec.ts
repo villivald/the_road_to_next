@@ -35,6 +35,21 @@ test.beforeEach(async () => {
 });
 
 for (const locale of ["en", "fi"] as const) {
+  test(`${locale}: clearing the last advanced filter keeps its controls open and focused`, async ({
+    page,
+  }) => {
+    await page.goto(`/${locale}/browse?view=wishes&priority=4`);
+    await expect(page.locator("[data-loading-preview]")).not.toBeVisible();
+    const priority = page.locator("#browse-priority");
+    await priority.focus();
+    await priority.selectOption("");
+    await expect(page).toHaveURL((url) => !url.searchParams.has("priority"));
+    await expect(page.locator("details")).toHaveJSProperty("open", true);
+    await expect(priority).toBeFocused();
+    await page.locator("details > summary").click();
+    await expect(page.locator("details")).toHaveJSProperty("open", false);
+  });
+
   test(`${locale}: browse filters update automatically and restore controls after clear and Back`, async ({
     page,
   }) => {

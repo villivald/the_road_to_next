@@ -85,8 +85,13 @@ test("shared toggle combines cards, preserves pagination state and redirects old
   await expect(
     page.getByRole("heading", { name: "Shared birthday wishes" }),
   ).toHaveCount(0);
-  await page.goto("/en/lists/shared");
-  await expect(page).toHaveURL(/\/lists\?shared=1/);
+  await page.goto("/en/lists/shared?utm_source=qa#shared-lists");
+  await expect(page).toHaveURL(
+    (url) =>
+      url.pathname === "/en/lists" && url.searchParams.get("shared") === "1",
+  );
+  expect(new URL(page.url()).searchParams.get("utm_source")).toBe("qa");
+  expect(new URL(page.url()).hash).toBe("#shared-lists");
   await expect(toggle).toBeChecked();
   await page
     .getByRole("heading", { name: "Shared birthday wishes" })

@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { AutoFilterForm } from "@/components/auto-filter-form";
 import styles from "@/components/shell.module.css";
 import { currencies } from "@/features/wish/utils/money";
@@ -12,6 +15,16 @@ export function DiscoveryFilters({ filters }: { filters: Filters }) {
 
   const wishes = filters.view === "wishes";
   const users = filters.view === "users";
+  const hasAdvancedFilters = !!(
+    filters.currency ||
+    filters.min ||
+    filters.max ||
+    filters.priority ||
+    filters.sort.startsWith("price")
+  );
+  const [advancedOpen, setAdvancedOpen] = useState<boolean | undefined>(
+    hasAdvancedFilters ? true : undefined,
+  );
 
   return (
     <AutoFilterForm
@@ -60,15 +73,8 @@ export function DiscoveryFilters({ filters }: { filters: Filters }) {
       {wishes && (
         <details
           className={styles.disclosure}
-          open={
-            !!(
-              filters.currency ||
-              filters.min ||
-              filters.max ||
-              filters.priority ||
-              filters.sort.startsWith("price")
-            )
-          }
+          open={advancedOpen ?? hasAdvancedFilters}
+          onToggle={(event) => setAdvancedOpen(event.currentTarget.open)}
         >
           <summary>{t("Price and priority filters")}</summary>
           <div className={styles["form-row"]}>

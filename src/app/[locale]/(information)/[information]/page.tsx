@@ -464,7 +464,7 @@ const information = (
             <Link href="/lists">{t("Your wishlists")}</Link>
           </li>
           <li>
-            <Link href="/lists/shared">{t("Lists shared with you")}</Link>
+            <Link href="/lists?shared=1">{t("Lists shared with you")}</Link>
           </li>
           <li>
             <Link href="/reservations">{t("Your reservations")}</Link>
