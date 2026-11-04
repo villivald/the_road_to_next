@@ -76,6 +76,17 @@ describe("wish input", () => {
     expect(formatWishPrice(null, null)).toBe("No price added");
   });
 
+  it.each(["EUR", "USD", "GBP"])(
+    "discards %s when the price is blank or whitespace",
+    (currency) => {
+      for (const price of ["", "   "]) {
+        expect(
+          wishSchema.parse({ title: "A book", price, currency }),
+        ).toMatchObject({ priceMinor: null, currency: null });
+      }
+    },
+  );
+
   it.each([
     "javascript:alert(1)",
     "data:text/html,hello",

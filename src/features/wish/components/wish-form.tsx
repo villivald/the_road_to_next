@@ -72,7 +72,7 @@ export function WishForm({
     description: wish?.description ?? "",
     externalUrl: wish?.externalUrl ?? "",
     price: priceInputValue(wish?.priceMinor ?? null),
-    currency: wish?.currency ?? "",
+    currency: wish?.currency ?? "EUR",
     priority: wish?.priority?.toString() ?? "",
   };
 

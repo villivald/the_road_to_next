@@ -32,6 +32,7 @@ const createPublishedList = async (page: Page) => {
 
 const addWish = async (page: Page, title: string) => {
   await page.getByRole("link", { name: "Add a wish", exact: true }).click();
+  await expect(page.getByLabel("Currency", { exact: true })).toHaveValue("EUR");
   await page.getByLabel("Title", { exact: true }).fill(title);
   await page.getByRole("button", { name: "Add wish", exact: true }).click();
   await expect(
@@ -39,6 +40,18 @@ const addWish = async (page: Page, title: string) => {
   ).toBeVisible();
 
   return new URL(page.url()).pathname;
+};
+
+const readStoredPrice = async (wishUrl: string) => {
+  const prisma = testPrisma();
+  try {
+    return await prisma.wish.findUniqueOrThrow({
+      where: { id: wishUrl.split("/").at(-1)! },
+      select: { priceMinor: true, currency: true },
+    });
+  } finally {
+    await prisma.$disconnect();
+  }
 };
 
 test.beforeEach(resetFixtures);
@@ -52,6 +65,13 @@ test("title-only wishes can be hidden, fulfilled, reopened, and deleted", async 
   const listUrl = await createPublishedList(page);
   const wishUrl = await addWish(page, "A beautiful notebook");
   await expect(page.getByRole("main")).toContainText("No price added");
+  expect(await readStoredPrice(wishUrl)).toEqual({
+    priceMinor: null,
+    currency: null,
+  });
+  await page.getByRole("link", { name: "Edit wish" }).click();
+  await expect(page.getByLabel("Currency", { exact: true })).toHaveValue("EUR");
+  await page.getByRole("link", { name: "Cancel", exact: true }).click();
   const visitor = await browser.newPage({ baseURL: testOrigin });
 
   try {
@@ -147,6 +167,7 @@ test("validates optional fields, preserves input, and displays all supported cur
 }, info) => {
   await createPublishedList(page);
   await page.getByRole("link", { name: "Add a wish", exact: true }).click();
+  await expect(page.getByLabel("Currency", { exact: true })).toHaveValue("EUR");
   await page.getByLabel("Title", { exact: true }).fill("A fountain pen");
   await page
     .getByLabel("Description (optional)")
@@ -155,7 +176,7 @@ test("validates optional fields, preserves input, and displays all supported cur
     .getByLabel("Product link (optional)")
     .fill("ftp://example.com/pen");
   await page.getByLabel("Price (optional)").fill("1.005");
-  await page.getByLabel("Currency", { exact: true }).selectOption("EUR");
+  await page.getByLabel("Currency", { exact: true }).selectOption("USD");
   await page.getByLabel("Priority (optional)").selectOption("5");
   await page.getByLabel("Hide this wish").check();
   await page.getByRole("button", { name: "Add wish", exact: true }).click();
@@ -179,18 +200,21 @@ test("validates optional fields, preserves input, and displays all supported cur
     /Fine nib/,
   );
   await expect(page.getByLabel("Priority (optional)")).toHaveValue("5");
+  await expect(page.getByLabel("Currency", { exact: true })).toHaveValue("USD");
   await expect(page.getByLabel("Hide this wish")).toBeChecked();
 
   await page
     .getByLabel("Product link (optional)")
     .fill("https://example.com/pen");
   await page.getByLabel("Price (optional)").fill("19,99");
+  await page.getByLabel("Currency", { exact: true }).selectOption("EUR");
   await page.getByLabel("Hide this wish").uncheck();
   await page.getByRole("button", { name: "Add wish", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "A fountain pen", exact: true }),
   ).toBeVisible();
   await expect(page.getByRole("main")).toContainText(/EUR\s*19\.99/);
+  const wishUrl = new URL(page.url()).pathname;
   await expect(
     page.getByRole("img", { name: "Priority: 5 out of 5 stars" }),
   ).toBeVisible();
@@ -204,11 +228,14 @@ test("validates optional fields, preserves input, and displays all supported cur
     scale: "css",
   });
 
-  for (const [currency, amount] of [
-    ["USD", "0"],
-    ["GBP", "12.50"],
+  for (const [savedCurrency, currency, amount] of [
+    ["EUR", "USD", "0"],
+    ["USD", "GBP", "12.50"],
   ]) {
     await page.getByRole("link", { name: "Edit wish" }).click();
+    await expect(page.getByLabel("Currency", { exact: true })).toHaveValue(
+      savedCurrency,
+    );
     await page.getByLabel("Price (optional)").fill(amount);
     await page.getByLabel("Currency", { exact: true }).selectOption(currency);
     await page.getByRole("button", { name: "Save changes" }).click();
@@ -223,12 +250,17 @@ test("validates optional fields, preserves input, and displays all supported cur
   }
 
   await page.getByRole("link", { name: "Edit wish" }).click();
+  await expect(page.getByLabel("Currency", { exact: true })).toHaveValue("GBP");
   await page.getByLabel("Price (optional)").fill("");
   await page.getByLabel("Description (optional)").fill("");
   await page.getByLabel("Product link (optional)").fill("");
   await page.getByLabel("Priority (optional)").selectOption("");
   await page.getByRole("button", { name: "Save changes" }).click();
   await expect(page.getByRole("main")).toContainText("No price added");
+  expect(await readStoredPrice(wishUrl)).toEqual({
+    priceMinor: null,
+    currency: null,
+  });
   await expect(
     page.getByRole("link", { name: "View product (opens in a new tab)" }),
   ).toHaveCount(0);
@@ -374,7 +406,7 @@ test("wish forms fit 320px dark layouts and work with the keyboard", async ({
   await page.getByLabel("Price (optional)").fill("12,50");
   await page.keyboard.press("Tab");
   await expect(page.getByLabel("Currency", { exact: true })).toBeFocused();
-  await page.getByLabel("Currency", { exact: true }).selectOption("EUR");
+  await expect(page.getByLabel("Currency", { exact: true })).toHaveValue("EUR");
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,
