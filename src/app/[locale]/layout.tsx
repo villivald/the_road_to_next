@@ -1,4 +1,5 @@
 import "../globals.css";
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { notFound } from "next/navigation";
@@ -82,6 +83,7 @@ export default async function RootLayout({
             </NavigationProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
+        <Analytics />
       </body>
     </html>
   );
