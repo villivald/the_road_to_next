@@ -50,6 +50,7 @@
     "@prisma/adapter-pg": "7.10.0",
     "@prisma/client": "7.10.0",
     "@vercel/blob": "^2.8.0",
+    "@vercel/speed-insights": "^2.0.0",
     "dotenv": "^18.0.4",
     "inngest": "^4.21.0",
     "lucide-react": "^1.48.0",
