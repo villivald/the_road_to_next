@@ -31,6 +31,7 @@ export default function WelcomeEmail({
       locale={locale}
       title={t("Welcome to Wishlist")}
       preview={t("Create a list, add wishes, and share gift ideas.")}
+      showSocialLinks
     >
       <EmailParagraph>
         {t("Hi {name}, your account is ready. Let’s add your first wishes.", {

@@ -15,6 +15,7 @@ import {
 } from "react-email";
 import { localizedPath, resolveLocale } from "@/i18n/config";
 import { createText } from "@/i18n/text";
+import { communityLinks } from "@/lib/community-links";
 import { getBaseUrl } from "@/utils/url";
 
 export const emailColors = {
@@ -34,11 +35,13 @@ export function EmailLayout({
   preview,
   title,
   children,
+  showSocialLinks = false,
 }: {
   locale?: string;
   preview: string;
   title: string;
   children: ReactNode;
+  showSocialLinks?: boolean;
 }) {
   const language = resolveLocale(locale);
   const t = createText(language);
@@ -133,6 +136,31 @@ export function EmailLayout({
                   {t("Privacy")}
                 </Link>
               </Text>
+              {showSocialLinks && (
+                <Text
+                  style={{
+                    fontSize: "13px",
+                    lineHeight: "1.8",
+                    margin: "10px 0 0",
+                  }}
+                >
+                  <Link
+                    href={communityLinks.instagram}
+                    style={{ color: emailColors.ink }}
+                    rel="noreferrer"
+                  >
+                    Instagram
+                  </Link>
+                  {" · "}
+                  <Link
+                    href={communityLinks.facebook}
+                    style={{ color: emailColors.ink }}
+                    rel="noreferrer"
+                  >
+                    Facebook
+                  </Link>
+                </Text>
+              )}
             </Section>
           </Container>
         </div>

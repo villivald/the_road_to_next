@@ -4,6 +4,7 @@ import {
   Coffee,
   type LucideIcon,
   Mail,
+  MessageCircle,
   Smartphone,
 } from "lucide-react";
 import { headers } from "next/headers";
@@ -12,15 +13,17 @@ import { getAuth } from "@/features/auth/actions/get-auth";
 import { getHomePath } from "@/features/auth/utils/home-path";
 import { Link } from "@/i18n/navigation";
 import { getText } from "@/i18n/server";
+import { communityLinks } from "@/lib/community-links";
 import styles from "./footer.module.css";
 
-const communityLinks: {
-  name: "Instagram" | "Buy Me a Coffee";
+const communityItems: {
+  name: "Instagram" | "Facebook" | "Buy Me a Coffee";
   icon: LucideIcon;
-  href: string | null;
+  href: string;
 }[] = [
-  { name: "Instagram", icon: Camera, href: null },
-  { name: "Buy Me a Coffee", icon: Coffee, href: null },
+  { name: "Instagram", icon: Camera, href: communityLinks.instagram },
+  { name: "Facebook", icon: MessageCircle, href: communityLinks.facebook },
+  { name: "Buy Me a Coffee", icon: Coffee, href: communityLinks.buyMeACoffee },
 ];
 
 export default async function Footer() {
@@ -79,25 +82,18 @@ export default async function Footer() {
           <section className={styles.links} aria-labelledby="footer-community">
             <h2 id="footer-community">{t("Follow and support")}</h2>
             <ul className={styles["community-links"]}>
-              {communityLinks.map(({ name, icon: Icon, href }) => (
+              {communityItems.map(({ name, icon: Icon, href }) => (
                 <li key={name}>
-                  {href ? (
-                    <a className={styles["community-link"]} href={href}>
-                      <Icon size={18} aria-hidden="true" />
-                      <span translate="no">{name}</span>
-                      <ArrowUpRight size={16} aria-hidden="true" />
-                    </a>
-                  ) : (
-                    <span className={styles["community-placeholder"]}>
-                      <Icon size={18} aria-hidden="true" />
-                      <span>
-                        <span translate="no">{name}</span>
-                        <span className={styles["placeholder-label"]}>
-                          {t("Coming soon")}
-                        </span>
-                      </span>
-                    </span>
-                  )}
+                  <a
+                    className={styles["community-link"]}
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <Icon size={18} aria-hidden="true" />
+                    <span translate="no">{name}</span>
+                    <ArrowUpRight size={16} aria-hidden="true" />
+                  </a>
                 </li>
               ))}
             </ul>

@@ -8,6 +8,7 @@ import EmailPasswordReset from "@/emails/password/email-password-reset";
 import GroupEmail from "@/emails/reservation/group";
 import InvitationAcceptedEmail from "@/emails/sharing/accepted";
 import InvitationEmail from "@/emails/sharing/invitation";
+import { communityLinks } from "@/lib/community-links";
 
 afterEach(() => vi.unstubAllEnvs());
 
@@ -75,6 +76,11 @@ it.each(["en", "fi"])(
       expect(Buffer.byteLength(html)).toBeLessThan(100_000);
       expect(plain.length).toBeGreaterThan(100);
       expect(plain).not.toContain("Show list");
+      expect(html).not.toContain(communityLinks.buyMeACoffee);
+      if (email !== emails[0]) {
+        expect(html).not.toContain(communityLinks.instagram);
+        expect(html).not.toContain(communityLinks.facebook);
+      }
     }
     const welcome = await render(emails[0]);
     expect(welcome).not.toContain("<script>");
@@ -85,6 +91,11 @@ it.each(["en", "fi"])(
     expect(welcome).toContain(
       `href="https://wishlist.example/${locale}/reservations"`,
     );
+    expect(welcome).toContain(`href="${communityLinks.instagram}"`);
+    expect(welcome).toContain(`href="${communityLinks.facebook}"`);
+    const plainWelcome = await render(emails[0], { plainText: true });
+    expect(plainWelcome).toContain(communityLinks.instagram);
+    expect(plainWelcome).toContain(communityLinks.facebook);
   },
 );
 

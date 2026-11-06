@@ -81,29 +81,17 @@
 
 .community-links {
   display: grid;
-  gap: 0.5rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.community-link,
-.community-placeholder {
+.community-link {
   display: flex;
   align-items: center;
   gap: 0.6rem;
   min-height: 44px;
   font-size: 0.9rem;
-}
-
-.community-placeholder {
-  color: var(--muted-foreground);
-}
-
-.placeholder-label {
-  display: block;
-  margin-top: 0.15rem;
-  font-size: 0.75rem;
 }
 
 .mobile {
