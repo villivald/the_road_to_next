@@ -1,4 +1,5 @@
 import { consumeRateLimit } from "@/features/auth/service/security";
+import { publicOwners } from "@/features/discovery/service/access";
 import {
   readPremiumAccess,
   requirePremium,
@@ -11,7 +12,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import { queueInvitationAcceptedEmail } from "./acceptance-email";
 import { lockSharing, requireAdmin, SharingError } from "./access";
-import { invitationSchema } from "./schemas";
+import { favoriteInvitationSchema, invitationSchema } from "./schemas";
 
 const unavailable =
   "This invitation is unavailable. Sign in with the invited email or ask the list admin for a new invitation.";
@@ -32,14 +33,35 @@ export const inviteMember = async (
   input: unknown,
   locale = "en",
 ) => {
-  const data = invitationSchema.parse(input);
+  const data =
+    input && typeof input === "object" && "recipientId" in input
+      ? favoriteInvitationSchema.parse(input)
+      : invitationSchema.parse(input);
   await consumeRateLimit("invite-create", userId, 20, 60 * 60 * 1000);
   return prisma.$transaction(async (tx) => {
     const { list, role } = await lockSharing(tx, userId, sessionId, listId);
     requireAdmin(role);
     await requirePremium(list.ownerId!, tx);
+    const favorite =
+      "recipientId" in data
+        ? await tx.user.findFirst({
+            where: {
+              ...publicOwners,
+              id: data.recipientId,
+              NOT: { id: userId },
+              favoritedBy: { some: { userId } },
+            },
+            select: { id: true, email: true, locale: true },
+          })
+        : null;
+    if ("recipientId" in data && !favorite) {
+      throw new SharingError(
+        "This favorite is no longer available. Choose another person or enter an email address.",
+      );
+    }
+    const email = "email" in data ? data.email : favorite!.email;
     const member = await tx.membership.findFirst({
-      where: { wishlistId: listId, user: { email: data.email } },
+      where: { wishlistId: listId, user: { email } },
       select: { id: true },
     });
     if (member) {
@@ -48,13 +70,18 @@ export const inviteMember = async (
     const previous = await tx.invitation.findFirst({
       where: {
         wishlistId: listId,
-        email: data.email,
+        OR: [{ email }, ...(favorite ? [{ recipientId: favorite.id }] : [])],
         acceptedAt: null,
         revokedAt: null,
       },
     });
     if (previous && previous.expiresAt > new Date()) {
-      if (previous.role !== data.role || previous.deliveryFailedAt) {
+      if (
+        previous.role !== data.role ||
+        previous.email !== email ||
+        previous.deliveryFailedAt ||
+        (favorite && previous.recipientId !== favorite.id)
+      ) {
         throw new SharingError(
           "Revoke the pending invitation before creating a replacement.",
         );
@@ -67,14 +94,18 @@ export const inviteMember = async (
         data: { revokedAt: new Date() },
       });
     }
-    await consumeRateLimit("invite-recipient", data.email, 5, 60 * 60 * 1000);
-    const recipient = await tx.user.findUnique({
-      where: { email: data.email },
-      select: { locale: true },
-    });
+    await consumeRateLimit("invite-recipient", email, 5, 60 * 60 * 1000);
+    const recipient =
+      favorite ??
+      (await tx.user.findUnique({
+        where: { email },
+        select: { locale: true },
+      }));
     return tx.invitation.create({
       data: {
-        ...data,
+        email,
+        role: data.role,
+        recipientId: favorite?.id,
         locale: recipient?.locale ?? locale,
         wishlistId: listId,
         inviterId: userId,
@@ -113,7 +144,12 @@ export const readInvitation = async (id: string, userId: string) => {
   });
   if (!user) return null;
   const invitation = await prisma.invitation.findFirst({
-    where: { id, email: user.email, ...activeInvitation() },
+    where: {
+      id,
+      email: user.email,
+      OR: [{ recipientId: null }, { recipientId: userId }],
+      ...activeInvitation(),
+    },
     select: {
       id: true,
       role: true,
@@ -163,7 +199,12 @@ export const acceptInvitation = async (
       locator.wishlistId,
     );
     const invitation = await tx.invitation.findFirst({
-      where: { id: invitationId, email: user.email, ...activeInvitation() },
+      where: {
+        id: invitationId,
+        email: user.email,
+        OR: [{ recipientId: null }, { recipientId: userId }],
+        ...activeInvitation(),
+      },
     });
     if (!invitation) throw new SharingError(unavailable);
     const inviter = await tx.membership.findFirst({

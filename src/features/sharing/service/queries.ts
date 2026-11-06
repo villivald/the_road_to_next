@@ -1,3 +1,4 @@
+import { publicOwners } from "@/features/discovery/service/access";
 import { readPremiumAccess } from "@/features/premium/service/entitlements";
 import { manageableLists } from "@/features/wishlist/service/access";
 import { prisma } from "@/lib/prisma";
@@ -19,6 +20,14 @@ export const readSharing = async (
       ownerId: true,
       visibility: true,
       publication: true,
+      _count: {
+        select: {
+          memberships: true,
+          guestLinks: {
+            where: { revokedAt: null, expiresAt: { gt: new Date() } },
+          },
+        },
+      },
       memberships: {
         orderBy: [{ joinedAt: "asc" }, { id: "asc" }],
         skip: (membersPage - 1) * 20,
@@ -38,6 +47,7 @@ export const readSharing = async (
         select: {
           id: true,
           email: true,
+          recipient: { select: { id: true, name: true, username: true } },
           role: true,
           expiresAt: true,
           sentAt: true,
@@ -47,12 +57,86 @@ export const readSharing = async (
     },
   });
   if (!list) return null;
-  const access = await readPremiumAccess(list.ownerId!);
+  const [access, pending] = await Promise.all([
+    readPremiumAccess(list.ownerId!),
+    prisma.invitation.findMany({
+      where: {
+        wishlistId: listId,
+        acceptedAt: null,
+        revokedAt: null,
+        expiresAt: { gt: new Date() },
+      },
+      select: { email: true, recipientId: true },
+    }),
+  ]);
+  const pendingEmails = pending.map(({ email }) => email);
+  const [favorites, previousRecipients] =
+    access.plan === "PREMIUM"
+      ? await Promise.all([
+          prisma.favoritePerson.findMany({
+            where: {
+              userId,
+              person: {
+                ...publicOwners,
+                id: {
+                  not: userId,
+                  notIn: pending.flatMap(({ recipientId }) =>
+                    recipientId ? [recipientId] : [],
+                  ),
+                },
+                email: { notIn: pendingEmails },
+                memberships: { none: { wishlistId: listId } },
+              },
+            },
+            orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+            take: 12,
+            select: {
+              person: { select: { id: true, name: true, username: true } },
+            },
+          }),
+          prisma.invitation.findMany({
+            where: {
+              inviterId: userId,
+              recipientId: null,
+              wishlistId: { not: listId },
+              revokedAt: null,
+              acceptedAt: { not: null },
+              wishlist: { archivedAt: null },
+              email: { notIn: pendingEmails },
+            },
+            distinct: ["email"],
+            orderBy: { createdAt: "desc" },
+            take: 12,
+            select: { email: true },
+          }),
+        ])
+      : [[], []];
+  const emails = previousRecipients.map(({ email }) => email);
+  const recipients = emails.length
+    ? await prisma.user.findMany({
+        where: {
+          id: { not: userId, notIn: favorites.map(({ person }) => person.id) },
+          email: { in: emails },
+          emailVerified: true,
+          memberships: { none: { wishlistId: listId } },
+        },
+        select: { email: true, username: true },
+      })
+    : [];
   return {
     ...list,
+    favorites: favorites.map(({ person }) => person),
+    previousRecipients: recipients,
     premium: access.plan === "PREMIUM",
     memberships: list.memberships.slice(0, 20),
-    invitations: list.invitations.slice(0, 20),
+    // Never serialize the private delivery address of an account invitation.
+    invitations: list.invitations
+      .slice(0, 20)
+      .map(({ email, recipient, ...invitation }) => ({
+        ...invitation,
+        recipient,
+        email: recipient ? null : email,
+      })),
     membersPage,
     invitationsPage,
     moreMembers: list.memberships.length > 20,

@@ -84,7 +84,7 @@ test("mobile header groups actions and keeps toast dismissal within the viewport
         document.documentElement.style.fontSize = enlarged ? "200%" : "";
       }, enlarged);
       const sharing = header.getByRole("button", {
-        name: locale === "fi" ? "Jakokortti" : "Sharing card",
+        name: locale === "fi" ? "QR-kortti" : "QR card",
         exact: true,
       });
       const settings = header.getByRole("link", {
@@ -155,7 +155,7 @@ test("mobile header groups actions and keeps toast dismissal within the viewport
       await expect(dialog).toBeVisible();
       await dialog
         .getByRole("button", {
-          name: locale === "fi" ? "Sulje jakokortti" : "Close sharing card",
+          name: locale === "fi" ? "Sulje QR-kortti" : "Close QR card",
         })
         .click();
       await expect(dialog).not.toBeVisible();

@@ -1,61 +1,26 @@
-.page {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 1.5rem;
-  width: 100%;
-  max-width: 960px;
-  margin-inline: auto;
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-.header {
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--border);
-  display: grid;
-  gap: 0.75rem;
-}
-
-.header > a,
-.back-preview {
-  justify-self: start;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.panel {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 1.25rem;
-  min-width: 0;
-  padding: clamp(1rem, 3vw, 1.75rem);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-}
-
-.panel h2 {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.5rem;
-}
-
-.panel svg {
-  flex-shrink: 0;
-}
-
-.heading {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 0.5rem;
-}
-
-.heading p,
 .row p {
   font-size: 0.9rem;
+}
+
+.role-help {
+  min-width: 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
+.role-help > summary {
+  min-height: 44px;
+  padding-block: 0.6rem;
+  color: var(--link);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.role-help-body {
+  display: grid;
+  gap: 0.75rem;
+  padding-block: 0.75rem 0.25rem;
 }
 
 .methods {
@@ -102,6 +67,193 @@
 
 .hint svg {
   margin-top: 0.2rem;
+}
+
+.audience {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  border: 0;
+  min-width: 0;
+}
+
+.choice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.choice-preview {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+  min-height: 7.5rem;
+  padding: 1.25rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.choice:hover {
+  border-color: var(--foreground);
+}
+
+.choice:has(:checked) {
+  border-color: var(--focus);
+  background: var(--accent);
+}
+
+.choice:has(:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.choice:has(:disabled) {
+  background: var(--muted);
+  cursor: not-allowed;
+}
+
+.choice input {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: 0.2rem;
+  accent-color: var(--foreground);
+}
+
+.choice strong {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.recipient span {
+  min-width: 0;
+}
+
+.recipient-identity {
+  display: grid;
+  gap: 0.2rem;
+  flex: 1;
+}
+
+.recipient-identity > span {
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+}
+
+.choice span span {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+}
+
+.audience-review {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.audience-review legend {
+  padding-inline: 0.35rem;
+  font-weight: 650;
+}
+
+.audience-review button {
+  justify-self: start;
+}
+
+.access-next {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+
+.access-next p {
+  flex: 1 1 20rem;
+}
+
+.access-next > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 650;
+}
+
+.suggestions,
+.suggestions > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.suggestions {
+  flex-direction: column;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.invitation-fields {
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  align-items: start;
+}
+
+.invitation-fields > .recipient-status,
+.invitation-fields > .suggestions,
+.invitation-fields > button {
+  grid-column: 1 / -1;
+}
+
+.invitation-fields > button {
+  justify-self: start;
+}
+
+.recipient {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  min-height: 44px;
+  max-width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--foreground);
+  font: inherit;
+  text-align: start;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.recipient:hover,
+.recipient[aria-pressed="true"] {
+  border-color: var(--focus);
+  background: var(--accent);
+}
+
+.count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius);
+  background: var(--muted);
+  font-family: var(--font-manrope), sans-serif;
+  font-size: 0.85rem;
 }
 
 .resources {
@@ -263,14 +415,118 @@
 }
 
 @media (width <= 700px) {
-  .methods {
+  .methods,
+  .audience,
+  .invitation-fields {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
 @media (width <= 400px) {
+  .choice,
+  .choice-preview,
+  .audience-review {
+    padding: 12px;
+  }
+
+  .choice {
+    gap: 12px;
+  }
+
+  .choice > span {
+    display: contents;
+  }
+
+  .choice strong {
+    grid-column: 2;
+  }
+
+  .choice span span {
+    grid-column: 1 / -1;
+    margin-top: 0;
+  }
+
+  .avatar {
+    width: 44px;
+    height: 44px;
+  }
+
+  .identity {
+    gap: 12px;
+  }
+
+  .recipient {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .recipient .avatar {
+    display: none;
+  }
+
+  .invitation-fields > button {
+    padding-inline: 12px;
+  }
+
   .row > form,
   .management {
     flex-basis: 100%;
   }
+
+  .guest-section > a {
+    width: 100%;
+    padding-inline: 12px;
+    font-size: 0.875rem;
+  }
+
+  .section-title > svg {
+    display: none;
+  }
+}
+
+.selected-recipient,
+.suggestions > p:first-child {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.selected-recipient {
+  padding: 0.75rem;
+  border: 1px solid var(--focus);
+  border-radius: var(--radius);
+  background: var(--accent);
+  font-weight: 650;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-title > span:first-of-type {
+  min-width: 0;
+}
+
+.section-title > .count {
+  flex-shrink: 0;
+}
+
+.guest-section {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+}
+
+.guest-section > div {
+  flex: 1 1 24rem;
+  min-width: 0;
+}
+
+.guest-section > a {
+  flex-shrink: 0;
+  max-width: 100%;
 }

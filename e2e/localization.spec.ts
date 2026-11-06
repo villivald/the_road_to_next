@@ -407,7 +407,7 @@ test("Finnish invitations use the recipient's saved language and keep the accept
     ).toBeVisible();
     await recipient.getByRole("checkbox").check();
     await recipient
-      .getByRole("button", { name: "Liity listaan", exact: true })
+      .getByRole("button", { name: "Hyväksy kutsu", exact: true })
       .click();
     await expect(recipient).toHaveURL(/\/fi\/lists\?shared=1/);
     await expect(recipient.getByRole("status")).toContainText(

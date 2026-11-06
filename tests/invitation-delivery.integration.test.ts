@@ -48,6 +48,36 @@ afterAll(async () => {
 });
 
 describe("durable invitation delivery", () => {
+  it("does not deliver an account invitation to a changed or unverified email", async () => {
+    const send = vi
+      .spyOn(mail, "deliverEmail")
+      .mockResolvedValue({ error: null });
+    await prisma.invitation.update({
+      where: { id },
+      data: { recipientId: "e2e-owner" },
+    });
+    await prisma.user.update({
+      where: { id: "e2e-owner" },
+      data: { email: "e2e-changed@example.test" },
+    });
+    expect(await deliverInvitations(id)).toEqual({ sent: 0, failed: 1 });
+    expect(send).not.toHaveBeenCalled();
+    expect(
+      (await prisma.invitation.findUniqueOrThrow({ where: { id } }))
+        .deliveryFailedAt,
+    ).not.toBeNull();
+    await prisma.user.update({
+      where: { id: "e2e-owner" },
+      data: { email: accounts.owner.email, emailVerified: false },
+    });
+    await prisma.invitation.update({
+      where: { id },
+      data: { deliveryFailedAt: null, nextAttemptAt: new Date() },
+    });
+    expect(await deliverInvitations(id)).toEqual({ sent: 0, failed: 1 });
+    expect(send).not.toHaveBeenCalled();
+  });
+
   it("claims once across concurrent workers and never resends a successful delivery", async () => {
     const send = vi
       .spyOn(mail, "deliverEmail")

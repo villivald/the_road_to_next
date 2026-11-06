@@ -43,7 +43,7 @@ test("new lists explain their visible state and can be hidden from the list page
     header.getByRole("link", { name: "List settings", exact: true }),
   ).toBeVisible();
   await expect(
-    header.getByRole("button", { name: "Sharing card", exact: true }),
+    header.getByRole("button", { name: "QR card", exact: true }),
   ).toBeVisible();
   await header.screenshot({ path: info.outputPath("list-header.png") });
   await expect(control).toContainText("Visible · Public list");

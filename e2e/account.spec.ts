@@ -157,7 +157,7 @@ test("register, create a visible list, reserve, cancel, fulfill and delete witho
     await page
       .getByRole("link", { name: "List settings", exact: true })
       .click();
-    await expect(page.getByRole("button", { name: "Hide list" })).toBeVisible();
+    await expect(page.getByLabel("Title", { exact: true })).toBeVisible();
     await page.getByRole("link", { name: "Back to list", exact: true }).click();
     await page.getByRole("link", { name: "Add a wish", exact: true }).click();
     await page.getByLabel("Title", { exact: true }).fill("A free account wish");

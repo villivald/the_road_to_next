@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { BackLink } from "@/components/back-link";
 import { ActionForm } from "@/components/form/action-form";
 import { SuccessMessage } from "@/components/form/success-message";
+import managementStyles from "@/components/list-management.module.css";
 import { LocalTime } from "@/components/local-time";
 import styles from "@/components/shell.module.css";
 import { getAuthOrRedirect } from "@/features/auth/queries/get-auth-or-redirect";
@@ -14,12 +15,7 @@ import { readPremiumAccess } from "@/features/premium/service/entitlements";
 import sharingStyles from "@/features/sharing/components/sharing.module.css";
 import { Link } from "@/i18n/navigation";
 import { getText } from "@/i18n/server";
-import {
-  accountPlanPath,
-  guestLinksPath,
-  listSettingsPath,
-  sharingPath,
-} from "@/paths";
+import { accountPlanPath, guestLinksPath, sharingPath } from "@/paths";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getText();
@@ -47,8 +43,8 @@ export default async function GuestLinksPage({
   const visible = list.publication === "PUBLISHED";
 
   return (
-    <div className={sharingStyles.page}>
-      <header className={sharingStyles.header}>
+    <div className={managementStyles.page}>
+      <header className={managementStyles.header}>
         <BackLink href={sharingPath(listId)}>
           {t("Back to sharing and members")}
         </BackLink>
@@ -61,8 +57,8 @@ export default async function GuestLinksPage({
       {!visible && (
         <p className={styles.notice}>
           {t("This list is hidden, so guest links cannot open it yet.")}{" "}
-          <Link href={`${listSettingsPath(listId)}#list-visibility-heading`}>
-            {t("Go to list settings and choose Show list")}
+          <Link href={`${sharingPath(listId)}#list-access-heading`}>
+            {t("Go to list access and choose Publish list")}
           </Link>
           .
         </p>
@@ -76,10 +72,10 @@ export default async function GuestLinksPage({
       )}
 
       <section
-        className={sharingStyles.panel}
+        className={managementStyles.panel}
         aria-labelledby="create-guest-link-heading"
       >
-        <div className={sharingStyles.heading}>
+        <div className={managementStyles.heading}>
           <h2 id="create-guest-link-heading">
             <Link2 size={21} aria-hidden="true" /> {t("Create a guest link")}
           </h2>
@@ -122,10 +118,10 @@ export default async function GuestLinksPage({
       </section>
 
       <section
-        className={sharingStyles.panel}
+        className={managementStyles.panel}
         aria-labelledby="guest-links-heading"
       >
-        <div className={sharingStyles.heading}>
+        <div className={managementStyles.heading}>
           <h2 id="guest-links-heading">
             <Clock size={21} aria-hidden="true" /> {t("Your links")}
           </h2>

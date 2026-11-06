@@ -283,7 +283,6 @@ test("list image upload, replacement, removal and revocation work through the UI
     path: testInfo.outputPath("compact-list-cover.png"),
     fullPage: true,
   });
-  await page.getByRole("link", { name: "List settings", exact: true }).click();
   page.once("dialog", (dialog) => dialog.accept());
   await page.getByRole("button", { name: "Hide list", exact: true }).click();
   await expect(

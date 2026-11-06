@@ -6,6 +6,11 @@ export const invitationSchema = z.object({
   role: z.enum(["MEMBER", "ADMIN"]),
 });
 
+export const favoriteInvitationSchema = z.object({
+  recipientId: z.string().min(1).max(100),
+  role: z.enum(["MEMBER", "ADMIN"]),
+});
+
 export const roleSchema = z.enum(["MEMBER", "ADMIN"]);
 export const visibilitySchema = z.enum(["PUBLIC", "PRIVATE"]);
 export const sharingPage = (input: unknown) => {

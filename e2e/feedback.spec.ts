@@ -63,7 +63,7 @@ test("visibility success keeps the toolbar stable and pauses while keyboard-focu
   if ((page.viewportSize()?.width ?? 0) >= 768) {
     const button = await hide.boundingBox();
     const sharing = await header
-      .getByRole("button", { name: "Sharing card", exact: true })
+      .getByRole("button", { name: "QR card", exact: true })
       .boundingBox();
     expect(
       Math.abs(

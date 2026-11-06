@@ -34,7 +34,7 @@ for (const premium of [false, true]) {
       await page.goto(`/${locale}/lists/e2e-card-access`);
       await page
         .getByRole("button", {
-          name: locale === "fi" ? "Jakokortti" : "Sharing card",
+          name: locale === "fi" ? "QR-kortti" : "QR card",
           exact: true,
         })
         .click();
@@ -42,8 +42,8 @@ for (const premium of [false, true]) {
       await expect(
         dialog.getByText(
           locale === "fi"
-            ? "Julkaise lista ennen jakokortin lataamista."
-            : "Publish your list before downloading a sharing card.",
+            ? "Julkaise lista ennen QR-kortin lataamista."
+            : "Publish your list before downloading a QR card.",
           { exact: true },
         ),
       ).toBeVisible();
@@ -55,7 +55,7 @@ for (const premium of [false, true]) {
       await expect(dialog.getByRole("radio")).toHaveCount(premium ? 0 : 3);
       await expect(
         dialog.getByRole("link", {
-          name: locale === "fi" ? "Lataa jakokortti" : "Download sharing card",
+          name: locale === "fi" ? "Lataa QR-kortti" : "Download QR card",
           exact: true,
         }),
       ).toHaveCount(0);

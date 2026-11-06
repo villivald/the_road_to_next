@@ -35,7 +35,7 @@ test.beforeEach(async () => {
     await db.$disconnect();
   }
 });
-test("themes persist, show in the list and export a sharing card", async ({
+test("themes persist, show in the list and export a QR card", async ({
   page,
 }, info) => {
   await signIn(page);
@@ -53,11 +53,6 @@ test("themes persist, show in the list and export a sharing card", async ({
     path: info.outputPath("list-settings.png"),
     fullPage: true,
   });
-  const download = page.waitForEvent("download");
-  await page
-    .getByRole("link", { name: "Download sharing card", exact: true })
-    .click();
-  expect((await download).suggestedFilename()).toBe("wishlist-card.png");
   await page.goto(`/en/lists/${listId}`);
   await expect(
     page.getByRole("heading", { name: "Birthday wishes", exact: true }),
@@ -66,19 +61,19 @@ test("themes persist, show in the list and export a sharing card", async ({
     page.locator('[data-list-theme="botanical"]:visible'),
   ).toBeVisible();
   const sharingButton = page.getByRole("button", {
-    name: "Sharing card",
+    name: "QR card",
     exact: true,
   });
   await sharingButton.click();
   const dialog = page.getByRole("dialog", {
-    name: "Sharing card",
+    name: "QR card",
   });
   await expect(dialog).toBeVisible();
   await expect(
     dialog.getByText("PNG image · 1200 × 800 pixels · QR code included"),
   ).toBeVisible();
   const preview = dialog.getByRole("img", {
-    name: "Sharing card for Birthday wishes",
+    name: "QR card for Birthday wishes",
   });
   await expect(preview).toBeVisible();
   await expect
@@ -91,7 +86,7 @@ test("themes persist, show in the list and export a sharing card", async ({
     .toBe(true);
   const toolbarDownload = page.waitForEvent("download");
   await dialog
-    .getByRole("link", { name: "Download sharing card", exact: true })
+    .getByRole("link", { name: "Download QR card", exact: true })
     .click();
   expect(await (await toolbarDownload).failure()).toBeNull();
   await page.screenshot({
@@ -159,7 +154,7 @@ test("profile badge is opt-in and can be hidden", async ({ page }) => {
   await page.goto("/en/browse?view=users");
   await expect(person.getByText("Premium", { exact: true })).toHaveCount(0);
 });
-test("a free list owner can find sharing cards and sees the Premium requirement", async ({
+test("a free list owner can find QR cards and sees the Premium requirement", async ({
   page,
 }, info) => {
   const db = testPrisma();
@@ -173,15 +168,15 @@ test("a free list owner can find sharing cards and sees the Premium requirement"
   }
   await signIn(page);
   await page.goto(`/en/lists/${listId}`);
-  await page.getByRole("button", { name: "Sharing card", exact: true }).click();
+  await page.getByRole("button", { name: "QR card", exact: true }).click();
   const dialog = page.getByRole("dialog", {
-    name: "Sharing card",
+    name: "QR card",
   });
   await expect(
-    dialog.getByText("The list owner needs Premium to download sharing cards."),
+    dialog.getByText("The list owner needs Premium to download QR cards."),
   ).toBeVisible();
   await expect(
-    dialog.getByRole("link", { name: "Download sharing card", exact: true }),
+    dialog.getByRole("link", { name: "Download QR card", exact: true }),
   ).toHaveCount(0);
   await expect(
     dialog.getByRole("link", { name: "Explore Premium", exact: true }),
@@ -190,7 +185,7 @@ test("a free list owner can find sharing cards and sees the Premium requirement"
   for (const name of ["Birthday", "Christmas", "Botanical"]) {
     await dialog.getByRole("radio", { name, exact: true }).check();
     const preview = dialog.getByRole("img", {
-      name: `Example sharing card in the ${name} theme`,
+      name: `Example QR card in the ${name} theme`,
     });
     await expect(preview).toBeVisible();
     await expect
@@ -219,7 +214,7 @@ test("a free list owner can find sharing cards and sees the Premium requirement"
     await page.goto(`/${locale}/lists/${listId}`);
     await page
       .getByRole("button", {
-        name: locale === "fi" ? "Jakokortti" : "Sharing card",
+        name: locale === "fi" ? "QR-kortti" : "QR card",
         exact: true,
       })
       .click();
@@ -294,8 +289,8 @@ test("premium showcase works in both languages and themes without overflow", asy
       page.getByRole("img", {
         name:
           locale === "fi"
-            ? "Esimerkki syntymäpäivän jakokortista, jossa on listan nimi ja QR-koodi"
-            : "Example birthday sharing card with a list title and QR code",
+            ? "Esimerkki syntymäpäivän QR-kortista, jossa on listan nimi ja QR-koodi"
+            : "Example birthday QR card with a list title and QR code",
       }),
     ).toBeVisible();
     for (const scheme of ["light", "dark"] as const) {
@@ -355,17 +350,17 @@ test("Classic sharing-card preview retries a failure and keeps its dialog usable
     },
   );
   const trigger = page.getByRole("button", {
-    name: "Sharing card",
+    name: "QR card",
     exact: true,
   });
   await trigger.click();
-  const dialog = page.getByRole("dialog", { name: "Sharing card" });
+  const dialog = page.getByRole("dialog", { name: "QR card" });
   await expect(dialog.getByRole("alert")).toHaveText(
     "Card unavailable. Check your access and try again.",
   );
-  await dialog.getByRole("button", { name: "Preview sharing card" }).click();
+  await dialog.getByRole("button", { name: "Preview QR card" }).click();
   const preview = dialog.getByRole("img", {
-    name: "Sharing card for Birthday wishes",
+    name: "QR card for Birthday wishes",
   });
   await expect(preview).toBeVisible();
   await expect

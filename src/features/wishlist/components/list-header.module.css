@@ -102,6 +102,10 @@
     font-size: 0.875rem;
   }
 
+  .managed .primary > .access-link {
+    flex-basis: 100%;
+  }
+
   .full-label {
     display: none;
   }

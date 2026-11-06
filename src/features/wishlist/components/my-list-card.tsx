@@ -61,7 +61,7 @@ export function MyListCard({
                 ? t("Your list")
                 : list.owner
                   ? `@${list.owner.username}`
-                  : t("Shared list")}
+                  : t("List access granted")}
             </span>
           </p>
           {!list.isOwner && list.membership && (

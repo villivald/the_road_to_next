@@ -36,7 +36,7 @@ test("create, validate, edit, publish, unpublish, and confirm deletion", async (
     page.getByRole("radio", { name: "Anyone", exact: true }),
   ).toBeChecked();
   await expect(
-    page.getByRole("radio", { name: "People with access", exact: true }),
+    page.getByRole("radio", { name: "Selected people", exact: true }),
   ).toBeDisabled();
   await page
     .getByLabel("Description (optional)")
@@ -69,8 +69,7 @@ test("create, validate, edit, publish, unpublish, and confirm deletion", async (
   await expect(page.getByLabel("Allow reservations")).not.toBeChecked();
   await expect(page.getByRole("status")).toContainText("Changes saved");
 
-  await page.goto(`${listUrl}/edit`);
-  await expect(page.getByRole("button", { name: "Hide list" })).toBeVisible();
+  await page.goto(listUrl);
   await expect(page.getByRole("button", { name: "Hide list" })).toBeVisible();
 
   const visitor = await browser.newPage({ baseURL: testOrigin });
@@ -100,6 +99,9 @@ test("create, validate, edit, publish, unpublish, and confirm deletion", async (
       visitor.getByRole("heading", { name: "Birthday wishes", exact: true }),
     ).toHaveCount(0);
 
+    await page
+      .getByRole("link", { name: "List settings", exact: true })
+      .click();
     await page.getByRole("link", { name: "Delete list", exact: true }).click();
     await page.getByRole("link", { name: "Cancel and keep list" }).click();
     await expect(
@@ -175,9 +177,6 @@ test("draft/private content stays out of direct responses and another account ca
     ).toHaveCount(0);
 
     await page
-      .getByRole("link", { name: "List settings", exact: true })
-      .click();
-    await page
       .getByRole("button", { name: "Publish list", exact: true })
       .click();
     await expect(page.getByRole("button", { name: "Hide list" })).toBeVisible();
@@ -189,6 +188,9 @@ test("draft/private content stays out of direct responses and another account ca
       }),
     ).toBeVisible();
 
+    await page
+      .getByRole("link", { name: "List settings", exact: true })
+      .click();
     await page
       .getByLabel("Title", { exact: true })
       .fill("First legitimate edit");

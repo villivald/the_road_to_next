@@ -43,7 +43,7 @@ export function MemberAccess({
     <li className={sharingStyles.row}>
       <div className={sharingStyles.identity}>
         <span className={sharingStyles.avatar} aria-hidden="true">
-          {admin ? <Shield size={20} /> : <UserRound size={20} />}
+          {name.slice(0, 1).toLocaleUpperCase(t.locale)}
         </span>
         <div>
           <h3>

@@ -43,10 +43,26 @@ export const deliverInvitations = async (id?: string) => {
 
     const invitation = await prisma.invitation.findUnique({
       where: { id: item.id },
-      include: { wishlist: { select: { ownerId: true, archivedAt: true } } },
+      include: {
+        wishlist: { select: { ownerId: true, archivedAt: true } },
+        recipient: { select: { email: true, emailVerified: true } },
+      },
     });
     if (!invitation) continue;
     const claimedWhere = { id: item.id, claimId };
+    // A favorite invitation belongs to one account, even if its email changes.
+    if (
+      invitation.recipientId &&
+      (!invitation.recipient?.emailVerified ||
+        invitation.recipient.email !== invitation.email)
+    ) {
+      await prisma.invitation.updateMany({
+        where: claimedWhere,
+        data: { deliveryFailedAt: new Date(), claimId: null },
+      });
+      failed++;
+      continue;
+    }
     // Resend remembers keys for 24 hours. Stop before that boundary rather than
     // risk an ambiguous old send becoming a fresh delivery on a later retry.
     if (

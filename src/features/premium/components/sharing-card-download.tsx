@@ -185,9 +185,17 @@ export function SharingCardDownload({
         {content}
       </dialog>
       <noscript>
-        <Link href={`/lists/${listId}/edit#sharing-card`}>
-          {t("Download a QR sharing card")}
-        </Link>
+        {premium && published ? (
+          <a href={href} download="wishlist-card.png">
+            {t("Download sharing card")}
+          </a>
+        ) : (
+          <p>
+            {!published
+              ? t("Show your list before downloading a sharing card.")
+              : t("The list owner needs Premium to download sharing cards.")}
+          </p>
+        )}
       </noscript>
     </>
   );

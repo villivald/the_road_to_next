@@ -4,8 +4,8 @@ import {
   Gift,
   Pencil,
   Settings,
-  Share2,
   UserRound,
+  UsersRound,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import {
@@ -123,7 +123,7 @@ export function CardActions({
             aria-label={t("Manage sharing for {value0}", { value0: title })}
             title={t("Manage sharing")}
           >
-            <Share2 size={18} aria-hidden="true" />
+            <UsersRound size={18} aria-hidden="true" />
           </Link>
         )}
         {children}

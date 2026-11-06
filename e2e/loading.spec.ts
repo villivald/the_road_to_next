@@ -435,7 +435,7 @@ test("streamed loading previews reserve space, hide decorative content and respe
           : path.endsWith("/new")
             ? "Add a wish"
             : path.endsWith("/sharing")
-              ? "Sharing and members"
+              ? "List access"
               : path.endsWith("/guest-links")
                 ? "Guest links"
                 : null;

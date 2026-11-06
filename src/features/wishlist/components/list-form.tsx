@@ -179,7 +179,7 @@ export function ListForm({
               />
               <span>
                 <strong id={`${prefix}-private-label`}>
-                  {t("People with access")}
+                  {t("Selected people")}
                 </strong>
                 <span id={`${prefix}-private-help`}>
                   {t(

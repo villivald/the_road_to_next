@@ -30,7 +30,8 @@ model User {
   reservations            Reservation[]
   premiumGrants           PremiumGrant[]
   promoRedemptions        PromoRedemption[]
-  sentInvitations         Invitation[]
+  sentInvitations         Invitation[]             @relation("InvitationSender")
+  receivedInvitations     Invitation[]             @relation("InvitationRecipient")
   billingAccounts         BillingAccount[]
   accountEmails           AccountEmail[]
   favoriteLists           FavoriteList[]
@@ -167,8 +168,10 @@ model Invitation {
   revokedAt        DateTime?
   wishlistId       String
   inviterId        String
+  recipientId      String?
   wishlist         Wishlist       @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
-  inviter          User           @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+  inviter          User           @relation("InvitationSender", fields: [inviterId], references: [id], onDelete: Cascade)
+  recipient        User?          @relation("InvitationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
   sentAt           DateTime?
   firstAttemptAt   DateTime?
   nextAttemptAt    DateTime       @default(now())
@@ -178,6 +181,7 @@ model Invitation {
 
   @@index([wishlistId, createdAt])
   @@index([inviterId])
+  @@index([recipientId])
   @@index([email])
   @@index([sentAt, nextAttemptAt])
 }

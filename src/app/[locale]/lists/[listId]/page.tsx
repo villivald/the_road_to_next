@@ -1,4 +1,4 @@
-import { Settings } from "lucide-react";
+import { Settings, UsersRound } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DetailNavigation } from "@/app/_navigation/navigation-context";
@@ -32,6 +32,7 @@ import {
   listSettingsPath,
   listsPath,
   reservationsPath,
+  sharingPath,
 } from "@/paths";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -153,6 +154,15 @@ export default async function ListPage({
                 )}
               </div>
               <div className={headerStyles.primary}>
+                {list.canManage && (
+                  <Link
+                    className={`${styles["secondary-button"]} ${headerStyles["access-link"]}`}
+                    href={sharingPath(list.id)}
+                  >
+                    <UsersRound size={18} aria-hidden="true" />{" "}
+                    {t("List access")}
+                  </Link>
+                )}
                 {list.canManage && (
                   <SharingCardDownload
                     modal

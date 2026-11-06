@@ -71,10 +71,9 @@ export const sendInvitation = async (
       user.id,
       session.id,
       listId,
-      {
-        email: data.get("email"),
-        role: data.get("role"),
-      },
+      data.get("recipientId")
+        ? { recipientId: data.get("recipientId"), role: data.get("role") }
+        : { email: data.get("email"), role: data.get("role") },
       await getLocale(),
     ));
   } catch (error) {

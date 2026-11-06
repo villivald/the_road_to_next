@@ -88,6 +88,206 @@ afterAll(async () => {
 });
 
 describe("private lists and collaboration", () => {
+  it("suggests only the viewer's previously accepted invitees and excludes current members and pending invitations", async () => {
+    const previous = await createWishlist(owner.user.id, {
+      title: "Previous family list",
+      description: "",
+      reservationsEnabled: false,
+      visibility: "PRIVATE",
+    });
+    const invitation = await inviteMember(
+      owner.user.id,
+      owner.session.id,
+      previous.id,
+      { email: member.user.email, role: "MEMBER" },
+    );
+    await join(invitation.id);
+    const recipients = async () =>
+      (await readSharing(listId, owner.user.id))?.previousRecipients;
+    expect(await recipients()).toEqual([
+      { email: member.user.email, username: member.user.username },
+    ]);
+    expect(await readSharing(listId, member.user.id)).toBeNull();
+
+    await changeMemberRole(
+      owner.user.id,
+      owner.session.id,
+      previous.id,
+      (
+        await prisma.membership.findUniqueOrThrow({
+          where: {
+            wishlistId_userId: {
+              wishlistId: previous.id,
+              userId: member.user.id,
+            },
+          },
+        })
+      ).id,
+      "ADMIN",
+    );
+    // A list admin sees their own invitation history, never another admin's contacts.
+    expect(
+      (await readSharing(previous.id, member.user.id))?.previousRecipients,
+    ).toEqual([]);
+    const pending = await invite();
+    expect(await recipients()).toEqual([]);
+    await join(pending.id);
+    expect(await recipients()).toEqual([]);
+  });
+
+  const favoriteMember = async () => {
+    await prisma.wishlist.update({
+      where: { id: "e2e-private-list" },
+      data: { visibility: "PUBLIC", publication: "PUBLISHED" },
+    });
+    await prisma.favoritePerson.create({
+      data: { userId: owner.user.id, personId: member.user.id },
+    });
+  };
+  const inviteFavorite = () =>
+    inviteMember(owner.user.id, owner.session.id, listId, {
+      recipientId: member.user.id,
+      role: "MEMBER",
+    });
+
+  it("recommends favorites without emails, binds invitations to the selected account and keeps delivery addresses private", async () => {
+    await favoriteMember();
+    const before = await readSharing(listId, owner.user.id);
+    expect(before?.favorites).toEqual([
+      { id: member.user.id, name: null, username: member.user.username },
+    ]);
+    expect(JSON.stringify(before)).not.toContain(member.user.email);
+    const invitation = await inviteFavorite();
+    expect(await inviteFavorite()).toEqual(invitation);
+    expect(
+      await prisma.invitation.findUnique({ where: invitation }),
+    ).toMatchObject({
+      recipientId: member.user.id,
+      email: member.user.email,
+    });
+    const pending = await readSharing(listId, owner.user.id);
+    expect(pending?.favorites).toEqual([]);
+    expect(pending?.invitations[0]).toMatchObject({
+      email: null,
+      recipient: { id: member.user.id },
+    });
+    expect(JSON.stringify(pending)).not.toContain(member.user.email);
+    // Removing a favorite must not expose the delivery address on a later visit.
+    await prisma.favoritePerson.deleteMany({
+      where: { userId: owner.user.id },
+    });
+    expect(
+      JSON.stringify(await readSharing(listId, owner.user.id)),
+    ).not.toContain(member.user.email);
+    expect(await readInvitation(invitation.id, owner.user.id)).toBeNull();
+    expect(await readInvitation(invitation.id, member.user.id)).not.toBeNull();
+    await join(invitation.id);
+    expect((await membership()).role).toBe("MEMBER");
+    const other = await createWishlist(owner.user.id, {
+      title: "Another list",
+      description: "",
+      reservationsEnabled: false,
+      visibility: "PRIVATE",
+    });
+    expect(
+      (await readSharing(other.id, owner.user.id))?.previousRecipients,
+    ).toEqual([]);
+  });
+
+  it("rejects arbitrary or stale favorite IDs and preserves the Premium gate", async () => {
+    await expect(inviteFavorite()).rejects.toThrow(
+      "favorite is no longer available",
+    );
+    await favoriteMember();
+    await prisma.user.update({
+      where: { id: member.user.id },
+      data: { emailVerified: false },
+    });
+    expect((await readSharing(listId, owner.user.id))?.favorites).toEqual([]);
+    await expect(inviteFavorite()).rejects.toThrow(
+      "favorite is no longer available",
+    );
+    await prisma.user.update({
+      where: { id: member.user.id },
+      data: { emailVerified: true },
+    });
+    await prisma.wishlist.update({
+      where: { id: "e2e-private-list" },
+      data: { publication: "DRAFT" },
+    });
+    await expect(inviteFavorite()).rejects.toThrow(
+      "favorite is no longer available",
+    );
+    await prisma.wishlist.update({
+      where: { id: "e2e-private-list" },
+      data: { publication: "PUBLISHED" },
+    });
+    await expirePremium();
+    expect((await readSharing(listId, owner.user.id))?.favorites).toEqual([]);
+    await expect(inviteFavorite()).rejects.toThrow(/Premium/);
+    expect(
+      await prisma.invitation.count({ where: { wishlistId: listId } }),
+    ).toBe(0);
+  });
+
+  it("excludes self, existing members and pending invitations beyond the current page from favorites", async () => {
+    await favoriteMember();
+    await prisma.favoritePerson.create({
+      data: { userId: owner.user.id, personId: owner.user.id },
+    });
+    expect((await readSharing(listId, owner.user.id))?.favorites).toHaveLength(
+      1,
+    );
+    const invitation = await inviteFavorite();
+    await prisma.invitation.createMany({
+      data: Array.from({ length: 22 }, (_, index) => ({
+        email: `e2e-pending-${index}@example.test`,
+        wishlistId: listId,
+        inviterId: owner.user.id,
+        role: "MEMBER" as const,
+        expiresAt: new Date(Date.now() + 86400000),
+        createdAt: new Date(Date.now() + index + 1000),
+      })),
+    });
+    const firstPage = await readSharing(listId, owner.user.id);
+    expect(firstPage?.invitations.some(({ id }) => id === invitation.id)).toBe(
+      false,
+    );
+    expect(firstPage?.favorites).toEqual([]);
+    await join(invitation.id);
+    expect((await readSharing(listId, owner.user.id))?.favorites).toEqual([]);
+  });
+
+  it("does not let a reused email accept an invitation intended for a different account", async () => {
+    await favoriteMember();
+    const invitation = await inviteFavorite();
+    await prisma.user.update({
+      where: { id: member.user.id },
+      data: { email: "e2e-changed@example.test" },
+    });
+    expect((await readSharing(listId, owner.user.id))?.favorites).toEqual([]);
+    await expect(inviteFavorite()).rejects.toThrow(
+      "Revoke the pending invitation",
+    );
+    await prisma.user.update({
+      where: { id: owner.user.id },
+      data: { email: member.user.email },
+    });
+    expect(await readInvitation(invitation.id, owner.user.id)).toBeNull();
+    await expect(
+      acceptInvitation(owner.user.id, owner.session.id, invitation.id),
+    ).rejects.toThrow("invitation is unavailable");
+    expect(await readInvitation(invitation.id, member.user.id)).toBeNull();
+    await deleteAccount(member.user.id, member.session.id, {
+      password: accounts.member.password,
+      confirmation: "DELETE",
+      impactToken: (await readDeletionImpact(member.user.id)).impactToken,
+    });
+    expect(
+      await prisma.invitation.findUnique({ where: invitation }),
+    ).toBeNull();
+  });
+
   it("keeps joined-list counts readable while current roles control management", async () => {
     await join((await invite()).id);
     await reserveWish(member.user.id, listId, "e2e-sharing-wish");

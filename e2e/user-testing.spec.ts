@@ -60,7 +60,9 @@ test("shared toggle combines cards, preserves pagination state and redirects old
   await expect(
     page.getByRole("heading", { name: "Shared birthday wishes" }),
   ).toHaveCount(0);
-  const toggle = page.getByRole("switch", { name: "Include shared lists" });
+  const toggle = page.getByRole("switch", {
+    name: "Include lists I’ve been given access to",
+  });
   await toggle.focus();
   await page.keyboard.press("Space");
   await expect(toggle).toBeChecked();
@@ -244,7 +246,9 @@ for (const locale of ["en", "fi"]) {
       const ownHeight = (await own.boundingBox())!.height;
       const toggle = page.getByRole("switch", {
         name:
-          locale === "fi" ? "Näytä myös jaetut listat" : "Include shared lists",
+          locale === "fi"
+            ? "Näytä myös listat, joihin olen saanut käyttöoikeuden"
+            : "Include lists I’ve been given access to",
       });
       await toggle.check();
       await expect(shared).toBeVisible();

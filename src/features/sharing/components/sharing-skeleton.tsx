@@ -1,4 +1,5 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Settings } from "lucide-react";
+import managementStyles from "@/components/list-management.module.css";
 import loading from "@/components/loading/loading-preview.module.css";
 import shell from "@/components/shell.module.css";
 import { useText } from "@/i18n/use-text";
@@ -11,21 +12,32 @@ export function SharingSkeleton({
 }) {
   const t = useText();
 
-  const heading = guestLinks ? t("Guest links") : t("Sharing and members");
+  const heading = guestLinks ? t("Guest links") : t("List access");
 
   return (
-    <section className={styles.page} data-loading-preview>
+    <section className={managementStyles.page} data-loading-preview>
       <p role="status" className={shell["visually-hidden"]}>
         {t("Loading")} {heading.toLowerCase()}…
       </p>
-      <div className={styles.page} aria-hidden="true" aria-busy="true">
-        <div className={styles.header}>
-          <span className={styles["back-preview"]}>
-            <ArrowLeft size={18} />
-            {guestLinks
-              ? t("Back to sharing and members")
-              : t("Back to list settings")}
-          </span>
+      <div
+        className={managementStyles.page}
+        aria-hidden="true"
+        aria-busy="true"
+      >
+        <div className={managementStyles.header}>
+          <div className={managementStyles.navigation}>
+            <span className={managementStyles["back-preview"]}>
+              <ArrowLeft size={18} />
+              {guestLinks
+                ? t("Back to sharing and members")
+                : t("Back to list")}
+            </span>
+            {!guestLinks && (
+              <span className={managementStyles["back-preview"]}>
+                <Settings size={18} /> {t("List settings")}
+              </span>
+            )}
+          </div>
           <h1>{heading}</h1>
           <div className={`${loading.block} ${loading.line}`} />
           {guestLinks && (
@@ -34,9 +46,34 @@ export function SharingSkeleton({
             </p>
           )}
         </div>
-        {[0, 1].map((index) => (
-          <div key={index} className={styles.panel}>
-            <div className={`${loading.block} ${loading.title}`} />
+        {!guestLinks && (
+          <div className={managementStyles.panel}>
+            <h2>{t("Who can view this list?")}</h2>
+            <div className={styles["access-summary"]}>
+              <div className={`${loading.block} ${loading.label}`} />
+              <div className={`${loading.block} ${loading.line}`} />
+            </div>
+            <div className={styles.audience}>
+              {[0, 1].map((index) => (
+                <div key={index} className={styles["choice-preview"]}>
+                  <div className={`${loading.block} ${loading.label}`} />
+                  <div className={`${loading.block} ${loading.line}`} />
+                </div>
+              ))}
+            </div>
+            <div className={styles["access-next"]}>
+              <div className={`${loading.block} ${loading.line}`} />
+              <div className={`${loading.block} ${loading.button}`} />
+            </div>
+          </div>
+        )}
+        {(guestLinks ? [0, 1] : [0]).map((index) => (
+          <div key={index} className={managementStyles.panel}>
+            {guestLinks ? (
+              <div className={`${loading.block} ${loading.title}`} />
+            ) : (
+              <h2>{t("Invite people")}</h2>
+            )}
             <div className={`${loading.block} ${loading.line}`} />
             <div className={`${loading.block} ${loading.toolbar}`} />
             <div className={`${loading.block} ${loading.button}`} />
