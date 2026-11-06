@@ -10,6 +10,7 @@ import Footer from "@/app/_navigation/footer";
 import Header from "@/app/_navigation/header";
 import { NavigationProvider } from "@/app/_navigation/navigation-context";
 import { FeedbackProvider } from "@/components/form/feedback-provider";
+import GoogleTagManager from "@/components/google-tag-manager";
 import styles from "@/components/shell.module.css";
 import ThemeProvider from "@/components/theme/theme-provider";
 import { PerformanceVitals } from "@/features/performance/components/performance-vitals";
@@ -84,6 +85,7 @@ export default async function RootLayout({
             </NavigationProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
+        <GoogleTagManager />
         <Analytics />
         <SpeedInsights />
       </body>
